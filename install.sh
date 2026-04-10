@@ -43,8 +43,45 @@ if [ ! -f "${SCRIPT_DIR}/server.py" ]; then
 fi
 
 # ── Dependencias del sistema ──────────────────────────────────────────────────
-echo -e "${CYAN}[*] Instalando python3-venv...${NC}"
+echo -e "${CYAN}[*] Actualizando repositorios...${NC}"
+apt-get update -qq
+
+echo -e "${CYAN}[*] Instalando python3 y venv...${NC}"
 apt-get install -y python3 python3-venv 2>/dev/null | tail -1
+
+echo -e "${CYAN}[*] Instalando herramientas de pentesting...${NC}"
+TOOLS=(
+  # Recon
+  nmap gobuster ffuf whatweb wafw00f subfinder amass
+  # Web
+  wpscan nikto curl wget
+  # Injection / Brute force
+  sqlmap hydra medusa wfuzz
+  # Hash cracking
+  john hashcat hashid
+  # Exploit
+  metasploit-framework exploitdb
+  # Active Directory / SMB
+  crackmapexec smbmap smbclient rpcclient enum4linux-ng
+  ldap-utils bloodhound responder
+  # Wireless
+  aircrack-ng
+  # OSINT
+  sherlock exiftool
+  # Misc
+  tcpdump netcat-openbsd
+)
+apt-get install -y "${TOOLS[@]}" 2>/dev/null | tail -5
+
+# Herramientas pip que no están en apt
+echo -e "${CYAN}[*] Instalando herramientas adicionales (pipx)...${NC}"
+apt-get install -y pipx 2>/dev/null | tail -1
+pipx install holehe      2>/dev/null || true
+pipx install dnsrecon    2>/dev/null || true
+pipx install httpx-toolkit 2>/dev/null || true
+pipx install theharvester  2>/dev/null || true
+pipx install sherlock-project 2>/dev/null || true
+pipx ensurepath 2>/dev/null || true
 
 # ── Copiar archivos ───────────────────────────────────────────────────────────
 echo -e "${CYAN}[*] Copiando archivos a ${INSTALL_DIR}...${NC}"
@@ -79,17 +116,22 @@ chmod +x /usr/local/bin/404x9-evil-kit
 ln -sf /usr/local/bin/404x9-evil-kit /usr/local/bin/kali-toolkit 2>/dev/null || true
 
 # ── Acceso directo escritorio ─────────────────────────────────────────────────
-cat > /root/Desktop/kali-toolkit.desktop 2>/dev/null << 'EOF'
+# Detectar usuario real (no root aunque se corra con sudo)
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_HOME=$(getent passwd "${REAL_USER}" | cut -d: -f6)
+DESKTOP_DIR="${REAL_HOME}/Desktop"
+mkdir -p "${DESKTOP_DIR}"
+cat > "${DESKTOP_DIR}/kali-toolkit.desktop" << 'EOF'
 [Desktop Entry]
 Name=Kali Toolkit
 Comment=Pentesting Web Toolkit
-Exec=bash -c 'kali-toolkit'
+Exec=bash -c '404x9-evil-kit'
 Icon=kali-menu
 Terminal=true
 Type=Application
 Categories=Security;
 EOF
-chmod +x /root/Desktop/kali-toolkit.desktop 2>/dev/null
+chmod +x "${DESKTOP_DIR}/kali-toolkit.desktop" 2>/dev/null
 
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════╗${NC}"
