@@ -28,14 +28,15 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
-# ── 1. Clonar si se ejecuta desde curl ───────────────────────────────────────
+# ── 1. Clonar si se ejecuta desde curl y re-ejecutar desde el repo fresco ────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
 if [ ! -f "${SCRIPT_DIR}/server.py" ]; then
   echo -e "${CYAN}[*] Clonando repositorio...${NC}"
   apt-get install -y git -qq
   TMP_DIR="$(mktemp -d)"
   git clone --depth=1 "${REPO_URL}" "${TMP_DIR}/repo" 2>&1 | tail -2
-  SCRIPT_DIR="${TMP_DIR}/repo"
+  # Re-ejecutar desde el install.sh del repo recién clonado (evita CDN cache)
+  exec bash "${TMP_DIR}/repo/install.sh"
 fi
 
 # ── 2. Instalar herramientas de sistema (apt ignora las ya instaladas) ────────
