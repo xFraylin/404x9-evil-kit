@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(awk -F: '$1>=1995 && $1<=2210')"
+    ]
+  }
+}
