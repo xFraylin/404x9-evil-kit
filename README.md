@@ -32,6 +32,16 @@ Built by [@xFraylin](https://github.com/xFraylin)
 
 ---
 
+## Instalación rápida (una sola línea)
+
+```bash
+sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/xFraylin/404x9-evil-kit/main/install.sh)"
+```
+
+Eso es todo. El script descarga el repo, crea el venv e instala todo solo.
+
+---
+
 ## Requirements
 
 - Kali Linux (or any Debian-based distro with pentesting tools installed)
@@ -40,7 +50,7 @@ Built by [@xFraylin](https://github.com/xFraylin)
 
 ---
 
-## Installation
+## Installation (manual)
 
 ```bash
 git clone https://github.com/xFraylin/404x9-evil-kit.git
