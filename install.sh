@@ -57,13 +57,13 @@ APT_TOOLS=(
   # Web
   wpscan nikto curl wget
   # Brute force
-  hydra medusa
+  hydra medusa wfuzz
   # Hash cracking
   john hashcat hashid
   # Exploit
   metasploit-framework exploitdb
   # Active Directory / SMB
-  smbmap smbclient enum4linux-ng ldap-utils responder
+  netexec smbmap smbclient enum4linux-ng ldap-utils responder
   # Wireless
   aircrack-ng
   # OSINT
