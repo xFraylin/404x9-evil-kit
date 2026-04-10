@@ -2536,12 +2536,13 @@ async function wlModalNav(path) {
 function wlModalRender(entries) {
   const cur = document.getElementById('wl-modal-path').textContent;
   const parent = cur.lastIndexOf('/') > 0 ? cur.substring(0, cur.lastIndexOf('/')) || '/' : null;
+  const e = s => String(s).replace(/'/g,"\\'").replace(/</g,'&lt;').replace(/>/g,'&gt;');
   let h = '';
-  if (parent) h += `<div class="wl-entry is-dir" onclick="wlModalNav('${esc(parent)}')"><span class="wl-icon">↩</span>..</div>`;
-  const dirs  = entries.filter(e => e.is_dir);
-  const files = entries.filter(e => !e.is_dir);
-  dirs.forEach(e  => { h += `<div class="wl-entry is-dir" onclick="wlModalNav('${esc(e.path)}')"><span class="wl-icon">📁</span>${esc(e.name)}</div>`; });
-  files.forEach(e => { h += `<div class="wl-entry" onclick="wlModalPick('${esc(e.path)}')"><span class="wl-icon">📄</span>${esc(e.name)}<span class="wl-size">${fmtSize(e.size)}</span></div>`; });
+  if (parent) h += `<div class="wl-entry is-dir" onclick="wlModalNav('${e(parent)}')"><span class="wl-icon">↩</span>..</div>`;
+  const dirs  = entries.filter(x => x.is_dir);
+  const files = entries.filter(x => !x.is_dir);
+  dirs.forEach(x  => { h += `<div class="wl-entry is-dir" onclick="wlModalNav('${e(x.path)}')"><span class="wl-icon">📁</span>${e(x.name)}</div>`; });
+  files.forEach(x => { h += `<div class="wl-entry" onclick="wlModalPick('${e(x.path)}')"><span class="wl-icon">📄</span>${e(x.name)}<span class="wl-size">${fmtSize(x.size)}</span></div>`; });
   if (!dirs.length && !files.length) h += '<div class="wl-entry" style="color:var(--dim)">Directorio vacío</div>';
   document.getElementById('wl-modal-list').innerHTML = h;
 }
