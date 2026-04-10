@@ -165,7 +165,18 @@ def api_kill(job_id):
         proc = active_procs.get(job_id)
     if proc:
         try:
-            os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+            pgid = os.getpgid(proc.pid)
+            # SIGTERM first, then SIGKILL to handle sudo'd processes
+            try: os.killpg(pgid, signal.SIGTERM)
+            except OSError: pass
+            time.sleep(0.3)
+            try: os.killpg(pgid, signal.SIGKILL)
+            except OSError: pass
+            # also terminate the proc object itself
+            try: proc.terminate()
+            except Exception: pass
+            try: proc.kill()
+            except Exception: pass
             return jsonify({'status': 'killed'})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
@@ -220,6 +231,7 @@ def api_tools_status():
         'airmon-ng','airodump-ng','aireplay-ng','aircrack-ng',
         'impacket-psexec','evil-winrm','hashid','tcpdump',
         'medusa','wfuzz','dalfox','httpx','theharvester',
+        'sherlock','holehe','dnsrecon','exiftool',
     ]
     status = {}
     for t in tools:
