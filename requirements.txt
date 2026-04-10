@@ -1,2 +1,16 @@
+# ── Servidor web ──────────────────────────────────────────────────────────────
 flask>=3.0.0
 flask-cors>=4.0.0
+
+# ── Herramientas Python (se instalan aisladas en el venv) ─────────────────────
+sqlmap                  # SQL injection
+impacket                # psexec, secretsdump, ntlmrelayx, etc.
+dnsrecon                # DNS recon
+holehe                  # OSINT - email to accounts
+theharvester            # OSINT - emails, domains, IPs
+sherlock-project        # OSINT - username lookup
+bloodhound              # AD enumeration (bloodhound-python)
+ldapdomaindump          # LDAP dump
+mitm6                   # IPv6 MITM
+wfuzz                   # Web fuzzing
+netexec                 # crackmapexec sucesor (nxc)

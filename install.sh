@@ -42,48 +42,38 @@ if [ ! -f "${SCRIPT_DIR}/server.py" ]; then
   SCRIPT_DIR="${TMP_DIR}/404x9-evil-kit"
 fi
 
-# ── Dependencias del sistema ──────────────────────────────────────────────────
+# ── Dependencias base del sistema ─────────────────────────────────────────────
 echo -e "${CYAN}[*] Actualizando repositorios...${NC}"
 apt-get update -qq
 
 echo -e "${CYAN}[*] Instalando python3 y venv...${NC}"
 apt-get install -y python3 python3-venv 2>/dev/null | tail -1
 
-echo -e "${CYAN}[*] Instalando herramientas de pentesting...${NC}"
-TOOLS=(
+# ── Herramientas que NO son Python (binarios via apt) ─────────────────────────
+echo -e "${CYAN}[*] Instalando herramientas de sistema (apt)...${NC}"
+APT_TOOLS=(
   # Recon
-  nmap gobuster ffuf whatweb wafw00f subfinder amass
+  nmap gobuster ffuf whatweb wafw00f amass
   # Web
   wpscan nikto curl wget
-  # Injection / Brute force
-  sqlmap hydra medusa wfuzz
+  # Brute force
+  hydra medusa
   # Hash cracking
   john hashcat hashid
   # Exploit
   metasploit-framework exploitdb
   # Active Directory / SMB
-  crackmapexec smbmap smbclient rpcclient enum4linux-ng
-  ldap-utils bloodhound responder
+  smbmap smbclient enum4linux-ng ldap-utils responder
   # Wireless
   aircrack-ng
   # OSINT
-  sherlock exiftool
+  exiftool
   # Misc
   tcpdump netcat-openbsd
 )
-apt-get install -y "${TOOLS[@]}" 2>/dev/null | tail -5
+apt-get install -y "${APT_TOOLS[@]}" 2>/dev/null | tail -5
 
-# Herramientas pip que no están en apt
-echo -e "${CYAN}[*] Instalando herramientas adicionales (pipx)...${NC}"
-apt-get install -y pipx 2>/dev/null | tail -1
-pipx install holehe      2>/dev/null || true
-pipx install dnsrecon    2>/dev/null || true
-pipx install httpx-toolkit 2>/dev/null || true
-pipx install theharvester  2>/dev/null || true
-pipx install sherlock-project 2>/dev/null || true
-pipx ensurepath 2>/dev/null || true
-
-# ── Copiar archivos ───────────────────────────────────────────────────────────
+# ── Copiar archivos del toolkit ───────────────────────────────────────────────
 echo -e "${CYAN}[*] Copiando archivos a ${INSTALL_DIR}...${NC}"
 mkdir -p "${INSTALL_DIR}/templates"
 mkdir -p "${INSTALL_DIR}/static"
@@ -92,31 +82,32 @@ cp "${SCRIPT_DIR}/requirements.txt"       "${INSTALL_DIR}/"
 cp "${SCRIPT_DIR}/templates/index.html"   "${INSTALL_DIR}/templates/"
 [ -d "${SCRIPT_DIR}/static" ] && cp -r "${SCRIPT_DIR}/static/." "${INSTALL_DIR}/static/"
 
-# ── Entorno virtual ───────────────────────────────────────────────────────────
+# ── Entorno virtual: servidor + herramientas Python ───────────────────────────
 echo -e "${CYAN}[*] Creando entorno virtual en ${VENV_DIR}...${NC}"
 python3 -m venv "${VENV_DIR}"
 
-echo -e "${CYAN}[*] Instalando dependencias Python (flask, flask-cors)...${NC}"
+echo -e "${CYAN}[*] Instalando dependencias en el venv (requirements.txt)...${NC}"
 "${VENV_DIR}/bin/pip" install --upgrade pip -q
-"${VENV_DIR}/bin/pip" install -r "${INSTALL_DIR}/requirements.txt" -q
+"${VENV_DIR}/bin/pip" install -r "${INSTALL_DIR}/requirements.txt"
 
 # ── Lanzador ──────────────────────────────────────────────────────────────────
+# Activa el venv completo para que sqlmap, dnsrecon, etc. estén en PATH
 cat > /usr/local/bin/404x9-evil-kit << EOF
 #!/bin/bash
 cd ${INSTALL_DIR}
+source ${VENV_DIR}/bin/activate
 echo ""
 echo "  404x9-evil-kit · by @xfraylin"
 echo "  Abriendo http://localhost:5000 ..."
 echo "  Ctrl+C para detener"
 echo ""
 (sleep 1.5 && xdg-open http://localhost:5000 2>/dev/null || firefox http://localhost:5000 2>/dev/null &) &
-${VENV_DIR}/bin/python3 server.py
+python3 server.py
 EOF
 chmod +x /usr/local/bin/404x9-evil-kit
 ln -sf /usr/local/bin/404x9-evil-kit /usr/local/bin/kali-toolkit 2>/dev/null || true
 
 # ── Acceso directo escritorio ─────────────────────────────────────────────────
-# Detectar usuario real (no root aunque se corra con sudo)
 REAL_USER="${SUDO_USER:-$USER}"
 REAL_HOME=$(getent passwd "${REAL_USER}" | cut -d: -f6)
 DESKTOP_DIR="${REAL_HOME}/Desktop"
