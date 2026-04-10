@@ -5,6 +5,10 @@ Built by [@xFraylin](https://github.com/xFraylin)
 
 ---
 
+![404x9-evil-kit preview](static/preview.svg)
+
+---
+
 > **Aviso legal / Disclaimer**  
 > Este toolkit es únicamente para uso en entornos autorizados: laboratorios propios, CTFs, pruebas de penetración con permiso explícito del propietario del sistema.  
 > **Todo uso es bajo tu exclusiva responsabilidad.** El autor no se hace responsable de ningún uso indebido, ilegal o dañino de esta herramienta.  

@@ -1,0 +1,303 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="520" viewBox="0 0 900 520">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;display=swap');
+      text { font-family: 'JetBrains Mono', 'Courier New', monospace; }
+    </style>
+    <linearGradient id="topbar-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#040805"/>
+      <stop offset="50%" style="stop-color:#09110a"/>
+      <stop offset="100%" style="stop-color:#040805"/>
+    </linearGradient>
+    <linearGradient id="sidebar-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#070f08"/>
+      <stop offset="100%" style="stop-color:#060c08"/>
+    </linearGradient>
+    <filter id="glow-green">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-soft">
+      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- ── Background ── -->
+  <rect width="900" height="520" fill="#030604" rx="8"/>
+  <!-- scanline texture -->
+  <rect width="900" height="520" fill="url(#scan)" opacity="0.03" rx="8"/>
+
+  <!-- ── Window border ── -->
+  <rect width="900" height="520" fill="none" stroke="#163019" stroke-width="1" rx="8"/>
+
+  <!-- ── Topbar ── -->
+  <rect x="0" y="0" width="900" height="38" fill="url(#topbar-grad)" rx="8"/>
+  <rect x="0" y="30" width="900" height="8" fill="url(#topbar-grad)"/>
+  <line x1="0" y1="38" x2="900" y2="38" stroke="#163019" stroke-width="1"/>
+
+  <!-- dots -->
+  <circle cx="18" cy="19" r="5" fill="#ff5f57" filter="url(#glow-soft)"/>
+  <circle cx="32" cy="19" r="5" fill="#febc2e" filter="url(#glow-soft)"/>
+  <circle cx="46" cy="19" r="5" fill="#28c840" filter="url(#glow-soft)"/>
+
+  <!-- title -->
+  <text x="450" y="23" text-anchor="middle" font-size="11" font-weight="700"
+        fill="#00ff88" letter-spacing="4" filter="url(#glow-green)">404x9-evil-kit</text>
+  <text x="560" y="23" text-anchor="middle" font-size="7" fill="#3d8a56" letter-spacing="2">by @xfraylin</text>
+
+  <!-- status pill -->
+  <rect x="810" y="12" width="62" height="14" fill="#030804" stroke="#1a3a20" stroke-width="1" rx="2"/>
+  <circle cx="820" cy="19" r="3" fill="#00ff88" filter="url(#glow-soft)"/>
+  <text x="826" y="22" font-size="7" fill="#00ff88" letter-spacing="1">ONLINE</text>
+
+  <!-- clock -->
+  <text x="724" y="22" font-size="7" fill="#3d8a56" letter-spacing="1">22:47:03</text>
+
+  <!-- ── Sidebar ── -->
+  <rect x="0" y="38" width="172" height="482" fill="#060c08"/>
+  <line x1="172" y1="38" x2="172" y2="520" stroke="#163019" stroke-width="1"/>
+
+  <!-- brand -->
+  <rect x="0" y="38" width="172" height="44" fill="url(#sidebar-grad)"/>
+  <line x1="0" y1="82" x2="172" y2="82" stroke="#163019" stroke-width="1"/>
+  <text x="14" y="57" font-size="9" font-weight="700" fill="#00ff88" letter-spacing="3" filter="url(#glow-soft)">404X9-EVIL-KIT</text>
+  <text x="14" y="72" font-size="7" fill="#3d8a56" letter-spacing="2">by @xfraylin</text>
+
+  <!-- category: RECON (open) -->
+  <rect x="0" y="83" width="172" height="22" fill="#060d07"/>
+  <line x1="0" y1="105" x2="172" y2="105" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="97" font-size="7" fill="#00ff88" letter-spacing="3">RECON</text>
+  <text x="154" y="97" font-size="8" fill="#00ff88" opacity="0.7">›</text>
+
+  <!-- active item: NMAP -->
+  <rect x="0" y="106" width="172" height="20" fill="#0d1e0f"/>
+  <rect x="0" y="106" width="2" height="20" fill="#00ff88"/>
+  <circle cx="22" cy="116" r="2" fill="#00ff88" filter="url(#glow-soft)"/>
+  <text x="32" y="120" font-size="8" fill="#00ff88" letter-spacing="0.5">NMAP</text>
+
+  <!-- items -->
+  <rect x="0" y="126" width="172" height="18" fill="transparent"/>
+  <circle cx="22" cy="135" r="2" fill="#163320"/>
+  <text x="32" y="139" font-size="8" fill="#3d8a56" letter-spacing="0.5">SUBFINDER</text>
+
+  <rect x="0" y="144" width="172" height="18" fill="transparent"/>
+  <circle cx="22" cy="153" r="2" fill="#163320"/>
+  <text x="32" y="157" font-size="8" fill="#3d8a56" letter-spacing="0.5">AMASS</text>
+
+  <!-- category: OSINT -->
+  <rect x="0" y="163" width="172" height="22" fill="#060c08"/>
+  <line x1="0" y1="185" x2="172" y2="185" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="177" font-size="7" fill="#3d8a56" letter-spacing="3">OSINT</text>
+  <text x="154" y="177" font-size="8" fill="#3d8a56" opacity="0.5">›</text>
+
+  <!-- category: WEB -->
+  <rect x="0" y="186" width="172" height="22" fill="#060c08"/>
+  <line x1="0" y1="208" x2="172" y2="208" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="200" font-size="7" fill="#3d8a56" letter-spacing="3">WEB</text>
+  <text x="154" y="200" font-size="8" fill="#3d8a56" opacity="0.5">›</text>
+
+  <!-- category: ACTIVE DIRECTORY -->
+  <rect x="0" y="209" width="172" height="22" fill="#060c08"/>
+  <line x1="0" y1="231" x2="172" y2="231" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="223" font-size="7" fill="#3d8a56" letter-spacing="3">ACTIVE DIRECTORY</text>
+  <text x="154" y="223" font-size="8" fill="#3d8a56" opacity="0.5">›</text>
+
+  <!-- category: HASH CRACKING -->
+  <rect x="0" y="232" width="172" height="22" fill="#060c08"/>
+  <line x1="0" y1="254" x2="172" y2="254" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="246" font-size="7" fill="#3d8a56" letter-spacing="3">HASH CRACKING</text>
+  <text x="154" y="246" font-size="8" fill="#3d8a56" opacity="0.5">›</text>
+
+  <!-- category: BRUTE FORCE -->
+  <rect x="0" y="255" width="172" height="22" fill="#060c08"/>
+  <line x1="0" y1="277" x2="172" y2="277" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="269" font-size="7" fill="#3d8a56" letter-spacing="3">BRUTE FORCE</text>
+  <text x="154" y="269" font-size="8" fill="#3d8a56" opacity="0.5">›</text>
+
+  <!-- category: EXPLOIT -->
+  <rect x="0" y="278" width="172" height="22" fill="#060c08"/>
+  <line x1="0" y1="300" x2="172" y2="300" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="292" font-size="7" fill="#3d8a56" letter-spacing="3">EXPLOIT</text>
+  <text x="154" y="292" font-size="8" fill="#3d8a56" opacity="0.5">›</text>
+
+  <!-- category: WIRELESS -->
+  <rect x="0" y="301" width="172" height="22" fill="#060c08"/>
+  <line x1="0" y1="323" x2="172" y2="323" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="315" font-size="7" fill="#3d8a56" letter-spacing="3">WIRELESS</text>
+  <text x="154" y="315" font-size="8" fill="#3d8a56" opacity="0.5">›</text>
+
+  <!-- category: MISC -->
+  <rect x="0" y="324" width="172" height="22" fill="#060c08"/>
+  <line x1="0" y1="346" x2="172" y2="346" stroke="#0a1209" stroke-width="1"/>
+  <text x="12" y="338" font-size="7" fill="#3d8a56" letter-spacing="3">MISC</text>
+  <text x="154" y="338" font-size="8" fill="#3d8a56" opacity="0.5">›</text>
+
+  <!-- ── Main panel ── -->
+  <rect x="172" y="38" width="558" height="482" fill="#050a06"/>
+  <!-- scanlines subtle -->
+  <rect x="172" y="38" width="558" height="482" fill="none" stroke="none"/>
+
+  <!-- panel title -->
+  <text x="192" y="65" font-size="13" font-weight="700" fill="#c8ffdc" letter-spacing="1">NMAP</text>
+  <text x="247" y="65" font-size="10" fill="#3d8a56">— Network scanner &amp; port discovery</text>
+
+  <!-- inputs row -->
+  <rect x="192" y="76" width="240" height="28" fill="#030604" stroke="#163019" stroke-width="1" rx="2"/>
+  <text x="200" y="86" font-size="6" fill="#3d8a56" letter-spacing="1">TARGET</text>
+  <text x="200" y="98" font-size="9" fill="#7fffc0">192.168.1.0/24</text>
+
+  <rect x="440" y="76" width="90" height="28" fill="#030604" stroke="#163019" stroke-width="1" rx="2"/>
+  <text x="448" y="86" font-size="6" fill="#3d8a56" letter-spacing="1">PORTS</text>
+  <text x="448" y="98" font-size="9" fill="#7fffc0">1-65535</text>
+
+  <rect x="538" y="76" width="80" height="28" fill="#030604" stroke="#163019" stroke-width="1" rx="2"/>
+  <text x="546" y="86" font-size="6" fill="#3d8a56" letter-spacing="1">TIMING</text>
+  <text x="546" y="98" font-size="9" fill="#7fffc0">T4 — Fast</text>
+
+  <!-- checkboxes row -->
+  <rect x="192" y="112" width="14" height="14" fill="#030604" stroke="#1a3a20" stroke-width="1" rx="1"/>
+  <text x="196" y="122" font-size="8" fill="#00ff88">✓</text>
+  <text x="210" y="122" font-size="8" fill="#3d8a56">-sV</text>
+
+  <rect x="240" y="112" width="14" height="14" fill="#030604" stroke="#1a3a20" stroke-width="1" rx="1"/>
+  <text x="244" y="122" font-size="8" fill="#00ff88">✓</text>
+  <text x="258" y="122" font-size="8" fill="#3d8a56">-O</text>
+
+  <rect x="280" y="112" width="14" height="14" fill="#030604" stroke="#163019" stroke-width="1" rx="1"/>
+  <text x="298" y="122" font-size="8" fill="#3d8a56">-A</text>
+
+  <rect x="318" y="112" width="14" height="14" fill="#030604" stroke="#163019" stroke-width="1" rx="1"/>
+  <text x="336" y="122" font-size="8" fill="#3d8a56">--script vuln</text>
+
+  <!-- command preview -->
+  <rect x="192" y="134" width="430" height="22" fill="#020302" stroke="#163019" stroke-width="1" rx="2"/>
+  <text x="200" y="148" font-size="7" fill="#3d8a56" letter-spacing="1">CMD</text>
+  <text x="228" y="148" font-size="8" fill="#00d8ff">nmap -sV -O -p 1-65535 -T4 192.168.1.0/24</text>
+
+  <!-- run button -->
+  <rect x="192" y="162" width="100" height="22" fill="#030f05" stroke="#1a4a22" stroke-width="1" rx="2"/>
+  <text x="220" y="177" font-size="8" fill="#00ff88" font-weight="700" letter-spacing="1" filter="url(#glow-soft)">▶ RUN</text>
+
+  <rect x="300" y="162" width="80" height="22" fill="#0a0805" stroke="#2a1a08" stroke-width="1" rx="2"/>
+  <text x="315" y="177" font-size="8" fill="#ff4f4f" letter-spacing="1">■ KILL</text>
+
+  <!-- output area -->
+  <rect x="192" y="194" width="430" height="300" fill="#020302" stroke="#163019" stroke-width="1" rx="3"/>
+
+  <!-- output header -->
+  <rect x="192" y="194" width="430" height="24" fill="#030604" rx="3"/>
+  <rect x="192" y="206" width="430" height="12" fill="#030604"/>
+  <line x1="192" y1="218" x2="622" y2="218" stroke="#163019" stroke-width="1"/>
+  <text x="202" y="210" font-size="7" fill="#3d8a56" letter-spacing="2">OUTPUT</text>
+  <rect x="574" y="198" width="40" height="14" fill="#0a1209" stroke="#163019" stroke-width="1" rx="1"/>
+  <text x="582" y="208" font-size="7" fill="#3d8a56">CLEAR</text>
+
+  <!-- output lines -->
+  <text x="202" y="235" font-size="8" fill="#00ff88" filter="url(#glow-soft)">Starting Nmap 7.94 ( https://nmap.org )</text>
+  <text x="202" y="250" font-size="8" fill="#7fffc0">Nmap scan report for 192.168.1.1</text>
+  <text x="202" y="265" font-size="8" fill="#3d8a56">Host is up (0.00042s latency).</text>
+  <text x="202" y="280" font-size="8" fill="#7fffc0">PORT      STATE  SERVICE    VERSION</text>
+  <line x1="202" y1="285" x2="600" y2="285" stroke="#163019" stroke-width="1" stroke-dasharray="2,4"/>
+
+  <!-- table rows -->
+  <text x="202" y="298" font-size="8" fill="#00d8ff">22/tcp  </text>
+  <text x="254" y="298" font-size="8" fill="#00ff88">open   </text>
+  <text x="300" y="298" font-size="8" fill="#7fffc0">ssh        OpenSSH 8.9</text>
+
+  <text x="202" y="313" font-size="8" fill="#00d8ff">80/tcp  </text>
+  <text x="254" y="313" font-size="8" fill="#00ff88">open   </text>
+  <text x="300" y="313" font-size="8" fill="#7fffc0">http       Apache 2.4.54</text>
+
+  <text x="202" y="328" font-size="8" fill="#00d8ff">443/tcp </text>
+  <text x="254" y="328" font-size="8" fill="#00ff88">open   </text>
+  <text x="300" y="328" font-size="8" fill="#7fffc0">https      Apache 2.4.54</text>
+
+  <text x="202" y="343" font-size="8" fill="#00d8ff">445/tcp </text>
+  <text x="254" y="343" font-size="8" fill="#00ff88">open   </text>
+  <text x="300" y="343" font-size="8" fill="#7fffc0">microsoft-ds</text>
+  <rect x="390" y="335" width="48" height="13" fill="#1a0505" stroke="#3a1010" stroke-width="1" rx="2"/>
+  <text x="396" y="345" font-size="7" fill="#ff4f4f" font-weight="700">SMB OPEN</text>
+
+  <text x="202" y="358" font-size="8" fill="#00d8ff">3306/tcp</text>
+  <text x="254" y="358" font-size="8" fill="#f5c542">filtered</text>
+  <text x="300" y="358" font-size="8" fill="#3d8a56">mysql</text>
+
+  <text x="202" y="373" font-size="8" fill="#00d8ff">8080/tcp</text>
+  <text x="254" y="373" font-size="8" fill="#00ff88">open   </text>
+  <text x="300" y="373" font-size="8" fill="#7fffc0">http-proxy  Nginx 1.22</text>
+
+  <line x1="202" y1="380" x2="600" y2="380" stroke="#163019" stroke-width="1" stroke-dasharray="2,4"/>
+  <text x="202" y="393" font-size="8" fill="#3d8a56">OS: Linux 5.x (96%)</text>
+  <text x="202" y="408" font-size="8" fill="#3d8a56">Nmap done: 1 IP address (1 host up) scanned in 12.43s</text>
+
+  <!-- cursor blink -->
+  <rect x="202" y="415" width="6" height="12" fill="#00ff88" opacity="0.8" filter="url(#glow-soft)"/>
+
+  <!-- exit code -->
+  <text x="202" y="480" font-size="7" fill="#3d8a56">[exit: 0]  —  12.43s</text>
+
+  <!-- ── Terminal right panel ── -->
+  <rect x="730" y="38" width="170" height="482" fill="#020302"/>
+  <line x1="730" y1="38" x2="730" y2="520" stroke="#163019" stroke-width="1"/>
+
+  <!-- term header -->
+  <rect x="730" y="38" width="170" height="24" fill="#030604"/>
+  <line x1="730" y1="62" x2="900" y2="62" stroke="#163019" stroke-width="1"/>
+  <text x="740" y="54" font-size="7" fill="#3d8a56" letter-spacing="2">TERMINAL</text>
+  <text x="838" y="54" font-size="7" fill="#3d8a56">×</text>
+
+  <!-- terminal lines -->
+  <text x="738" y="78" font-size="7" fill="#3d8a56">┌──(root㉿kali)</text>
+  <text x="738" y="90" font-size="7" fill="#3d8a56">└─</text>
+  <text x="752" y="90" font-size="7" fill="#00ff88">$</text>
+  <text x="762" y="90" font-size="7" fill="#7fffc0">404x9-evil-kit</text>
+
+  <text x="738" y="108" font-size="7" fill="#00ff88" filter="url(#glow-soft)">  ██╗  ██╗ ██████╗  █████╗</text>
+  <text x="738" y="119" font-size="7" fill="#00ff88">  ╚██╗██╔╝██╔═══██╗██╔══██╗</text>
+  <text x="738" y="130" font-size="7" fill="#00d8ff">   ╚███╔╝ ╚█████╔╝╚██████║</text>
+  <text x="738" y="141" font-size="7" fill="#00d8ff">   ██╔██╗  ╚═══██╗ ╚═══██║</text>
+  <text x="738" y="152" font-size="7" fill="#7fffc0">  ██╔╝ ██╗██████╔╝ █████╔╝</text>
+  <text x="738" y="163" font-size="7" fill="#7fffc0">  ╚═╝  ╚═╝╚═════╝  ╚════╝</text>
+
+  <text x="738" y="178" font-size="7" fill="#3d8a56">URL → http://localhost:5000</text>
+  <text x="738" y="190" font-size="7" fill="#3d8a56">Press Ctrl+C to stop</text>
+
+  <line x1="738" y1="198" x2="892" y2="198" stroke="#163019" stroke-width="1" stroke-dasharray="2,4"/>
+
+  <text x="738" y="212" font-size="7" fill="#3d8a56">Active jobs: 1</text>
+  <text x="738" y="224" font-size="7" fill="#f5c542">● nmap running...</text>
+  <text x="738" y="236" font-size="7" fill="#3d8a56">PID: 18472</text>
+
+  <line x1="738" y1="244" x2="892" y2="244" stroke="#163019" stroke-width="1" stroke-dasharray="2,4"/>
+
+  <text x="738" y="258" font-size="7" fill="#3d8a56">Tools status</text>
+  <circle cx="742" cy="269" r="2.5" fill="#00ff88"/>
+  <text x="749" y="272" font-size="7" fill="#7fffc0">nmap</text>
+  <circle cx="780" cy="269" r="2.5" fill="#00ff88"/>
+  <text x="787" y="272" font-size="7" fill="#7fffc0">sqlmap</text>
+
+  <circle cx="742" cy="283" r="2.5" fill="#00ff88"/>
+  <text x="749" y="286" font-size="7" fill="#7fffc0">hydra</text>
+  <circle cx="780" cy="283" r="2.5" fill="#00ff88"/>
+  <text x="787" y="286" font-size="7" fill="#7fffc0">hashcat</text>
+
+  <circle cx="742" cy="297" r="2.5" fill="#00ff88"/>
+  <text x="749" y="300" font-size="7" fill="#7fffc0">ffuf</text>
+  <circle cx="780" cy="297" r="2.5" fill="#00ff88"/>
+  <text x="787" y="300" font-size="7" fill="#7fffc0">gobuster</text>
+
+  <circle cx="742" cy="311" r="2.5" fill="#ff4f4f"/>
+  <text x="749" y="314" font-size="7" fill="#3d8a56">amass</text>
+  <circle cx="780" cy="311" r="2.5" fill="#00ff88"/>
+  <text x="787" y="314" font-size="7" fill="#7fffc0">nikto</text>
+
+  <circle cx="742" cy="325" r="2.5" fill="#00ff88"/>
+  <text x="749" y="328" font-size="7" fill="#7fffc0">responder</text>
+
+  <circle cx="742" cy="339" r="2.5" fill="#00ff88"/>
+  <text x="749" y="342" font-size="7" fill="#7fffc0">evil-winrm</text>
+
+  <circle cx="742" cy="353" r="2.5" fill="#00ff88"/>
+  <text x="749" y="356" font-size="7" fill="#7fffc0">impacket</text>
+</svg>
