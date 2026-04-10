@@ -267,6 +267,30 @@ textarea.fi{resize:vertical;min-height:48px}
 .method-opt{font-size:7px;padding:3px 9px;border:1px solid var(--brd);border-radius:3px;cursor:pointer;color:var(--mut);transition:all .1s}
 .method-opt:hover{color:var(--g2);border-color:#2d6040}
 .method-opt.on{background:#0a1a0c;border-color:var(--g);color:var(--g)}
+
+/* ─── WORDLIST WIDGET ────────────────────────────────── */
+.wl-combo{display:flex;flex-direction:column;gap:3px;width:100%}
+.wl-row{display:flex;gap:4px;align-items:center}
+.wl-row input.fi{flex:1}
+.wl-browse{background:#040a05;border:1px solid var(--brd);color:var(--g);font-size:10px;padding:3px 7px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all .1s;line-height:1}
+.wl-browse:hover{border-color:var(--g);background:#0a1a0c}
+
+/* ─── FILE BROWSER MODAL ─────────────────────────────── */
+#wl-modal{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.75);align-items:center;justify-content:center}
+#wl-modal.open{display:flex}
+#wl-modal-box{background:#060e07;border:1px solid var(--g);border-radius:6px;width:560px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+#wl-modal-hdr{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--brd);background:#020403}
+#wl-modal-hdr span{font-size:8px;letter-spacing:1px;color:var(--g);flex:1}
+#wl-modal-close{background:none;border:none;color:var(--red);font-size:12px;cursor:pointer;padding:0 4px}
+#wl-modal-path{font-size:8px;color:var(--cyan);padding:6px 12px;border-bottom:1px solid var(--brd);background:#030705;word-break:break-all}
+#wl-modal-list{flex:1;overflow-y:auto;padding:4px 0}
+.wl-entry{display:flex;align-items:center;gap:8px;padding:5px 14px;font-size:9px;cursor:pointer;transition:background .08s;color:var(--txt)}
+.wl-entry:hover{background:#0a1a0c}
+.wl-entry.is-dir{color:var(--cyan)}
+.wl-entry .wl-icon{font-size:10px;width:14px;text-align:center;flex-shrink:0}
+.wl-entry .wl-size{margin-left:auto;font-size:7px;color:var(--dim)}
+#wl-modal-filter{background:#040705;border:0;border-top:1px solid var(--brd);padding:6px 12px;color:var(--txt);font-family:inherit;font-size:9px;outline:none;width:100%}
+#wl-modal-filter::placeholder{color:var(--dim)}
 </style>
 </head>
 <body>
@@ -585,7 +609,11 @@ textarea.fi{resize:vertical;min-height:48px}
   </div>
   <div class="row">
     <div class="ig"><div class="lbl">USUARIO (bruteforce)</div><input class="fi" id="wp-usr" placeholder="admin" oninput="bWp()"></div>
-    <div class="ig"><div class="lbl">PASSWORDS</div><input class="fi" id="wp-pw" placeholder="/usr/share/wordlists/rockyou.txt" oninput="bWp()"></div>
+    <div class="ig"><div class="lbl">PASSWORDS</div>
+      <div class="wl-row">
+        <input class="fi" id="wp-pw" placeholder="/usr/share/wordlists/rockyou.txt" oninput="bWp()">
+        <button class="wl-browse" onclick="wlBrowse('wp-pw', bWp)" title="Explorar">📂</button>
+      </div></div>
   </div>
   <div class="checks" id="wp-xfl">
     <div class="ck" data-v="--disable-tls-checks">ignore SSL</div>
@@ -713,16 +741,23 @@ textarea.fi{resize:vertical;min-height:48px}
   </div>
   <div class="row">
     <div class="ig w2"><div class="lbl">WORDLIST (W)</div>
-      <select class="fi" id="ff-wl" onchange="bFfuf()">
-        <option>/usr/share/wordlists/dirb/common.txt</option>
-        <option>/usr/share/wordlists/dirb/big.txt</option>
-        <option>/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt</option>
-        <option>/usr/share/seclists/Discovery/Web-Content/raft-large-files.txt</option>
-        <option>/usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt</option>
-        <option>/usr/share/seclists/Fuzzing/LFI/LFI-Jhaddix.txt</option>
-        <option>/usr/share/seclists/Fuzzing/SQLi/Generic-SQLi.txt</option>
-        <option>/usr/share/seclists/Fuzzing/XSS/XSS-Jhaddix.txt</option>
-      </select></div>
+      <div class="wl-combo">
+        <select class="fi" id="ff-wl" onchange="wlSelChange('ff-wl', bFfuf)">
+          <option>/usr/share/wordlists/dirb/common.txt</option>
+          <option>/usr/share/wordlists/dirb/big.txt</option>
+          <option>/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt</option>
+          <option>/usr/share/seclists/Discovery/Web-Content/raft-large-files.txt</option>
+          <option>/usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt</option>
+          <option>/usr/share/seclists/Fuzzing/LFI/LFI-Jhaddix.txt</option>
+          <option>/usr/share/seclists/Fuzzing/SQLi/Generic-SQLi.txt</option>
+          <option>/usr/share/seclists/Fuzzing/XSS/XSS-Jhaddix.txt</option>
+          <option value="__custom__">✏ Ruta personalizada...</option>
+        </select>
+        <div class="wl-row" id="ff-wl-row" style="display:none">
+          <input class="fi" id="ff-wl-c" placeholder="/ruta/wordlist.txt" oninput="bFfuf()">
+          <button class="wl-browse" onclick="wlBrowse('ff-wl-c', bFfuf)" title="Explorar">📂</button>
+        </div>
+      </div></div>
     <div class="ig"><div class="lbl">WORDLIST 2 (W2) opcional</div><input class="fi" id="ff-w2" placeholder="/ruta/wordlist2.txt:W2" oninput="bFfuf()"></div>
     <div class="ig"><div class="lbl">EXTENSIONES (-e)</div><input class="fi" id="ff-e" placeholder="php,html,txt" oninput="bFfuf()"></div>
   </div>
@@ -779,14 +814,21 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="ig" style="max-width:60px"><div class="lbl">THREADS</div><input class="fi" id="gb-th" value="50" oninput="bGob()"></div>
   </div>
   <div class="ig" style="margin-bottom:7px"><div class="lbl">WORDLIST</div>
-    <select class="fi" id="gb-wl" onchange="bGob()">
-      <option>/usr/share/wordlists/dirb/common.txt</option>
-      <option>/usr/share/wordlists/dirb/big.txt</option>
-      <option>/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt</option>
-      <option>/usr/share/seclists/Discovery/Web-Content/raft-large-files.txt</option>
-      <option>/usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt</option>
-      <option>/usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt</option>
-    </select></div>
+    <div class="wl-combo">
+      <select class="fi" id="gb-wl" onchange="wlSelChange('gb-wl', bGob)">
+        <option>/usr/share/wordlists/dirb/common.txt</option>
+        <option>/usr/share/wordlists/dirb/big.txt</option>
+        <option>/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt</option>
+        <option>/usr/share/seclists/Discovery/Web-Content/raft-large-files.txt</option>
+        <option>/usr/share/seclists/Discovery/DNS/subdomains-top1million-20000.txt</option>
+        <option>/usr/share/seclists/Discovery/Web-Content/raft-large-directories.txt</option>
+        <option value="__custom__">✏ Ruta personalizada...</option>
+      </select>
+      <div class="wl-row" id="gb-wl-row" style="display:none">
+        <input class="fi" id="gb-wl-c" placeholder="/ruta/wordlist.txt" oninput="bGob()">
+        <button class="wl-browse" onclick="wlBrowse('gb-wl-c', bGob)" title="Explorar">📂</button>
+      </div>
+    </div></div>
 
   <!-- DIR-specific section -->
   <div id="gb-dir-section">
@@ -886,14 +928,21 @@ textarea.fi{resize:vertical;min-height:48px}
   </div>
   <div class="row">
     <div class="ig w2"><div class="lbl">WORDLIST (-w)</div>
-      <select class="fi" id="wf-wl" onchange="bWfuzz()">
-        <option>/usr/share/wordlists/dirb/common.txt</option>
-        <option>/usr/share/wordlists/dirb/big.txt</option>
-        <option>/usr/share/seclists/Discovery/Web-Content/raft-large-files.txt</option>
-        <option>/usr/share/seclists/Fuzzing/LFI/LFI-Jhaddix.txt</option>
-        <option>/usr/share/seclists/Fuzzing/SQLi/Generic-SQLi.txt</option>
-        <option>/usr/share/seclists/Fuzzing/XSS/XSS-Jhaddix.txt</option>
-      </select></div>
+      <div class="wl-combo">
+        <select class="fi" id="wf-wl" onchange="wlSelChange('wf-wl', bWfuzz)">
+          <option>/usr/share/wordlists/dirb/common.txt</option>
+          <option>/usr/share/wordlists/dirb/big.txt</option>
+          <option>/usr/share/seclists/Discovery/Web-Content/raft-large-files.txt</option>
+          <option>/usr/share/seclists/Fuzzing/LFI/LFI-Jhaddix.txt</option>
+          <option>/usr/share/seclists/Fuzzing/SQLi/Generic-SQLi.txt</option>
+          <option>/usr/share/seclists/Fuzzing/XSS/XSS-Jhaddix.txt</option>
+          <option value="__custom__">✏ Ruta personalizada...</option>
+        </select>
+        <div class="wl-row" id="wf-wl-row" style="display:none">
+          <input class="fi" id="wf-wl-c" placeholder="/ruta/wordlist.txt" oninput="bWfuzz()">
+          <button class="wl-browse" onclick="wlBrowse('wf-wl-c', bWfuzz)" title="Explorar">📂</button>
+        </div>
+      </div></div>
     <div class="ig"><div class="lbl">FILTRAR CODE</div><input class="fi" id="wf-fc" placeholder="404,403" oninput="bWfuzz()"></div>
     <div class="ig"><div class="lbl">FILTRAR WORDS</div><input class="fi" id="wf-fw" placeholder="" oninput="bWfuzz()"></div>
     <div class="ig" style="max-width:60px"><div class="lbl">THREADS</div><input class="fi" id="wf-t" value="20" oninput="bWfuzz()"></div>
@@ -1056,11 +1105,18 @@ textarea.fi{resize:vertical;min-height:48px}
   </div>
   <div class="row">
     <div class="ig w2"><div class="lbl">WORDLIST</div>
-      <select class="fi" id="jn-wl" onchange="bJohn()">
-        <option>/usr/share/wordlists/rockyou.txt</option>
-        <option>/usr/share/wordlists/fasttrack.txt</option>
-        <option>/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt</option>
-      </select></div>
+      <div class="wl-combo">
+        <select class="fi" id="jn-wl" onchange="wlSelChange('jn-wl', bJohn)">
+          <option>/usr/share/wordlists/rockyou.txt</option>
+          <option>/usr/share/wordlists/fasttrack.txt</option>
+          <option>/usr/share/seclists/Passwords/Common-Credentials/10-million-password-list-top-1000.txt</option>
+          <option value="__custom__">✏ Ruta personalizada...</option>
+        </select>
+        <div class="wl-row" id="jn-wl-row" style="display:none">
+          <input class="fi" id="jn-wl-c" placeholder="/ruta/wordlist.txt" oninput="bJohn()">
+          <button class="wl-browse" onclick="wlBrowse('jn-wl-c', bJohn)" title="Explorar">📂</button>
+        </div>
+      </div></div>
     <div class="ig"><div class="lbl">RULES</div>
       <select class="fi" id="jn-ru" onchange="bJohn()">
         <option value="">-- none --</option><option>best64</option>
@@ -1097,10 +1153,17 @@ textarea.fi{resize:vertical;min-height:48px}
         <option value="0">0 Dictionary</option><option value="3">3 Brute/Mask</option>
       </select></div>
     <div class="ig w2"><div class="lbl">WORDLIST</div>
-      <select class="fi" id="hc-wl" onchange="bHc()">
-        <option>/usr/share/wordlists/rockyou.txt</option>
-        <option>/usr/share/wordlists/fasttrack.txt</option>
-      </select></div>
+      <div class="wl-combo">
+        <select class="fi" id="hc-wl" onchange="wlSelChange('hc-wl', bHc)">
+          <option>/usr/share/wordlists/rockyou.txt</option>
+          <option>/usr/share/wordlists/fasttrack.txt</option>
+          <option value="__custom__">✏ Ruta personalizada...</option>
+        </select>
+        <div class="wl-row" id="hc-wl-row" style="display:none">
+          <input class="fi" id="hc-wl-c" placeholder="/ruta/wordlist.txt" oninput="bHc()">
+          <button class="wl-browse" onclick="wlBrowse('hc-wl-c', bHc)" title="Explorar">📂</button>
+        </div>
+      </div></div>
     <div class="ig"><div class="lbl">WORKLOAD</div>
       <select class="fi" id="hc-w" onchange="bHc()">
         <option value="-w 1">-w 1 Low</option><option value="-w 2" selected>-w 2 Default</option>
@@ -1143,7 +1206,11 @@ textarea.fi{resize:vertical;min-height:48px}
   </div>
   <div class="row">
     <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="hy-u" placeholder="admin" oninput="bHyd()"></div>
-    <div class="ig"><div class="lbl">PASSWORDS</div><input class="fi" id="hy-pw" placeholder="/usr/share/wordlists/rockyou.txt" oninput="bHyd()"></div>
+    <div class="ig"><div class="lbl">PASSWORDS</div>
+      <div class="wl-row">
+        <input class="fi" id="hy-pw" placeholder="/usr/share/wordlists/rockyou.txt" oninput="bHyd()">
+        <button class="wl-browse" onclick="wlBrowse('hy-pw', bHyd)" title="Explorar">📂</button>
+      </div></div>
   </div>
   <div id="hy-form-row" style="display:none;margin-bottom:7px">
     <div class="lbl">HTTP FORM</div>
@@ -1175,7 +1242,11 @@ textarea.fi{resize:vertical;min-height:48px}
   </div>
   <div class="row">
     <div class="ig"><div class="lbl">USUARIO (u o -U file)</div><input class="fi" id="md-u" placeholder="admin" oninput="bMedusa()"></div>
-    <div class="ig"><div class="lbl">PASSWORDS (-P file)</div><input class="fi" id="md-pw" placeholder="/usr/share/wordlists/rockyou.txt" oninput="bMedusa()"></div>
+    <div class="ig"><div class="lbl">PASSWORDS (-P file)</div>
+      <div class="wl-row">
+        <input class="fi" id="md-pw" placeholder="/usr/share/wordlists/rockyou.txt" oninput="bMedusa()">
+        <button class="wl-browse" onclick="wlBrowse('md-pw', bMedusa)" title="Explorar">📂</button>
+      </div></div>
   </div>
   <div class="checks" id="md-op">
     <div class="ck" data-v="-f">-f stop on first</div>
@@ -1462,7 +1533,11 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="ig"><div class="lbl">INTERFAZ</div><input class="fi" id="ac-if" placeholder="wlan0" oninput="bAir()"></div>
     <div class="ig"><div class="lbl">BSSID</div><input class="fi" id="ac-bs" placeholder="AA:BB:CC:DD:EE:FF" oninput="bAir()"></div>
     <div class="ig" style="max-width:58px"><div class="lbl">CANAL</div><input class="fi" id="ac-ch" placeholder="6" oninput="bAir()"></div>
-    <div class="ig"><div class="lbl">WORDLIST</div><input class="fi" id="ac-wl" value="/usr/share/wordlists/rockyou.txt" oninput="bAir()"></div>
+    <div class="ig"><div class="lbl">WORDLIST</div>
+      <div class="wl-row">
+        <input class="fi" id="ac-wl" value="/usr/share/wordlists/rockyou.txt" oninput="bAir()">
+        <button class="wl-browse" onclick="wlBrowse('ac-wl', bAir)" title="Explorar">📂</button>
+      </div></div>
   </div>
   <div style="display:flex;flex-direction:column;gap:5px">
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
@@ -2417,6 +2492,101 @@ function stab(g, n, el) {
 
 /* ─── UTILITIES ───────────────────────────────────────── */
 function gv(id) { return (document.getElementById(id) || {}).value || ''; }
+
+// ── Wordlist smart getter: si el select está en "custom", lee el input -c ────
+function gvWl(id) {
+  const el = document.getElementById(id);
+  if (!el) return '';
+  if (el.tagName === 'SELECT') {
+    return el.value === '__custom__' ? gv(id + '-c') : el.value;
+  }
+  return el.value;
+}
+
+// ── File browser modal ────────────────────────────────────────────────────────
+let _wlTarget = null, _wlBuildFn = null, _wlAllEntries = [];
+
+function wlBrowse(targetId, buildFn) {
+  _wlTarget  = targetId;
+  _wlBuildFn = buildFn;
+  document.getElementById('wl-modal-filter').value = '';
+  document.getElementById('wl-modal').classList.add('open');
+  wlModalNav('/usr/share/wordlists');
+}
+
+function wlModalClose() {
+  document.getElementById('wl-modal').classList.remove('open');
+}
+
+async function wlModalNav(path) {
+  document.getElementById('wl-modal-path').textContent = path;
+  document.getElementById('wl-modal-list').innerHTML = '<div class="wl-entry" style="color:var(--dim)">Cargando...</div>';
+  document.getElementById('wl-modal-filter').value = '';
+  try {
+    const r = await fetch('/api/files/browse?path=' + encodeURIComponent(path));
+    const data = await r.json();
+    if (data.error) { document.getElementById('wl-modal-list').innerHTML = '<div class="wl-entry" style="color:var(--red)">' + data.error + '</div>'; return; }
+    _wlAllEntries = data.entries || [];
+    wlModalRender(_wlAllEntries);
+  } catch(e) {
+    document.getElementById('wl-modal-list').innerHTML = '<div class="wl-entry" style="color:var(--red)">Error: ' + e + '</div>';
+  }
+}
+
+function wlModalRender(entries) {
+  const cur = document.getElementById('wl-modal-path').textContent;
+  const parent = cur.lastIndexOf('/') > 0 ? cur.substring(0, cur.lastIndexOf('/')) || '/' : null;
+  let h = '';
+  if (parent) h += `<div class="wl-entry is-dir" onclick="wlModalNav('${esc(parent)}')"><span class="wl-icon">↩</span>..</div>`;
+  const dirs  = entries.filter(e => e.is_dir);
+  const files = entries.filter(e => !e.is_dir);
+  dirs.forEach(e  => { h += `<div class="wl-entry is-dir" onclick="wlModalNav('${esc(e.path)}')"><span class="wl-icon">📁</span>${esc(e.name)}</div>`; });
+  files.forEach(e => { h += `<div class="wl-entry" onclick="wlModalPick('${esc(e.path)}')"><span class="wl-icon">📄</span>${esc(e.name)}<span class="wl-size">${fmtSize(e.size)}</span></div>`; });
+  if (!dirs.length && !files.length) h += '<div class="wl-entry" style="color:var(--dim)">Directorio vacío</div>';
+  document.getElementById('wl-modal-list').innerHTML = h;
+}
+
+function wlModalFilter(q) {
+  if (!q) { wlModalRender(_wlAllEntries); return; }
+  const lq = q.toLowerCase();
+  wlModalRender(_wlAllEntries.filter(e => e.name.toLowerCase().includes(lq)));
+}
+
+function wlModalPick(path) {
+  if (!_wlTarget) return;
+  const el = document.getElementById(_wlTarget);
+  if (!el) return;
+  if (el.tagName === 'SELECT') {
+    // Ensure custom option exists, select it, fill the -c input
+    let cOpt = Array.from(el.options).find(o => o.value === '__custom__');
+    if (!cOpt) { cOpt = new Option('✏ Ruta personalizada...', '__custom__'); el.appendChild(cOpt); }
+    el.value = '__custom__';
+    wlSelChange(_wlTarget, _wlBuildFn);
+    const inp = document.getElementById(_wlTarget + '-c');
+    if (inp) { inp.value = path; }
+  } else {
+    el.value = path;
+  }
+  if (_wlBuildFn) _wlBuildFn();
+  wlModalClose();
+}
+
+function wlSelChange(id, buildFn) {
+  const sel = document.getElementById(id);
+  const row = document.getElementById(id + '-row');
+  if (row) row.style.display = sel && sel.value === '__custom__' ? 'flex' : 'none';
+  if (buildFn) buildFn();
+}
+
+function fmtSize(b) {
+  if (!b) return '';
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(0) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+
+// Close modal on backdrop click
+document.addEventListener('click', e => { if (e.target.id === 'wl-modal') wlModalClose(); });
 function chks(id) { return [...document.querySelectorAll('#' + id + ' .ck.on')].map(c => c.dataset.v).filter(Boolean).join(' '); }
 function chksc(id) { return [...document.querySelectorAll('#' + id + ' .ck.on')].map(c => c.dataset.v).filter(Boolean).join(','); }
 function setH(id, html) { const e = document.getElementById(id); if (e) e.innerHTML = html; }
@@ -3566,7 +3736,7 @@ function wpApiHint() {
   if(hint) hint.style.display = gv('wp-api') ? 'none' : 'inline';
 }
 function bFfuf() {
-  const u=gv('ff-u')||'http://target.com/FUZZ', wl=gv('ff-wl'), t=gv('ff-t')||'40';
+  const u=gv('ff-u')||'http://target.com/FUZZ', wl=gvWl('ff-wl'), t=gv('ff-t')||'40';
   const method=gv('ff-method')||'GET', w2=gv('ff-w2');
   const e=gv('ff-e'), fc=gv('ff-fc'), mc=gv('ff-mc'), fs=gv('ff-fs'), ms=gv('ff-ms');
   const op=chks('ff-op');
@@ -3604,7 +3774,7 @@ function gobMode() {
   bGob();
 }
 function bGob() {
-  const u=gv('gb-u')||'http://target.com', m=gv('gb-m'), wl=gv('gb-wl'), th=gv('gb-th')||'50';
+  const u=gv('gb-u')||'http://target.com', m=gv('gb-m'), wl=gvWl('gb-wl'), th=gv('gb-th')||'50';
   let c=`<span class="b">gobuster</span> <span class="f">${m}</span>`;
   if(m==='dir') {
     const ex=chksc('gb-ex'), op=chks('gb-op');
@@ -3641,7 +3811,7 @@ function bNikto() {
   setH('nk-cmd', c);
 }
 function bWfuzz() {
-  const u=gv('wf-u')||'http://target.com/FUZZ', wl=gv('wf-wl'), t=gv('wf-t')||'20';
+  const u=gv('wf-u')||'http://target.com/FUZZ', wl=gvWl('wf-wl'), t=gv('wf-t')||'20';
   const fc=gv('wf-fc'), fw=gv('wf-fw'), op=chks('wf-op');
   let c=`<span class="b">wfuzz</span> <span class="f">-w</span> <span class="v">${wl}</span>`;
   if(fc) c+=` <span class="f">--hc</span> <span class="v">${fc}</span>`;
@@ -3693,7 +3863,7 @@ function bSql() {
 }
 function bJohn() {
   // FIX: use correct john format names
-  const f=gv('jn-f')||'/root/hashes.txt', fm=gv('jn-fm'), wl=gv('jn-wl'), ru=gv('jn-ru');
+  const f=gv('jn-f')||'/root/hashes.txt', fm=gv('jn-fm'), wl=gvWl('jn-wl'), ru=gv('jn-ru');
   let c=`<span class="b">john</span> <span class="f">--wordlist=</span><span class="v">${wl}</span>`;
   if(fm) c+=` <span class="f">--format=</span><span class="v">${fm}</span>`;
   if(ru) c+=` <span class="f">--rules=</span><span class="v">${ru}</span>`;
@@ -3701,7 +3871,7 @@ function bJohn() {
   setH('jn-cmd', c);
 }
 function bHc() {
-  const h=gv('hc-h')||'hash.txt', m=gv('hc-m'), a=gv('hc-a'), wl=gv('hc-wl'), w=gv('hc-w');
+  const h=gv('hc-h')||'hash.txt', m=gv('hc-m'), a=gv('hc-a'), wl=gvWl('hc-wl'), w=gv('hc-w');
   let c=`<span class="b">hashcat</span> <span class="f">-m ${m} -a ${a}</span> <span class="v">${h}</span>`;
   if(a==='0') c+=` <span class="v">${wl}</span>`;
   c+=` <span class="f">${w}</span>`;
@@ -4160,5 +4330,18 @@ bindGobDns();
 // bind new checks
 bc('gb-dns-op', bGob); bc('gb-vhost-op', bGob);
 </script>
+
+<!-- ══ FILE BROWSER MODAL ══ -->
+<div id="wl-modal">
+  <div id="wl-modal-box">
+    <div id="wl-modal-hdr">
+      <span>EXPLORADOR DE WORDLISTS</span>
+      <button id="wl-modal-close" onclick="wlModalClose()">✕</button>
+    </div>
+    <div id="wl-modal-path">/usr/share/wordlists</div>
+    <div id="wl-modal-list"></div>
+    <input id="wl-modal-filter" placeholder="Filtrar archivos..." oninput="wlModalFilter(this.value)">
+  </div>
+</div>
 </body>
 </html>

@@ -261,6 +261,29 @@ def api_files_list():
             result[d] = []
     return jsonify(result)
 
+@app.route('/api/files/browse')
+def api_files_browse():
+    path = request.args.get('path', '/usr/share/wordlists')
+    if not os.path.isdir(path):
+        return jsonify({'error': 'No es un directorio'}), 400
+    try:
+        entries = []
+        for name in sorted(os.listdir(path)):
+            fp = os.path.join(path, name)
+            try:
+                st = os.stat(fp)
+                entries.append({
+                    'name': name,
+                    'path': fp,
+                    'is_dir': os.path.isdir(fp),
+                    'size': st.st_size
+                })
+            except OSError:
+                pass
+        return jsonify({'path': path, 'entries': entries})
+    except PermissionError:
+        return jsonify({'error': 'Permiso denegado'}), 403
+
 @app.route('/api/files/read')
 def api_files_read():
     path = request.args.get('path', '')
