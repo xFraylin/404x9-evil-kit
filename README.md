@@ -143,8 +143,8 @@ sudo bash install.sh
 The installer will:
 1. Clone the repo automatically if run via `curl`
 2. Install system binaries via `apt` (skips already installed tools)
-3. Copy all files to `/opt/kali-toolkit/`
-4. Create an isolated venv at `/opt/kali-toolkit/venv/`
+3. Copy all files to `/opt/x9-evilkit/`
+4. Create an isolated venv at `/opt/x9-evilkit/venv/`
 5. Activate the venv and install all Python dependencies from `requirements.txt`
 6. Create the `/usr/local/bin/404x9-evil-kit` launcher
 7. Create a desktop shortcut
@@ -163,10 +163,10 @@ The launcher activates the venv automatically and opens `http://localhost:5000` 
 
 ```bash
 # 1. Activate the venv
-source /opt/kali-toolkit/venv/bin/activate
+source /opt/x9-evilkit/venv/bin/activate
 
 # 2. Run the server
-cd /opt/kali-toolkit
+cd /opt/x9-evilkit
 python3 server.py
 ```
 
@@ -174,18 +174,18 @@ python3 server.py
 
 ```bash
 # Activate
-source /opt/kali-toolkit/venv/bin/activate
+source /opt/x9-evilkit/venv/bin/activate
 
 # Verify it's active (should show venv path)
 which python
-# → /opt/kali-toolkit/venv/bin/python
+# → /opt/x9-evilkit/venv/bin/python
 
 # Deactivate when done
 deactivate
 ```
 
-> **Note:** `source /opt/kali-toolkit/venv` is **wrong** and does nothing.  
-> Always use `source /opt/kali-toolkit/venv/bin/activate`.
+> **Note:** `source /opt/x9-evilkit/venv` is **wrong** and does nothing.  
+> Always use `source /opt/x9-evilkit/venv/bin/activate`.
 
 ---
 
