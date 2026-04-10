@@ -9,72 +9,104 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --g:#2dff6e;--g2:#7fffa0;--bg:#040706;--bg2:#070d09;--bg3:#0a0f0b;
-  --brd:#1a3020;--txt:#d0ffe0;--mut:#3a7a50;--dim:#1a4025;
-  --red:#ff5f57;--yellow:#febc2e;--cyan:#00d4ff;--ora:#ffa94d;--blue:#4d9fff;
+  --g:#00ff88;--g2:#7fffc0;--bg:#030604;--bg2:#060c08;--bg3:#09110a;
+  --brd:#163019;--txt:#c8ffdc;--mut:#3d8a56;--dim:#163320;
+  --red:#ff4f4f;--yellow:#f5c542;--cyan:#00d8ff;--ora:#ff9f3f;--blue:#4da6ff;
+  --glow:0 0 8px rgba(0,255,136,.18);--glow-md:0 0 14px rgba(0,255,136,.22);
+  --panel-bg:#050a06;--input-bg:#030604;
 }
 body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:12px}
-::-webkit-scrollbar{width:3px;height:3px}
-::-webkit-scrollbar-thumb{background:#1c4025;border-radius:2px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#1e4a2a;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#2a6a3a}
 
 /* ─── TOPBAR ─────────────────────────────────────────── */
-#topbar{background:var(--bg3);border-bottom:1px solid var(--brd);padding:0 14px;display:flex;align-items:center;gap:10px;height:36px;flex-shrink:0}
-.dots{display:flex;gap:4px}
-.dot{width:9px;height:9px;border-radius:50%}
-.dr{background:var(--red)}.dy{background:var(--yellow)}.dg{background:#28c840}
-#app-title{font-size:11px;color:var(--g);font-weight:700;letter-spacing:2px;flex:1;text-align:center}
-#app-title span{color:var(--mut);font-weight:400;font-size:9px;letter-spacing:1px}
-.tpill{font-size:7px;border:1px solid var(--brd);padding:2px 7px;border-radius:3px;letter-spacing:1px}
-#srv-status{color:#ff5050;border-color:#3a1010}
-#srv-status.ok{color:var(--g);border-color:var(--brd)}
-#clock-pill{color:var(--mut);font-size:8px}
+#topbar{background:linear-gradient(90deg,#040805 0%,var(--bg3) 50%,#040805 100%);border-bottom:1px solid var(--brd);box-shadow:0 1px 0 #0a1a0c,0 2px 12px rgba(0,0,0,.5);padding:0 16px;display:flex;align-items:center;gap:12px;height:38px;flex-shrink:0;position:relative;z-index:10}
+.dots{display:flex;gap:5px}
+.dot{width:9px;height:9px;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.5)}
+.dr{background:#ff5f57;box-shadow:0 0 5px rgba(255,95,87,.4)}.dy{background:#febc2e;box-shadow:0 0 5px rgba(254,188,46,.3)}.dg{background:#28c840;box-shadow:0 0 5px rgba(40,200,64,.4)}
+#app-title{font-size:11px;color:var(--g);font-weight:700;letter-spacing:3px;flex:1;text-align:center;text-shadow:0 0 12px rgba(0,255,136,.3)}
+#app-title span{color:var(--mut);font-weight:400;font-size:8px;letter-spacing:2px;margin-left:6px}
+.tpill{font-size:7px;border:1px solid var(--brd);padding:2px 8px;border-radius:2px;letter-spacing:1px}
+#srv-status{color:#ff5050;border-color:#3a1010;background:#100404}
+#srv-status.ok{color:var(--g);border-color:#1a3a20;background:#030804;box-shadow:var(--glow)}
+#clock-pill{color:var(--mut);font-size:7px;letter-spacing:1px}
 
 /* ─── LAYOUT ─────────────────────────────────────────── */
 #layout{display:flex;flex:1;overflow:hidden}
 
 /* ─── SIDEBAR ────────────────────────────────────────── */
-#sidebar{width:168px;background:var(--bg2);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0;padding-bottom:20px;display:flex;flex-direction:column}
-.sb-brand{padding:10px 12px 8px;border-bottom:1px solid var(--brd);display:flex;flex-direction:column;gap:2px}
-.sb-brand-name{font-size:9px;color:var(--g);font-weight:700;letter-spacing:2px}
-.sb-brand-by{font-size:7px;color:var(--dim);letter-spacing:1px}
+#sidebar{width:172px;background:var(--bg2);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0;padding-bottom:20px;display:flex;flex-direction:column}
+.sb-brand{padding:12px 14px 10px;border-bottom:1px solid var(--brd);display:flex;flex-direction:column;gap:3px;background:linear-gradient(180deg,#070f08 0%,var(--bg2) 100%)}
+.sb-brand-name{font-size:9px;color:var(--g);font-weight:700;letter-spacing:3px;text-shadow:0 0 10px rgba(0,255,136,.25)}
+.sb-brand-by{font-size:7px;color:var(--mut);letter-spacing:2px}
 
 /* accordion */
-.acc-cat{cursor:pointer;padding:7px 11px;font-size:7px;color:var(--mut);letter-spacing:2px;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:color .1s;border-bottom:1px solid #0d160f}
-.acc-cat:hover{color:var(--g2)}
-.acc-cat.open{color:var(--g)}
-.acc-arrow{font-size:8px;transition:transform .2s;opacity:.5}
-.acc-cat.open .acc-arrow{transform:rotate(90deg);opacity:1}
+.acc-cat{cursor:pointer;padding:8px 12px;font-size:7px;color:var(--mut);letter-spacing:3px;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:all .15s;border-bottom:1px solid #0a1209;margin-top:1px}
+.acc-cat:hover{color:var(--g2);background:#080f09}
+.acc-cat.open{color:var(--g);background:#060d07}
+.acc-arrow{font-size:7px;transition:transform .2s;opacity:.4}
+.acc-cat.open .acc-arrow{transform:rotate(90deg);opacity:.9}
 .acc-items{overflow:hidden;max-height:0;transition:max-height .25s ease}
-.acc-items.open{max-height:400px}
-.s-item{padding:6px 10px 6px 18px;font-size:8px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;white-space:nowrap;transition:all .1s;position:relative}
-.s-item:hover{color:#a0ffb0;background:#0b150d}
-.s-item.active{color:var(--g);background:#0d1a0f;border-left-color:var(--g)}
-.s-dot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0}
-.s-item.active .s-dot{background:var(--g)}
+.acc-items.open{max-height:500px}
+.s-item{padding:5px 10px 5px 16px;font-size:8px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:7px;border-left:2px solid transparent;white-space:nowrap;transition:all .12s;position:relative;letter-spacing:.5px}
+.s-item:hover{color:var(--g2);background:#0a160b;border-left-color:#1a3a20}
+.s-item.active{color:var(--g);background:linear-gradient(90deg,#0d1e0f 0%,#080e09 100%);border-left-color:var(--g);box-shadow:inset 0 0 12px rgba(0,255,136,.04)}
+.s-dot{width:4px;height:4px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all .15s}
+.s-item:hover .s-dot{background:#2d6040}
+.s-item.active .s-dot{background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.6)}
+.s-icon{font-size:8px;color:var(--dim);width:12px;text-align:center;flex-shrink:0;transition:color .12s}
+.s-item:hover .s-icon{color:#3a6a4a}
+.s-item.active .s-icon{color:var(--g);text-shadow:0 0 6px rgba(0,255,136,.5)}
 .s-badge{margin-left:auto;font-size:6px;background:#0a1a0c;color:var(--g);border:1px solid var(--brd);border-radius:2px;padding:1px 4px;letter-spacing:1px}
 
 /* ─── MAIN BODY ──────────────────────────────────────── */
 #body{display:flex;flex:1;overflow:hidden}
-#content{flex:1;overflow-y:auto;padding:14px;min-width:0}
+#content{flex:1;overflow-y:auto;padding:18px 20px;min-width:0;background:var(--panel-bg);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.008) 2px,rgba(0,255,136,.008) 4px)}
+
+/* ─── TWO-COLUMN PANEL LAYOUT ────────────────────────── */
+.panel.active{display:grid;grid-template-columns:1fr 340px;column-gap:18px;align-items:start}
+.panel.active .pt,
+.panel.active .val-msg,
+.panel.active .sdiv,
+.panel.active .tabs,
+.panel.active .tab-content.on{grid-column:1 / -1}
+.panel.active .cmd-preview,
+.panel.active .run-row,
+.panel.active .out-area{grid-column:2}
+.panel.active .row,
+.panel.active .checks,
+.panel.active .lbl:not(.cmd-lbl),
+.panel.active .adv-toggle,
+.panel.active .adv-section,
+.panel.active .plist,
+.panel.active .psearch,
+.panel.active .method-sel,
+.panel.active .htable,
+.panel.active .enc-transforms,
+.panel.active .enc-chain-wrap,
+.panel.active .enc-chain-label{grid-column:1}
 
 /* ─── TERMINAL PANEL ─────────────────────────────────── */
-#term-panel{width:400px;background:#020403;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0}
-#term-panel.collapsed{width:28px}
-#term-topbar{background:var(--bg3);border-bottom:1px solid var(--brd);padding:5px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0}
-#term-title{font-size:8px;color:var(--mut);flex:1;letter-spacing:1px;cursor:pointer}
-#term-title:hover{color:var(--g)}
-#term-collapse{font-size:9px;color:var(--dim);cursor:pointer;padding:0 4px}
+#term-panel{width:300px;background:#020302;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s ease}
+#term-panel.collapsed{width:26px}
+#term-topbar{background:#040805;border-bottom:1px solid var(--brd);padding:6px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0}
+#term-title{font-size:8px;color:var(--mut);flex:1;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
+#term-title:hover{color:var(--g2)}
+#term-collapse{font-size:9px;color:var(--dim);cursor:pointer;padding:0 4px;transition:color .1s}
 #term-collapse:hover{color:var(--g)}
 #term-jobs{font-size:7px;color:var(--yellow)}
 #term-tabs{display:flex;border-bottom:1px solid var(--brd);overflow-x:auto;flex-shrink:0;background:var(--bg2)}
-.tt{font-size:7px;padding:4px 9px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:4px;white-space:nowrap}
+.tt{font-size:7px;padding:5px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all .12s;letter-spacing:.5px}
+.tt:hover{color:var(--g2);background:#060d07}
 .tt.active{color:var(--g);border-bottom-color:var(--g)}
 .tt .tx{color:var(--dim);font-size:9px}
 .tt .tx:hover{color:var(--red)}
-#new-tt{padding:4px 7px;font-size:10px;color:var(--dim);cursor:pointer}
+#new-tt{padding:5px 8px;font-size:11px;color:var(--dim);cursor:pointer;transition:color .1s}
 #new-tt:hover{color:var(--g)}
 #term-body{flex:1;overflow:hidden;position:relative}
-.tout{position:absolute;inset:0;overflow-y:auto;padding:7px 9px;font-size:9px;line-height:1.6;display:none;font-family:'JetBrains Mono',monospace}
+.tout{position:absolute;inset:0;overflow-y:auto;padding:8px 10px;font-size:9px;line-height:1.7;display:none;font-family:'JetBrains Mono',monospace}
 .tout.active{display:block}
 .tl{white-space:pre-wrap;word-break:break-all}
 .tl.err{color:#ff7070}
@@ -83,11 +115,11 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 .tl.sys{color:var(--mut);font-style:italic}
 .tl.warn{color:var(--yellow)}
 .tl.sep{color:var(--dim);border-top:1px solid #0d160f;padding-top:4px;margin-top:4px}
-#term-input-row{border-top:1px solid var(--brd);display:flex;align-items:center;padding:4px 7px;gap:5px;flex-shrink:0}
-#term-prompt{font-size:9px;color:var(--g);white-space:nowrap}
+#term-input-row{border-top:1px solid var(--brd);display:flex;align-items:center;padding:5px 8px;gap:6px;flex-shrink:0;background:#030504}
+#term-prompt{font-size:9px;color:var(--g);white-space:nowrap;text-shadow:0 0 8px rgba(0,255,136,.3)}
 #term-input{flex:1;background:transparent;border:none;color:var(--txt);font-family:inherit;font-size:9px;outline:none}
-#term-run-btn{font-size:7px;color:var(--g);cursor:pointer;padding:2px 7px;border:1px solid var(--brd);border-radius:2px}
-#term-run-btn:hover{background:#0a1a0c}
+#term-run-btn{font-size:7px;color:var(--g);cursor:pointer;padding:3px 8px;border:1px solid var(--brd);border-radius:2px;transition:all .1s;letter-spacing:1px}
+#term-run-btn:hover{background:#0a1a0c;border-color:#254530}
 
 /* ─── ENCODER AUX PANEL (right, replaces terminal) ────── */
 #enc-aux-panel{width:400px;background:#020403;border-left:1px solid var(--brd);display:none;flex-direction:column;flex-shrink:0}
@@ -103,78 +135,90 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 
 /* ─── PANELS ─────────────────────────────────────────── */
 .panel{display:none}
-.panel.active{display:block}
-.pt{font-size:11px;color:var(--g);font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.pt::before{content:'';width:5px;height:5px;background:var(--g);border-radius:50%;flex-shrink:0}
-.ptd{font-size:8px;color:#3a6045;font-weight:400}
+.panel.active{display:block;animation:panelIn .15s ease}
+@keyframes panelIn{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.pt{font-size:13px;color:var(--g);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid #163019;animation:titleGlow 5s ease-in-out infinite}
+@keyframes titleGlow{0%,100%{text-shadow:0 0 10px rgba(0,255,136,.15)}50%{text-shadow:0 0 22px rgba(0,255,136,.35),0 0 40px rgba(0,255,136,.1)}}
+.pt::before{content:'';width:3px;height:20px;background:linear-gradient(180deg,var(--g) 0%,rgba(0,255,136,.1) 100%);border-radius:2px;flex-shrink:0;box-shadow:0 0 10px rgba(0,255,136,.5)}
+.ptd{font-size:8px;color:var(--mut);font-weight:400;letter-spacing:.5px;animation:none}
 .row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
-.ig{display:flex;flex-direction:column;gap:3px;flex:1;min-width:70px}
+.ig{display:flex;flex-direction:column;gap:4px;flex:1;min-width:70px}
 .ig.w2{flex:2}.ig.w3{flex:3}.ig.w4{flex:4}
-.lbl{font-size:7px;color:var(--mut);letter-spacing:1px}
-input.fi,select.fi,textarea.fi{background:#040705;border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:9px;padding:4px 7px;width:100%;border-radius:4px;outline:none;transition:border .1s}
-input.fi:focus,select.fi:focus,textarea.fi:focus{border-color:var(--g)}
+.lbl{font-size:7px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase}
+input.fi,select.fi,textarea.fi{background:var(--input-bg);border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:9px;padding:5px 8px;width:100%;border-radius:3px;outline:none;transition:border .15s,box-shadow .15s}
+input.fi:hover,select.fi:hover{border-color:#254530}
+input.fi:focus,select.fi:focus,textarea.fi:focus{border-color:var(--g);box-shadow:0 0 0 2px rgba(0,255,136,.08),inset 0 1px 4px rgba(0,0,0,.4)}
 textarea.fi{resize:vertical;min-height:48px}
 .checks{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.ck{background:#040705;border:1px solid var(--brd);border-radius:3px;padding:3px 7px;font-size:7px;color:var(--mut);cursor:pointer;user-select:none;transition:all .1s}
-.ck:hover{border-color:#2d6040;color:#80e090}
-.ck.on{background:#0a1a0c;border-color:var(--g);color:var(--g)}
+.ck{background:var(--input-bg);border:1px solid var(--brd);border-radius:2px;padding:3px 8px;font-size:7px;color:var(--mut);cursor:pointer;user-select:none;transition:all .12s;letter-spacing:.5px}
+.ck:hover{border-color:#2d6040;color:var(--g2);background:#080f09}
+.ck.on{background:#091509;border-color:var(--g);color:var(--g);box-shadow:inset 0 0 8px rgba(0,255,136,.06)}
 
 /* ─── CMD PREVIEW ────────────────────────────────────── */
-.cmd-preview{background:#020403;border:1px solid var(--brd);border-radius:4px;padding:8px 10px;margin-top:8px}
-.cmd-lbl{font-size:7px;color:var(--dim);letter-spacing:2px;margin-bottom:4px}
-.cmd-text{color:var(--g2);word-break:break-all;line-height:1.8;font-size:9px;min-height:16px}
-.cmd-text .b{color:var(--g);font-weight:700}
+.cmd-preview{background:#010302;border:1px solid #1e4428;border-radius:4px;margin-top:12px;overflow:hidden;box-shadow:0 0 20px rgba(0,255,136,.06),inset 0 0 40px rgba(0,0,0,.4)}
+.cmd-lbl{background:#030806;border-bottom:1px solid #163019;padding:6px 12px;font-size:7px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.cmd-lbl::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px rgba(0,255,136,.6);flex-shrink:0}
+.cmd-lbl::after{content:'COMMAND';margin-left:auto;font-size:6px;color:var(--dim);letter-spacing:3px}
+.cmd-text{color:var(--g2);word-break:break-all;line-height:2;font-size:11px;min-height:20px;padding:10px 14px;font-family:'JetBrains Mono',monospace}
+.cmd-text .b{color:var(--g);font-weight:700;text-shadow:0 0 8px rgba(0,255,136,.3)}
 .cmd-text .f{color:var(--cyan)}
 .cmd-text .v{color:var(--ora)}
 
 /* ─── RUN BUTTONS ────────────────────────────────────── */
-.run-row{display:flex;align-items:center;gap:7px;margin-top:9px;flex-wrap:wrap}
-.rbtn{background:#0a1a0c;border:1px solid var(--g);color:var(--g);font-family:inherit;font-size:8px;padding:5px 14px;border-radius:3px;cursor:pointer;letter-spacing:1px;transition:all .1s;display:flex;align-items:center;gap:5px}
-.rbtn:hover{background:#152815}
-.rbtn:active{transform:scale(.98)}
-.rbtn.running{border-color:var(--yellow);color:var(--yellow)}
-.rbtn.running::before{content:'';width:5px;height:5px;border:1px solid var(--yellow);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+.run-row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #0d1a0f}
+.rbtn{background:linear-gradient(180deg,#0f2412 0%,#07120a 100%);border:1px solid var(--g);color:var(--g);font-family:inherit;font-size:9px;padding:9px 24px;border-radius:3px;cursor:pointer;letter-spacing:2px;transition:all .2s;display:flex;align-items:center;gap:7px;box-shadow:0 0 12px rgba(0,255,136,.15),inset 0 1px 0 rgba(0,255,136,.12);position:relative;overflow:hidden}
+.rbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(0,255,136,.04) 50%,transparent 100%);transform:translateX(-100%);transition:transform .4s}
+.rbtn:hover{background:linear-gradient(180deg,#162e18 0%,#0d1e0f 100%);box-shadow:0 0 22px rgba(0,255,136,.28),inset 0 1px 0 rgba(0,255,136,.2);transform:translateY(-1px)}
+.rbtn:hover::after{transform:translateX(100%)}
+.rbtn:active{transform:translateY(0) scale(.98);box-shadow:0 0 8px rgba(0,255,136,.1)}
+.rbtn.running{border-color:var(--yellow);color:var(--yellow);background:linear-gradient(180deg,#140e02 0%,#0a0900 100%);box-shadow:0 0 10px rgba(245,197,66,.15)}
+.rbtn.running::before{content:'';width:6px;height:6px;border:1.5px solid var(--yellow);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-.sbtn{background:#200a0a;border:1px solid var(--red);color:var(--red);font-family:inherit;font-size:8px;padding:5px 12px;border-radius:3px;cursor:pointer;letter-spacing:1px;transition:all .1s}
-.sbtn:hover{background:#2a0e0e}
-.sbtn:disabled{opacity:.4;cursor:not-allowed}
-.kbtn{background:#040705;border:1px solid var(--brd);color:var(--mut);font-family:inherit;font-size:8px;padding:4px 10px;border-radius:3px;cursor:pointer;letter-spacing:1px;transition:all .1s}
-.kbtn:hover{color:var(--g);border-color:var(--g)}
-.kbtn.ok{color:#fff;background:#1a4020;border-color:#4dff8d}
+@keyframes btnPulse{0%,100%{box-shadow:0 0 12px rgba(0,255,136,.15)}50%{box-shadow:0 0 22px rgba(0,255,136,.3)}}
+.sbtn{background:#100404;border:1px solid #4a1818;color:#cc5050;font-family:inherit;font-size:8px;padding:8px 16px;border-radius:3px;cursor:pointer;letter-spacing:1.5px;transition:all .15s}
+.sbtn:hover{background:#1c0606;border-color:var(--red);color:var(--red);box-shadow:0 0 10px rgba(255,79,79,.1)}
+.sbtn:disabled{opacity:.25;cursor:not-allowed}
+.kbtn{background:var(--input-bg);border:1px solid var(--brd);color:var(--mut);font-family:inherit;font-size:7px;padding:5px 11px;border-radius:3px;cursor:pointer;letter-spacing:1px;transition:all .12s}
+.kbtn:hover{color:var(--g2);border-color:#254530;background:#070f08}
+.kbtn.ok{color:var(--g);background:#070e08;border-color:#1e4428}
 
 /* ─── OUTPUT AREA ────────────────────────────────────── */
-.out-area{background:#020403;border:1px solid var(--brd);border-radius:4px;margin-top:9px;overflow:hidden;display:none}
-.out-hdr{background:var(--bg2);border-bottom:1px solid var(--brd);padding:4px 9px;display:flex;align-items:center;gap:6px}
-.out-title{font-size:7px;color:var(--mut);letter-spacing:2px;flex:1}
-.out-content{padding:8px 10px;max-height:240px;overflow-y:auto;font-size:9px;line-height:1.7;color:var(--g2);white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace}
+.out-area{background:#020302;border:1px solid var(--brd);border-radius:3px;margin-top:10px;overflow:hidden;display:none}
+.out-hdr{background:#040805;border-bottom:1px solid var(--brd);padding:5px 10px;display:flex;align-items:center;gap:8px}
+.out-hdr::before{content:'';width:6px;height:6px;border-radius:50%;background:#1a3a20;border:1px solid #2a5030;flex-shrink:0}
+.out-area[style*="block"] .out-hdr::before,.out-area.active .out-hdr::before{background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.5);border-color:var(--g)}
+.out-title{font-size:7px;color:var(--mut);letter-spacing:2px;flex:1;text-transform:uppercase}
+.out-content{padding:9px 11px;max-height:250px;overflow-y:auto;font-size:9px;line-height:1.7;color:#9dccb0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace}
 .out-err{color:#ff7070}
 .out-ok{color:var(--g)}
 .out-sys{color:var(--mut);font-style:italic}
 
 /* ─── PARSED OUTPUT ─────────────────────────────────── */
-.out-tab-row{display:flex;gap:1px;background:var(--bg);border-radius:3px;padding:1px;margin-right:4px}
-.out-tab{font-size:6px;padding:2px 8px;color:var(--mut);cursor:pointer;letter-spacing:1px;border-radius:2px;transition:all .1s;border:1px solid transparent}
-.out-tab.on{color:var(--bg);background:var(--g);border-color:var(--g)}
-.out-parsed{padding:8px 10px;max-height:320px;overflow-y:auto;display:none}
-.p-summary{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.p-pill{font-size:7px;padding:2px 7px;border-radius:3px;border:1px solid var(--brd);color:var(--mut);background:#060a07;white-space:nowrap}
-.p-pill.ok{color:var(--g);border-color:#1a3a20;background:#040a05}
-.p-pill.warn{color:var(--yellow);border-color:#3a300a;background:#090800}
-.p-pill.crit{color:var(--red);border-color:#3a1010;background:#080303}
-.p-pill.info{color:var(--cyan);border-color:#1a303a;background:#030709}
-.p-section{margin-bottom:9px}
-.p-sec-hdr{font-size:7px;color:var(--mut);letter-spacing:2px;margin-bottom:4px;padding-bottom:2px;border-bottom:1px solid #0d160f}
+.out-tab-row{display:flex;gap:1px;background:#020302;border-radius:2px;padding:1px;margin-right:4px}
+.out-tab{font-size:7px;padding:2px 10px;color:var(--mut);cursor:pointer;letter-spacing:1px;border-radius:2px;transition:all .12s;border:1px solid transparent}
+.out-tab:hover{color:var(--g2);background:#080f09}
+.out-tab.on{color:#000;background:var(--g);border-color:var(--g);font-weight:700}
+.out-parsed{padding:10px 12px;max-height:330px;overflow-y:auto;display:none}
+.p-summary{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
+.p-pill{font-size:7px;padding:3px 8px;border-radius:2px;border:1px solid var(--brd);color:var(--mut);background:#050905;white-space:nowrap;letter-spacing:.5px}
+.p-pill.ok{color:var(--g);border-color:#183320;background:#030704}
+.p-pill.warn{color:var(--yellow);border-color:#3a2d08;background:#080700}
+.p-pill.crit{color:var(--red);border-color:#3a1010;background:#060202}
+.p-pill.info{color:var(--cyan);border-color:#163340;background:#020508}
+.p-section{margin-bottom:12px}
+.p-sec-hdr{font-size:7px;color:var(--mut);letter-spacing:2px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #0d160f;text-transform:uppercase}
 .p-sec-body{font-size:8px}
 .p-table{width:100%}
-.p-hrow .p-cell{color:var(--mut);font-size:7px;letter-spacing:1px}
-.p-row{display:flex;gap:6px;padding:2px 0;border-bottom:1px solid #080f09;flex-wrap:wrap}
+.p-hrow .p-cell{color:var(--mut);font-size:7px;letter-spacing:1px;text-transform:uppercase}
+.p-row{display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #070d08;flex-wrap:wrap;transition:background .08s}
+.p-row:hover{background:#060d07}
 .p-cell{flex:1;min-width:50px;color:var(--txt);word-break:break-all;font-family:'JetBrains Mono',monospace;font-size:8px}
-.p-find{font-size:8px;padding:2px 6px;border-left:2px solid var(--brd);margin-bottom:2px;font-family:'JetBrains Mono',monospace;word-break:break-all;color:var(--txt)}
-.p-find.ok{border-color:var(--g);color:var(--g2)}
-.p-find.warn{border-color:var(--yellow);color:var(--yellow)}
-.p-find.crit{border-color:var(--red);color:#ff9090}
-.p-find.info{border-color:var(--cyan);color:var(--cyan)}
-.p-empty{font-size:8px;color:var(--dim);padding:12px;text-align:center;font-style:italic}
+.p-find{font-size:8px;padding:3px 8px;border-left:2px solid var(--brd);margin-bottom:3px;font-family:'JetBrains Mono',monospace;word-break:break-all;color:var(--txt);border-radius:0 2px 2px 0;background:#030604}
+.p-find.ok{border-color:var(--g);color:var(--g2);background:#030704}
+.p-find.warn{border-color:var(--yellow);color:var(--yellow);background:#060600}
+.p-find.crit{border-color:var(--red);color:#ff9090;background:#060202}
+.p-find.info{border-color:var(--cyan);color:var(--cyan);background:#020508}
+.p-empty{font-size:8px;color:var(--dim);padding:18px;text-align:center;font-style:italic;letter-spacing:1px}
 
 /* ─── TABS ───────────────────────────────────────────── */
 .tabs{display:flex;flex-wrap:wrap;margin-bottom:9px;border-bottom:1px solid var(--brd)}
@@ -194,9 +238,9 @@ textarea.fi{resize:vertical;min-height:48px}
 
 /* ─── HTABLE ─────────────────────────────────────────── */
 .htable{width:100%;border-collapse:collapse;font-size:8px}
-.htable th{color:var(--mut);padding:4px 7px;text-align:left;border-bottom:1px solid var(--brd);letter-spacing:1px}
-.htable td{color:var(--g2);padding:4px 7px;border-bottom:1px solid #0d160f}
-.htable tr:hover td{background:#0a150c}
+.htable th{color:var(--mut);padding:5px 8px;text-align:left;border-bottom:1px solid var(--brd);letter-spacing:1.5px;text-transform:uppercase;font-size:7px}
+.htable td{color:var(--g2);padding:4px 8px;border-bottom:1px solid #070d08}
+.htable tr:hover td{background:#070e08}
 .hmatch{color:var(--g);font-weight:700}
 
 /* ─── CURL SPECIAL ───────────────────────────────────── */
@@ -210,10 +254,10 @@ textarea.fi{resize:vertical;min-height:48px}
 .header-row .del-btn:hover{opacity:.7}
 
 /* ─── SDIV ───────────────────────────────────────────── */
-.sdiv{font-size:7px;color:var(--dim);letter-spacing:2px;margin:10px 0 6px;padding-bottom:3px;border-bottom:1px solid #0d160f}
+.sdiv{font-size:7px;color:var(--mut);letter-spacing:3px;margin:12px 0 7px;padding-bottom:4px;border-bottom:1px solid #0d160f;text-transform:uppercase}
 
 /* ─── STATUSBAR ──────────────────────────────────────── */
-#statusbar{background:#040705;border-top:1px solid var(--brd);padding:3px 14px;display:flex;justify-content:space-between;align-items:center;font-size:7px;color:var(--dim);flex-shrink:0}
+#statusbar{background:#030604;border-top:1px solid var(--brd);padding:3px 14px;display:flex;justify-content:space-between;align-items:center;font-size:7px;color:var(--dim);flex-shrink:0;letter-spacing:.5px}
 .sb-warn{color:#cc6020}
 .sb-right{display:flex;gap:14px;align-items:center}
 .sb-brand{color:var(--dim);letter-spacing:1px}
@@ -223,18 +267,19 @@ textarea.fi{resize:vertical;min-height:48px}
 #offline-bar a{color:var(--cyan);cursor:pointer;text-decoration:underline}
 
 /* ─── TOOL STATUS ─────────────────────────────────────── */
-.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:5px}
-.tc{background:#020403;border:1px solid var(--brd);border-radius:3px;padding:6px 9px;display:flex;align-items:center;gap:6px}
-.tc .tn{font-size:8px;color:var(--txt);flex:1}
-.tc .ts{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0}
-.tc .ts.ok{background:var(--g)}
-.tc .ts.err{background:var(--red)}
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px}
+.tc{background:var(--input-bg);border:1px solid var(--brd);border-radius:3px;padding:6px 10px;display:flex;align-items:center;gap:8px;transition:border .12s}
+.tc:hover{border-color:#1e4030}
+.tc .tn{font-size:8px;color:var(--txt);flex:1;letter-spacing:.5px}
+.tc .ts{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all .2s}
+.tc .ts.ok{background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.4)}
+.tc .ts.err{background:#6a2020}
 
 /* ─── VALIDATION MSG ─────────────────────────────────── */
-.val-msg{font-size:8px;padding:5px 9px;border-radius:3px;margin-bottom:7px;display:none}
-.val-msg.err{background:#200808;border:1px solid var(--red);color:#ff9090}
-.val-msg.warn{background:#1a1400;border:1px solid var(--yellow);color:var(--yellow)}
-.val-msg.ok{background:#081408;border:1px solid var(--g);color:var(--g)}
+.val-msg{font-size:8px;padding:6px 10px;border-radius:3px;margin-bottom:8px;display:none;border-left-width:2px;letter-spacing:.5px}
+.val-msg.err{background:#150505;border:1px solid #5a1818;border-left-color:var(--red);color:#ff9090}
+.val-msg.warn{background:#100f03;border:1px solid #4a3c08;border-left-color:var(--yellow);color:var(--yellow)}
+.val-msg.ok{background:#040d05;border:1px solid #1a3a20;border-left-color:var(--g);color:var(--g)}
 
 /* ─── ADVANCED TOGGLE ────────────────────────────────── */
 .adv-toggle{font-size:7px;color:var(--dim);cursor:pointer;padding:4px 0;letter-spacing:2px;display:inline-flex;align-items:center;gap:5px;margin-bottom:5px;user-select:none}
@@ -276,20 +321,23 @@ textarea.fi{resize:vertical;min-height:48px}
 .wl-browse:hover{border-color:var(--g);background:#0a1a0c}
 
 /* ─── FILE BROWSER MODAL ─────────────────────────────── */
-#wl-modal{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.75);align-items:center;justify-content:center}
+#wl-modal{display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.82);align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 #wl-modal.open{display:flex}
-#wl-modal-box{background:#060e07;border:1px solid var(--g);border-radius:6px;width:560px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
-#wl-modal-hdr{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--brd);background:#020403}
-#wl-modal-hdr span{font-size:8px;letter-spacing:1px;color:var(--g);flex:1}
-#wl-modal-close{background:none;border:none;color:var(--red);font-size:12px;cursor:pointer;padding:0 4px}
-#wl-modal-path{font-size:8px;color:var(--cyan);padding:6px 12px;border-bottom:1px solid var(--brd);background:#030705;word-break:break-all}
+#wl-modal-box{background:#050a06;border:1px solid var(--g);border-radius:4px;width:560px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,255,136,.1),0 20px 60px rgba(0,0,0,.6)}
+#wl-modal-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--brd);background:#040805}
+#wl-modal-hdr span{font-size:8px;letter-spacing:2px;color:var(--g);flex:1;text-transform:uppercase;text-shadow:0 0 8px rgba(0,255,136,.3)}
+#wl-modal-close{background:none;border:1px solid #3a1010;color:var(--red);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:2px;transition:all .1s}
+#wl-modal-close:hover{background:#200808}
+#wl-modal-path{font-size:8px;color:var(--cyan);padding:6px 14px;border-bottom:1px solid var(--brd);background:#030605;word-break:break-all;letter-spacing:.5px}
 #wl-modal-list{flex:1;overflow-y:auto;padding:4px 0}
-.wl-entry{display:flex;align-items:center;gap:8px;padding:5px 14px;font-size:9px;cursor:pointer;transition:background .08s;color:var(--txt)}
-.wl-entry:hover{background:#0a1a0c}
+.wl-entry{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:9px;cursor:pointer;transition:background .08s;color:var(--txt);border-left:2px solid transparent}
+.wl-entry:hover{background:#080f09;border-left-color:#1a3a20}
 .wl-entry.is-dir{color:var(--cyan)}
+.wl-entry.is-dir:hover{border-left-color:var(--cyan)}
 .wl-entry .wl-icon{font-size:10px;width:14px;text-align:center;flex-shrink:0}
 .wl-entry .wl-size{margin-left:auto;font-size:7px;color:var(--dim)}
-#wl-modal-filter{background:#040705;border:0;border-top:1px solid var(--brd);padding:6px 12px;color:var(--txt);font-family:inherit;font-size:9px;outline:none;width:100%}
+#wl-modal-filter{background:#030604;border:0;border-top:1px solid var(--brd);padding:7px 14px;color:var(--txt);font-family:inherit;font-size:9px;outline:none;width:100%}
+#wl-modal-filter:focus{background:#040805}
 #wl-modal-filter::placeholder{color:var(--dim)}
 </style>
 </head>
@@ -318,109 +366,109 @@ textarea.fi{resize:vertical;min-height:48px}
   <!-- RECON -->
   <div class="acc-cat open" onclick="toggleAcc(this)">RECON <span class="acc-arrow">▶</span></div>
   <div class="acc-items open">
-    <div class="s-item active" onclick="sw('nmap',this)"><div class="s-dot"></div>NMAP</div>
-    <div class="s-item" onclick="sw('subfinder',this)"><div class="s-dot"></div>SUBFINDER</div>
-    <div class="s-item" onclick="sw('amass',this)"><div class="s-dot"></div>AMASS</div>
-    <div class="s-item" onclick="sw('harvester',this)"><div class="s-dot"></div>THEHARVESTER</div>
-    <div class="s-item" onclick="sw('whatweb',this)"><div class="s-dot"></div>WHATWEB</div>
-    <div class="s-item" onclick="sw('wpscan',this)"><div class="s-dot"></div>WPSCAN</div>
+    <div class="s-item active" onclick="sw('nmap',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>NMAP</div>
+    <div class="s-item" onclick="sw('subfinder',this)"><div class="s-dot"></div><span class="s-icon">◎</span>SUBFINDER</div>
+    <div class="s-item" onclick="sw('amass',this)"><div class="s-dot"></div><span class="s-icon">◈</span>AMASS</div>
+    <div class="s-item" onclick="sw('harvester',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>THEHARVESTER</div>
+    <div class="s-item" onclick="sw('whatweb',this)"><div class="s-dot"></div><span class="s-icon">◉</span>WHATWEB</div>
+    <div class="s-item" onclick="sw('wpscan',this)"><div class="s-dot"></div><span class="s-icon">⊞</span>WPSCAN</div>
   </div>
 
   <!-- OSINT -->
   <div class="acc-cat" onclick="toggleAcc(this)">OSINT <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('sherlock',this)"><div class="s-dot"></div>SHERLOCK</div>
-    <div class="s-item" onclick="sw('holehe',this)"><div class="s-dot"></div>HOLEHE</div>
-    <div class="s-item" onclick="sw('dnsrecon',this)"><div class="s-dot"></div>DNSRECON</div>
-    <div class="s-item" onclick="sw('exiftool',this)"><div class="s-dot"></div>EXIFTOOL</div>
+    <div class="s-item" onclick="sw('sherlock',this)"><div class="s-dot"></div><span class="s-icon">◎</span>SHERLOCK</div>
+    <div class="s-item" onclick="sw('holehe',this)"><div class="s-dot"></div><span class="s-icon">◉</span>HOLEHE</div>
+    <div class="s-item" onclick="sw('dnsrecon',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>DNSRECON</div>
+    <div class="s-item" onclick="sw('exiftool',this)"><div class="s-dot"></div><span class="s-icon">◈</span>EXIFTOOL</div>
   </div>
 
   <!-- WEB -->
   <div class="acc-cat" onclick="toggleAcc(this)">WEB <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('ffuf',this)"><div class="s-dot"></div>FFUF</div>
-    <div class="s-item" onclick="sw('gobuster',this)"><div class="s-dot"></div>GOBUSTER</div>
-    <div class="s-item" onclick="sw('nikto',this)"><div class="s-dot"></div>NIKTO</div>
-    <div class="s-item" onclick="sw('wfuzz',this)"><div class="s-dot"></div>WFUZZ</div>
-    <div class="s-item" onclick="sw('dalfox',this)"><div class="s-dot"></div>DALFOX</div>
+    <div class="s-item" onclick="sw('ffuf',this)"><div class="s-dot"></div><span class="s-icon">≋</span>FFUF</div>
+    <div class="s-item" onclick="sw('gobuster',this)"><div class="s-dot"></div><span class="s-icon">≡</span>GOBUSTER</div>
+    <div class="s-item" onclick="sw('nikto',this)"><div class="s-dot"></div><span class="s-icon">⊘</span>NIKTO</div>
+    <div class="s-item" onclick="sw('wfuzz',this)"><div class="s-dot"></div><span class="s-icon">≋</span>WFUZZ</div>
+    <div class="s-item" onclick="sw('dalfox',this)"><div class="s-dot"></div><span class="s-icon">⊗</span>DALFOX</div>
   </div>
 
   <!-- INJECTION -->
   <div class="acc-cat" onclick="toggleAcc(this)">INJECTION <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('sqlmap',this)"><div class="s-dot"></div>SQLMAP</div>
+    <div class="s-item" onclick="sw('sqlmap',this)"><div class="s-dot"></div><span class="s-icon">⊗</span>SQLMAP</div>
   </div>
 
   <!-- CRACKING -->
   <div class="acc-cat" onclick="toggleAcc(this)">CRACKING <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('john',this)"><div class="s-dot"></div>JOHN</div>
-    <div class="s-item" onclick="sw('hashcat',this)"><div class="s-dot"></div>HASHCAT</div>
-    <div class="s-item" onclick="sw('hashid',this)"><div class="s-dot"></div>HASH ID</div>
+    <div class="s-item" onclick="sw('john',this)"><div class="s-dot"></div><span class="s-icon">⚿</span>JOHN</div>
+    <div class="s-item" onclick="sw('hashcat',this)"><div class="s-dot"></div><span class="s-icon">⊞</span>HASHCAT</div>
+    <div class="s-item" onclick="sw('hashid',this)"><div class="s-dot"></div><span class="s-icon">?</span>HASH ID</div>
   </div>
 
   <!-- BRUTE FORCE -->
   <div class="acc-cat" onclick="toggleAcc(this)">BRUTE FORCE <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('hydra',this)"><div class="s-dot"></div>HYDRA</div>
-    <div class="s-item" onclick="sw('medusa',this)"><div class="s-dot"></div>MEDUSA</div>
+    <div class="s-item" onclick="sw('hydra',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>HYDRA</div>
+    <div class="s-item" onclick="sw('medusa',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>MEDUSA</div>
   </div>
 
   <!-- EXPLOIT -->
   <div class="acc-cat" onclick="toggleAcc(this)">EXPLOIT <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('msf',this)"><div class="s-dot"></div>MSFVENOM</div>
-    <div class="s-item" onclick="sw('searchsploit',this)"><div class="s-dot"></div>SEARCHSPLOIT</div>
+    <div class="s-item" onclick="sw('msf',this)"><div class="s-dot"></div><span class="s-icon">⊘</span>MSFVENOM</div>
+    <div class="s-item" onclick="sw('searchsploit',this)"><div class="s-dot"></div><span class="s-icon">◎</span>SEARCHSPLOIT</div>
   </div>
 
   <!-- ACTIVE DIRECTORY -->
   <div class="acc-cat" onclick="toggleAcc(this)">ACTIVE DIRECTORY <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('ad-enum',this)"><div class="s-dot"></div>ENUMERATION</div>
-    <div class="s-item" onclick="sw('ad-smb',this)"><div class="s-dot"></div>SMB ACCESS</div>
-    <div class="s-item" onclick="sw('ad-kerb',this)"><div class="s-dot"></div>KERBEROS</div>
-    <div class="s-item" onclick="sw('ad-exec',this)"><div class="s-dot"></div>EXECUTION</div>
-    <div class="s-item" onclick="sw('ad-creds',this)"><div class="s-dot"></div>CREDENTIALS</div>
-    <div class="s-item" onclick="sw('ad-map',this)"><div class="s-dot"></div>BLOODHOUND</div>
-    <div class="s-item" onclick="sw('ad-mitm',this)"><div class="s-dot"></div>MITM</div>
+    <div class="s-item" onclick="sw('ad-enum',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>ENUMERATION</div>
+    <div class="s-item" onclick="sw('ad-smb',this)"><div class="s-dot"></div><span class="s-icon">◈</span>SMB ACCESS</div>
+    <div class="s-item" onclick="sw('ad-kerb',this)"><div class="s-dot"></div><span class="s-icon">⚿</span>KERBEROS</div>
+    <div class="s-item" onclick="sw('ad-exec',this)"><div class="s-dot"></div><span class="s-icon">▶</span>EXECUTION</div>
+    <div class="s-item" onclick="sw('ad-creds',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>CREDENTIALS</div>
+    <div class="s-item" onclick="sw('ad-map',this)"><div class="s-dot"></div><span class="s-icon">◉</span>BLOODHOUND</div>
+    <div class="s-item" onclick="sw('ad-mitm',this)"><div class="s-dot"></div><span class="s-icon">⊗</span>MITM</div>
   </div>
 
   <!-- NETWORK -->
   <div class="acc-cat" onclick="toggleAcc(this)">NETWORK <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('tcpdump',this)"><div class="s-dot"></div>TCPDUMP</div>
+    <div class="s-item" onclick="sw('tcpdump',this)"><div class="s-dot"></div><span class="s-icon">◈</span>TCPDUMP</div>
   </div>
 
   <!-- WIRELESS -->
   <div class="acc-cat" onclick="toggleAcc(this)">WIRELESS <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('aircrack',this)"><div class="s-dot"></div>AIRCRACK-NG</div>
-    <div class="s-item" onclick="sw('wideauth',this)"><div class="s-dot"></div>WIFI DISCONNECT</div>
+    <div class="s-item" onclick="sw('aircrack',this)"><div class="s-dot"></div><span class="s-icon">◉</span>AIRCRACK-NG</div>
+    <div class="s-item" onclick="sw('wideauth',this)"><div class="s-dot"></div><span class="s-icon">⊘</span>WIFI DISCONNECT</div>
   </div>
 
   <!-- PRIV ESC -->
   <div class="acc-cat" onclick="toggleAcc(this)">PRIV ESC <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('privesc',this)"><div class="s-dot"></div>PRIV ESC</div>
-    <div class="s-item" onclick="sw('revshells',this)"><div class="s-dot"></div>REV SHELLS</div>
-    <div class="s-item" onclick="sw('linpeas',this)"><div class="s-dot"></div>LINPEAS / WINPEAS</div>
+    <div class="s-item" onclick="sw('privesc',this)"><div class="s-dot"></div><span class="s-icon">▲</span>PRIV ESC</div>
+    <div class="s-item" onclick="sw('revshells',this)"><div class="s-dot"></div><span class="s-icon">⊘</span>REV SHELLS</div>
+    <div class="s-item" onclick="sw('linpeas',this)"><div class="s-dot"></div><span class="s-icon">≡</span>LINPEAS / WINPEAS</div>
   </div>
 
   <!-- UTILS -->
   <div class="acc-cat" onclick="toggleAcc(this)">UTILS <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('curl-adv',this)"><div class="s-dot"></div>CURL <span class="s-badge">ADV</span></div>
-    <div class="s-item" onclick="sw('wget-adv',this)"><div class="s-dot"></div>WGET <span class="s-badge">ADV</span></div>
-    <div class="s-item" onclick="sw('httpx',this)"><div class="s-dot"></div>HTTPX</div>
-    <div class="s-item" onclick="sw('encoder',this)"><div class="s-dot"></div>ENCODER <span class="s-badge">NEW</span></div>
+    <div class="s-item" onclick="sw('curl-adv',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>CURL <span class="s-badge">ADV</span></div>
+    <div class="s-item" onclick="sw('wget-adv',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>WGET <span class="s-badge">ADV</span></div>
+    <div class="s-item" onclick="sw('httpx',this)"><div class="s-dot"></div><span class="s-icon">◎</span>HTTPX</div>
+    <div class="s-item" onclick="sw('encoder',this)"><div class="s-dot"></div><span class="s-icon">⊞</span>ENCODER <span class="s-badge">NEW</span></div>
   </div>
 
   <!-- SYSTEM -->
   <div class="acc-cat" onclick="toggleAcc(this)">SYSTEM <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
-    <div class="s-item" onclick="sw('tools',this)"><div class="s-dot"></div>HERRAMIENTAS</div>
-    <div class="s-item" onclick="sw('files',this)"><div class="s-dot"></div>ARCHIVOS</div>
-    <div class="s-item" onclick="sw('history',this)"><div class="s-dot"></div>HISTORIAL</div>
+    <div class="s-item" onclick="sw('tools',this)"><div class="s-dot"></div><span class="s-icon">◈</span>HERRAMIENTAS</div>
+    <div class="s-item" onclick="sw('files',this)"><div class="s-dot"></div><span class="s-icon">≡</span>ARCHIVOS</div>
+    <div class="s-item" onclick="sw('history',this)"><div class="s-dot"></div><span class="s-icon">◉</span>HISTORIAL</div>
   </div>
 </div>
 
@@ -2633,24 +2681,51 @@ function updJobs() {
 }
 
 /* ─── OUTPUT HELPERS ──────────────────────────────────── */
+// Per-element pending line buffers for batched DOM writes
+const _outBufs = {};  // elId → [{text, cls}]
+const _outRaf  = {};  // elId → rafId
+
 function appendOut(elId, text, cls) {
-  const el = document.getElementById(elId);
-  if (!el) return;
+  if (!_outBufs[elId]) _outBufs[elId] = [];
   const lines = text.split('\n');
-  lines.forEach(l => {
-    if (!l.trim() && lines.length > 1) return;
-    const div = document.createElement('div');
-    div.className = 'tl ' + (cls || '');
-    div.textContent = l;
-    el.appendChild(div);
-  });
-  el.scrollTop = el.scrollHeight;
+  for (const l of lines) {
+    if (!l.trim() && lines.length > 1) continue;
+    _outBufs[elId].push({ t: l, c: cls || '' });
+  }
+  if (!_outRaf[elId]) {
+    _outRaf[elId] = requestAnimationFrame(() => {
+      _outRaf[elId] = null;
+      const el = document.getElementById(elId);
+      if (!el) { _outBufs[elId] = []; return; }
+      const frag = document.createDocumentFragment();
+      for (const { t, c } of _outBufs[elId]) {
+        const div = document.createElement('div');
+        div.className = 'tl' + (c ? ' ' + c : '');
+        div.textContent = t;
+        frag.appendChild(div);
+      }
+      _outBufs[elId] = [];
+      el.appendChild(frag);
+      // Prune oldest nodes if output grows too large (keep last 3000 lines)
+      while (el.childElementCount > 3000) el.removeChild(el.firstChild);
+      el.scrollTop = el.scrollHeight;
+    });
+  }
 }
 function clrOut(areaId) {
-  const area = document.getElementById(areaId);
-  if (area) area.style.display = 'none';
-  const c = document.getElementById(areaId + '-c') || document.getElementById(areaId.replace('-out', '-out-c'));
+  const prefix = areaId.replace(/-out$/, '');
+  // Clear raw content
+  const c = document.getElementById(areaId + '-c');
   if (c) c.innerHTML = '';
+  // Remove parsed tabs row
+  const tabs = document.getElementById(prefix + '-otabs');
+  if (tabs) tabs.remove();
+  // Remove parsed div
+  const pd = document.getElementById(areaId + '-p');
+  if (pd) pd.remove();
+  // Clear rawBuffer
+  if (rawBuffers[prefix]) rawBuffers[prefix] = [];
+  // Keep the area visible — do NOT hide it
 }
 function openOut(areaId) {
   const el = document.getElementById(areaId);
@@ -2927,24 +3002,144 @@ parsers.ss = r => {
 
 /* SMBMAP */
 parsers.sm = r => {
-  const shares=[];
-  for (const l of r.split('\n')){const m=l.match(/\s+([\w$-]{3,})\s+(READ(?: ONLY)?|WRITE|READ,\s*WRITE|NO ACCESS)\s*(.*)/);if(m)shares.push([ph.esc(m[1]),m[2].toUpperCase().includes('WRITE')?ph.pill(m[2],'crit'):m[2].toUpperCase().includes('READ')?ph.pill(m[2],'warn'):ph.pill(m[2],'ok'),ph.esc(m[4]||'')]);}
-  const ipM=r.match(/IP: ([\d.]+)/);
-  let o=ph.sum([ipM?ph.pill(ipM[1],'info'):'',ph.pill(shares.length+' shares',shares.length>0?'warn':'ok')]);
-  o+=shares.length?ph.sec('SMB Shares',ph.tbl(['SHARE','PERMISOS','COMMENT'],shares)):ph.empty('Sin shares accesibles o formato no reconocido.');
+  // smbmap output: lines like "    Share Name                                  READ, WRITE    comment"
+  // The share table starts after a "[+] IP:" header line and ends at blank or next header.
+  // We parse only lines that match the share table format: indented name (may have spaces),
+  // followed by a known permission token. We skip directory listing lines (contain dates like 02/08/2025).
+  const PERMS_RE = /\b(READ,\s*WRITE|READ ONLY|READ|WRITE|NO ACCESS)\b/i;
+  const DATE_RE  = /\d{2}\/\d{2}\/\d{4}/;
+  const shares = [];
+  for (const l of r.split('\n')) {
+    if (DATE_RE.test(l)) continue; // skip dir listing lines
+    const pm = l.match(PERMS_RE);
+    if (!pm) continue;
+    const permIdx = l.indexOf(pm[0]);
+    const namePart = l.slice(0, permIdx).trim();
+    if (!namePart || namePart.length < 2) continue;
+    // skip header/separator lines
+    if (/Disk|Permissions|---/.test(namePart) && namePart.split(/\s+/).length <= 2) continue;
+    const perm = pm[0].replace(/\s*,\s*/g, ',').toUpperCase();
+    const afterPerm = l.slice(permIdx + pm[0].length).trim();
+    shares.push([
+      ph.esc(namePart),
+      perm.includes('WRITE') ? ph.pill(perm,'crit') : perm.includes('READ') ? ph.pill(perm,'warn') : ph.pill(perm,'ok'),
+      ph.esc(afterPerm)
+    ]);
+  }
+  const ipM = r.match(/\[[\+\*]\]\s+([\d.]+)/);
+  let o = ph.sum([ipM ? ph.pill(ipM[1],'info') : '', ph.pill(shares.length+' shares', shares.length>0?'warn':'ok')]);
+  o += shares.length ? ph.sec('SMB Shares', ph.tbl(['SHARE','PERMISOS','COMMENT'], shares)) : ph.empty('Sin shares accesibles o formato no reconocido.');
   return o;
 };
 
 /* CRACKMAPEXEC / NETEXEC */
 parsers.cd = r => {
-  const L=r.split('\n');
-  const pwned=L.filter(l=>/Pwn3d!/i.test(l)).map(l=>ph.esc(l.trim()));
-  const creds=[];for(const l of L){const m=l.match(/\[\+\]\s+[\w.\\]+\\(\S+):(\S+)/);if(m)creds.push([ph.esc(m[1]),ph.esc(m[2])]);}
-  const hosts=[...new Set(L.flatMap(l=>{const m=l.match(/\b([\d.]{7,15})\b/);return m?[m[1]]:[];}))].slice(0,20);
-  let o=ph.sum([ph.pill(pwned.length+' Pwn3d!',pwned.length>0?'crit':'ok'),ph.pill(creds.length+' credenciales',creds.length>0?'crit':'ok'),ph.pill(hosts.length+' hosts','info')]);
-  if (pwned.length)  o+=ph.sec('Pwn3d! ↓',pwned.map(p=>ph.find(p,'crit')).join(''));
-  if (creds.length)  o+=ph.sec('Credenciales',ph.tbl(['USUARIO','CONTRASEÑA'],creds));
-  if (!pwned.length&&!creds.length) o+=ph.empty('Sin compromisos. Verifica credenciales y módulos usados.');
+  const L = r.split('\n');
+
+  // ── Detect secretsdump output ─────────────────────────────────────────────
+  const HASH_LINE_RE  = /^[^:]+:\d+:[a-f0-9]{32}:[a-f0-9]{32}:::/i;
+  const isSecretsdump = L.some(l => /Dumping (local SAM|Domain Credentials|LSA Secrets)/i.test(l))
+                     || L.filter(l => HASH_LINE_RE.test(l)).length > 0;
+
+  if (isSecretsdump) {
+    // ── secretsdump parser ──────────────────────────────────────────────────
+    const samHashes    = [];  // local SAM:  [user, RID, NT]
+    const domainHashes = [];  // NTDS:       [DOMAIN\user, RID, NT]
+    const plaintext    = [];  // LSA / _SC_: [source, user, password]
+
+    let inLSASection = '';    // current _SC_ key name
+    let mode = '';            // 'sam' | 'domain' | 'lsa'
+
+    for (const l of L) {
+      const t = l.trim();
+      // Section switches
+      if (/Dumping local SAM/i.test(t))          { mode = 'sam';    continue; }
+      if (/Dumping Domain Credentials/i.test(t)) { mode = 'domain'; continue; }
+      if (/Dumping LSA Secrets/i.test(t))        { mode = 'lsa';    inLSASection = ''; continue; }
+      if (/Dumping cached domain/i.test(t))      { mode = 'cached'; continue; }
+      if (/^\[\*\]\s+Cleaning up/i.test(t))      { mode = ''; continue; }
+
+      if (mode === 'lsa') {
+        // Track current secret key
+        if (/^\[\*\]\s+(\S+)/.test(t)) {
+          inLSASection = t.match(/^\[\*\]\s+(\S+)/)[1];
+          continue;
+        }
+        // Plaintext credential line: DOMAIN\user:password  OR  user:password
+        // (appears as the value after a secret key header)
+        const ptm = t.match(/^([\w.-]+\\[\w.-]+|[\w.-]+@[\w.-]+|[\w.-]+):(.+)$/);
+        if (ptm && inLSASection && !HASH_LINE_RE.test(t)) {
+          const [, userPart, pass] = ptm;
+          plaintext.push([ph.esc(inLSASection), ph.esc(userPart), ph.esc(pass)]);
+          continue;
+        }
+      }
+
+      // Hash lines (both SAM and NTDS share the same format)
+      const hm = t.match(/^([^:]+):(\d+):([a-f0-9]{32}):([a-f0-9]{32}):::/i);
+      if (hm) {
+        const [, user, rid, , nthash] = hm;
+        const isDomain = /\\/.test(user) || mode === 'domain';
+        if (isDomain) {
+          domainHashes.push([ph.esc(user), ph.esc(rid), `<code style="font-size:0.78em">${ph.esc(nthash)}</code>`]);
+        } else {
+          samHashes.push([ph.esc(user), ph.esc(rid), `<code style="font-size:0.78em">${ph.esc(nthash)}</code>`]);
+        }
+        continue;
+      }
+    }
+
+    const total = samHashes.length + domainHashes.length;
+    let o = ph.sum([
+      ph.pill(total+' hashes', total>0?'crit':'ok'),
+      ph.pill(samHashes.length+' SAM local', samHashes.length>0?'warn':'ok'),
+      ph.pill(domainHashes.length+' domain', domainHashes.length>0?'crit':'ok'),
+      ph.pill(plaintext.length+' plaintext', plaintext.length>0?'crit':'ok'),
+    ]);
+    if (plaintext.length)    o += ph.sec('Plaintext Credentials ↓', ph.tbl(['FUENTE LSA','USUARIO','CONTRASEÑA'], plaintext));
+    if (samHashes.length)    o += ph.sec('SAM — Local Hashes', ph.tbl(['USUARIO','RID','NT HASH'], samHashes));
+    if (domainHashes.length) o += ph.sec('NTDS — Domain Hashes', ph.tbl(['USUARIO','RID','NT HASH'], domainHashes));
+    if (!total && !plaintext.length) o += ph.empty('Sin hashes extraídos. Verifica permisos y que secretsdump haya completado.');
+    return o;
+  }
+
+  // ── crackmapexec / netexec parser ─────────────────────────────────────────
+  const pwned = L.filter(l => /Pwn3d!/i.test(l)).map(l => ph.esc(l.trim()));
+  const creds = []; for (const l of L) { const m = l.match(/\[\+\]\s+[\w.\\]+\\(\S+):(\S+)/); if (m) creds.push([ph.esc(m[1]), ph.esc(m[2])]); }
+  const hosts = [...new Set(L.flatMap(l => { const m = l.match(/\b([\d.]{7,15})\b/); return m ? [m[1]] : []; }))].slice(0, 20);
+
+  // Parse shares: "SMB  IP  PORT  HOSTNAME  ShareName  READ,WRITE  [Comment]"
+  const PERM_PAT = /\b(READ,\s*WRITE|READ ONLY|READ|WRITE|NO ACCESS)\b/i;
+  const shares = [];
+  for (const l of L) {
+    if (!/^\s*SMB\b/i.test(l)) continue;
+    const pm = l.match(PERM_PAT);
+    if (!pm) continue;
+    const permIdx = l.indexOf(pm[0]);
+    const left   = l.slice(0, permIdx).trim();
+    const comment = l.slice(permIdx + pm[0].length).trim();
+    const leftM = left.match(/^SMB\s+[\d.]+\s+\d+\s+\S+\s+(.*)/i);
+    if (!leftM) continue;
+    const shareName = leftM[1].trim();
+    if (!shareName) continue;
+    const perm = pm[0].replace(/\s*,\s*/g, ',').toUpperCase();
+    shares.push([
+      ph.esc(shareName),
+      perm.includes('WRITE') ? ph.pill(perm,'crit') : perm.includes('READ') ? ph.pill(perm,'warn') : ph.pill(perm,'ok'),
+      ph.esc(comment)
+    ]);
+  }
+
+  let o = ph.sum([
+    ph.pill(pwned.length+' Pwn3d!', pwned.length>0?'crit':'ok'),
+    ph.pill(creds.length+' credenciales', creds.length>0?'crit':'ok'),
+    ph.pill(shares.length+' shares', shares.length>0?'warn':'ok'),
+    ph.pill(hosts.length+' hosts','info'),
+  ]);
+  if (pwned.length)  o += ph.sec('Pwn3d! ↓', pwned.map(p => ph.find(p,'crit')).join(''));
+  if (creds.length)  o += ph.sec('Credenciales', ph.tbl(['USUARIO','CONTRASEÑA'], creds));
+  if (shares.length) o += ph.sec('Shares', ph.tbl(['SHARE','PERMISOS','COMMENT'], shares));
+  if (!pwned.length && !creds.length && !shares.length) o += ph.empty('Sin compromisos ni shares. Verifica credenciales y módulos usados.');
   return o;
 };
 
@@ -2972,14 +3167,246 @@ parsers.bh = r => {
   return o;
 };
 
-/* EVIL-WINRM */
+/* AD ENUM (enum4linux-ng, rpcclient, smbclient, ldapsearch) */
 parsers.ae = r => {
-  const conn=r.match(/Establish|Evil-WinRM shell|PS .*>/i);
-  const err=r.match(/Unable|Error|Failed|refused/i);
-  let o=ph.sum([conn?ph.pill('Sesión WinRM establecida','ok'):err?ph.pill('Conexión fallida','crit'):ph.pill('Sin info de conexión','warn')]);
-  const lines=r.split('\n').filter(l=>l.trim()).slice(0,20);
-  if (lines.length) o+=ph.sec('Output inicial',lines.map(l=>ph.find(ph.esc(l),'info')).join(''));
-  return o;
+  const e = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const L = r.split('\n');
+
+  // ── Detect tool ──────────────────────────────────────
+  const isE4l  = /enum4linux-ng|ENUM4LINUX/i.test(r);
+  const isRpc  = /rpcclient\$|enumdomusers/i.test(r) || (r.includes('user:[') && r.includes('] rid:['));
+  const isSmb  = /smbclient|Disk|IPC\$/i.test(r);
+  const isLdap = /dn:|objectClass:|sAMAccountName:/i.test(r);
+
+  // ── enum4linux-ng full parser ─────────────────────────
+  if (isE4l) {
+    // Section headers: "| Title on IP |" or "| Title |"
+    // Store lines per section; key = full header title (may include IP)
+    const sections = {};
+    const secOrder = [];
+    let cur = '__header__';
+    sections[cur] = [];
+    for (const ln of L) {
+      const hm = ln.match(/^\s*\|\s+(.+?)\s+\|\s*$/);
+      if (hm) {
+        cur = hm[1].trim();
+        if (!sections[cur]) { sections[cur] = []; secOrder.push(cur); }
+      } else {
+        if (!sections[cur]) sections[cur] = [];
+        sections[cur].push(ln);
+      }
+    }
+
+    // Partial-key lookup: find first section whose name contains the pattern
+    const secGet = pat => {
+      const k = secOrder.find(k => pat.test(k));
+      return k ? sections[k] : [];
+    };
+    const secGetAll = pat => secOrder.filter(k => pat.test(k)).map(k => ({ key: k, lines: sections[k] }));
+
+    let o = '';
+
+    // ── Read summary counts from [+] Found N x lines ───
+    const foundLine  = txt => { const m = r.match(new RegExp('\\[\\+\\] After merging ' + txt + ' results we have (\\d+)')); return m ? parseInt(m[1]) : null; };
+    const foundLineB = txt => { const m = r.match(new RegExp('\\[\\+\\] Found (\\d+) ' + txt)); return m ? parseInt(m[1]) : null; };
+    const nUsers  = foundLine('user')  ?? foundLineB('user')  ?? 0;
+    const nGroups = foundLine('group') ?? foundLineB('group') ?? 0;
+    const nShares = foundLineB('share') ?? 0;
+    const nSvcs   = foundLineB('service') ?? 0;
+    const hasPolicy = secOrder.some(k => /Polic/i.test(k));
+
+    o += ph.sum([
+      ph.pill(nUsers  + ' usuarios',  nUsers  ? 'crit' : 'ok'),
+      ph.pill(nGroups + ' grupos',    nGroups ? 'warn' : 'ok'),
+      ph.pill(nShares + ' shares',    nShares ? 'info' : 'ok'),
+      ph.pill(nSvcs   + ' servicios', nSvcs   ? 'info' : 'ok'),
+      hasPolicy ? ph.pill('Password policy', 'warn') : '',
+    ]);
+
+    // ── Target + Domain info ────────────────────────────
+    for (const { key, lines } of secGetAll(/Target Information|Domain Information/i)) {
+      const rows = lines.filter(l => /:\s/.test(l)).map(l => {
+        const m = l.replace(/^\[\+\]\s*/,'').match(/^(.+?)\s*:\s*(.+)/);
+        return m ? [e(m[1].trim()), e(m[2].trim())] : null;
+      }).filter(Boolean);
+      if (rows.length) o += ph.sec(key, ph.tbl(['Campo','Valor'], rows));
+    }
+
+    // ── Users ────────────────────────────────────────────
+    // Lines: "username:  foo" / "name: Bar" / "acb: '0x...': desc"
+    const uSecLines = secGet(/Users via RPC/i);
+    const uEntries = uSecLines.join('\n').split(/\n(?=\s*username:)/i).filter(b => /username:/i.test(b));
+    if (uEntries.length) {
+      const uRows = uEntries.map(ue => {
+        const un  = (ue.match(/username:\s*(.+)/i)||[])[1];
+        const nm  = (ue.match(/name:\s*(.+)/i)||[])[1];
+        const rid = (ue.match(/\brid:\s*(\d+)/i)||[])[1];
+        const acb = (ue.match(/acb:\s*(.+)/i)||[])[1];
+        if (!un) return null;
+        return [
+          e(un.trim()),
+          rid ? e(rid) : '',
+          nm  ? e(nm.trim().slice(0,40)) : '',
+          acb ? e(acb.replace(/^'[^']*':\s*/,'').trim().slice(0,55)) : '',
+        ];
+      }).filter(Boolean);
+      if (uRows.length) o += ph.sec('Usuarios via RPC (' + uRows.length + ')', ph.tbl(['Usuario','RID','Nombre','Flags'], uRows));
+    }
+
+    // ── Groups ───────────────────────────────────────────
+    const gSecLines = secGet(/Groups via RPC/i);
+    const gEntries = gSecLines.join('\n').split(/\n(?=\s*groupname:)/i).filter(b => /groupname:/i.test(b));
+    if (gEntries.length) {
+      const gRows = gEntries.map(ge => {
+        const gn  = (ge.match(/groupname:\s*(.+)/i)||[])[1];
+        const rid = (ge.match(/\brid:\s*(\d+)/i)||[])[1];
+        const typ = (ge.match(/type:\s*(.+)/i)||[])[1];
+        return gn ? [e(gn.trim()), rid ? e(rid) : '', typ ? e(typ.trim()) : ''] : null;
+      }).filter(Boolean);
+      if (gRows.length) o += ph.sec('Grupos via RPC (' + gRows.length + ')', ph.tbl(['Grupo','RID','Tipo'], gRows));
+    }
+
+    // ── Shares ───────────────────────────────────────────
+    // Format: "name: X\ncomment: Y\ntype: Z\n[*] Testing...\n[+] Mapping: A, Listing: B"
+    const sSecLines = secGet(/Shares via RPC/i);
+    const sEntries = sSecLines.join('\n').split(/\n(?=\s*name:)/i).filter(b => /name:/i.test(b));
+    if (sEntries.length) {
+      const sRows = sEntries.map(blk => {
+        const nm  = (blk.match(/^name:\s*(.+)/im)||[])[1]||'';
+        const cm  = (blk.match(/comment:\s*(.+)/i)||[])[1]||'';
+        const typ = (blk.match(/type:\s*(.+)/i)||[])[1]||'';
+        const mapM = blk.match(/Mapping:\s*(\w+)/i);
+        const lstM = blk.match(/Listing:\s*([\w ]+)/i);
+        const map = mapM ? mapM[1] : '';
+        const lst = lstM ? lstM[1].trim() : '';
+        const mapPill = map === 'OK' ? ph.pill('OK','ok') : map === 'DENIED' ? ph.pill('DENIED','crit') : e(map)||'—';
+        const lstPill = lst === 'OK' ? ph.pill('OK','ok') : lst && lst !== 'OK' ? ph.pill(lst,'warn') : '—';
+        return nm.trim() ? [e(nm.trim()), e(cm.replace(/^['"]|['"]$/g,'').trim().slice(0,35)), e(typ.trim()), mapPill, lstPill] : null;
+      }).filter(Boolean);
+      if (sRows.length) o += ph.sec('Shares via RPC (' + sRows.length + ')', ph.tbl(['Share','Comentario','Tipo','Map','List'], sRows));
+    }
+
+    // ── Services ─────────────────────────────────────────
+    // Format: "name: X\ndisplay: Y\nstate: RUNNING\ndescription: Z"
+    const svSecLines = secGet(/Services via RPC/i);
+    const svEntries = svSecLines.join('\n').split(/\n(?=\s*name:)/i).filter(b => /name:/i.test(b));
+    if (svEntries.length) {
+      const svRows = svEntries.slice(0, 200).map(blk => {
+        const nm  = (blk.match(/^name:\s*(.+)/im)||[])[1]||'';
+        const disp= (blk.match(/display:\s*(.+)/i)||[])[1]||'';
+        const st  = (blk.match(/state:\s*(\w+)/i)||[])[1]||'';
+        if (!nm.trim()) return null;
+        const pill = st.toUpperCase() === 'RUNNING' ? ph.pill('RUNNING','ok') : st ? ph.pill(st,'warn') : '—';
+        return [e(nm.trim()), pill, e((disp||'').trim().slice(0,45))];
+      }).filter(Boolean);
+      if (svRows.length) o += ph.sec('Servicios via RPC (' + svRows.length + (svEntries.length > 200 ? ', top 200' : '') + ')', ph.tbl(['Servicio','Estado','Display'], svRows));
+    }
+
+    // ── Password Policy ──────────────────────────────────
+    const polSecs = secGetAll(/Polic/i);
+    for (const { key, lines } of polSecs) {
+      const rows = lines.filter(l => /:\s/.test(l) || /^[\s-]*DOMAIN_PASSWORD/i.test(l)).map(l => {
+        const clean = l.replace(/^\s*-\s*/,'').trim();
+        const m = clean.match(/^(.+?)\s*:\s*(.+)/);
+        return m ? [e(m[1].trim()), e(m[2].trim())] : null;
+      }).filter(Boolean);
+      if (rows.length) o += ph.sec(key, ph.tbl(['Parámetro','Valor'], rows));
+    }
+
+    // ── Printers ─────────────────────────────────────────
+    const prtSecs = secGetAll(/Printer/i);
+    for (const { key, lines } of prtSecs) {
+      const prtLines = lines.filter(l => l.trim() && !/^[-=\s]+$/.test(l));
+      if (prtLines.length) o += ph.sec(key, prtLines.map(l => ph.find(e(l.trim()),'info')).join(''));
+    }
+
+    // ── RID Cycling ──────────────────────────────────────
+    const ridLines = L.filter(l => /Found user.+RID \d+/i.test(l));
+    if (ridLines.length) {
+      const ridRows = ridLines.slice(0,50).map(l => {
+        const m = l.match(/Found user '([^']+)'\s*\(RID (\d+)\)/i);
+        return m ? [e(m[2]), e(m[1])] : null;
+      }).filter(Boolean);
+      if (ridRows.length) o += ph.sec('RID Cycling (' + ridRows.length + ')', ph.tbl(['RID','Usuario'], ridRows));
+    }
+
+    // ── Errors / advertencias ────────────────────────────
+    const errLines = L.filter(l => /\[-\]\s/.test(l)).slice(0, 15);
+    if (errLines.length) o += ph.sec('Errores / advertencias', errLines.map(l => ph.find(e(l.trim()),'warn')).join(''));
+
+    return o || ph.empty('Sin secciones reconocibles. Verifica que enum4linux-ng completó con -A.');
+  }
+
+  // ── rpcclient simple parser ───────────────────────────
+  if (isRpc) {
+    const ridFmt = raw => {
+      // Convert hex RID (0x1f4) to decimal, or return as-is
+      const hex = raw.match(/0x([0-9a-f]+)/i);
+      return hex ? String(parseInt(hex[1], 16)) : raw;
+    };
+    const users  = L.filter(l => /user:\[/.test(l)).map(l => {
+      const m = l.match(/user:\[([^\]]+)\].*rid:\[([^\]]+)\]/);
+      return m ? [e(m[1].trim()), ridFmt(m[2].trim())] : null;
+    }).filter(Boolean);
+    const groups = L.filter(l => /group:\[/.test(l)).map(l => {
+      const m = l.match(/group:\[([^\]]+)\].*rid:\[([^\]]+)\]/);
+      return m ? [e(m[1].trim()), ridFmt(m[2].trim())] : null;
+    }).filter(Boolean);
+    const errLine = L.find(l => /NT_STATUS|ACCESS_DENIED|error|failed/i.test(l));
+    let o = ph.sum([
+      ph.pill(users.length  + ' usuarios', users.length  ? 'crit' : 'ok'),
+      ph.pill(groups.length + ' grupos',   groups.length ? 'warn' : 'ok'),
+      errLine ? ph.pill('Error: ' + errLine.trim().slice(0,40), 'crit') : '',
+    ]);
+    if (users.length)  o += ph.sec('Usuarios — rpcclient (' + users.length + ')', ph.tbl(['Usuario','RID'], users));
+    if (groups.length) o += ph.sec('Grupos — rpcclient (' + groups.length + ')', ph.tbl(['Grupo','RID'], groups));
+    if (!users.length && !groups.length) o += ph.empty('Sin usuarios/grupos. Verifica credenciales y conectividad.');
+    return o;
+  }
+
+  // ── smbclient share list parser ───────────────────────
+  if (isSmb) {
+    const shares = L.filter(l => /Disk|IPC\$|ADMIN\$|\bPRINT\b/i.test(l)).map(l => {
+      const m = l.match(/^\s*(\S+)\s+(Disk|IPC|Printer)\s*(.*)/i);
+      return m ? [e(m[1]), e(m[2]), e(m[3].trim())] : [e(l.trim()),'',''];
+    }).filter(r => r[0]);
+    const errLine = L.find(l => /NT_STATUS|Access denied|failed/i.test(l));
+    let o = ph.sum([ph.pill(shares.length+' shares','info'), errLine?ph.pill('Error de acceso','crit'):'']);
+    if (shares.length) o += ph.sec('Shares SMB', ph.tbl(['Share','Tipo','Comentario'], shares));
+    if (!shares.length) o += ph.empty('Sin shares visibles. Verifica credenciales.');
+    return o;
+  }
+
+  // ── ldapsearch parser ─────────────────────────────────
+  if (isLdap) {
+    const objs = r.split(/\n\n+/).filter(b => /^dn:/m.test(b));
+    const users = objs.filter(b => /objectClass: user|objectClass: person/i.test(b));
+    const comps = objs.filter(b => /objectClass: computer/i.test(b));
+    const ous   = objs.filter(b => /objectClass: organizationalUnit/i.test(b));
+    let o = ph.sum([ph.pill(objs.length+' objetos','info'), ph.pill(users.length+' usuarios','crit'), ph.pill(comps.length+' equipos','warn')]);
+    const uRows = users.slice(0,50).map(b => {
+      const dn  = (b.match(/^dn:\s*(.+)/m)||[])[1]||'';
+      const sam = (b.match(/sAMAccountName:\s*(.+)/i)||[])[1]||'';
+      const upn = (b.match(/userPrincipalName:\s*(.+)/i)||[])[1]||'';
+      return [e(sam.trim()), e(upn.trim().slice(0,40)), e(dn.trim().slice(0,60))];
+    });
+    if (uRows.length) o += ph.sec('Usuarios AD (top 50)', ph.tbl(['sAMAccountName','UPN','DN'], uRows));
+    if (ous.length) {
+      const ouRows = ous.map(b => { const dn=(b.match(/^dn:\s*(.+)/m)||[])[1]||''; return [e(dn.trim())]; });
+      o += ph.sec('Unidades Organizativas', ph.tbl(['DN'], ouRows));
+    }
+    return o;
+  }
+
+  // ── Generic fallback ─────────────────────────────────
+  const ok   = L.filter(l => /\[\+\]/.test(l)).map(l => ph.find(e(l.trim()),'ok')).join('');
+  const info = L.filter(l => /\[\*\]/.test(l)).map(l => ph.find(e(l.trim()),'info')).join('');
+  const errs = L.filter(l => /\[-\]/.test(l)).map(l => ph.find(e(l.trim()),'warn')).join('');
+  let o = ph.sum([ph.pill(L.filter(l=>/\[\+\]/.test(l)).length+' OK','ok'), ph.pill(L.filter(l=>/\[-\]/.test(l)).length+' errores','warn')]);
+  if (ok)   o += ph.sec('Éxitos',ok);
+  if (info) o += ph.sec('Información',info);
+  if (errs) o += ph.sec('Errores',errs);
+  return o || ph.empty('Sin resultados reconocibles.');
 };
 
 /* RESPONDER / MITM6 */
@@ -3344,6 +3771,14 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
 
   const isLive = !!(prefix && liveRenderers[prefix]);
   if (prefix) rawBuffers[prefix] = [];
+  if (prefix && !isLive) {
+    // Reset parsed state so re-runs always show fresh parsed output
+    const oldPd = document.getElementById(prefix + '-out-p');
+    if (oldPd) oldPd.innerHTML = '<div class="p-empty">Ejecutando...</div>';
+    // Switch to RAW during execution so user sees live output
+    const rawTab = document.querySelector('#' + prefix + '-out .out-tab');
+    if (rawTab) swOut(prefix, 'raw', rawTab);
+  }
   if (outArea && !isLive) { outArea.style.display = 'block'; }
   if (outC && !isLive) {
     // block separator
@@ -3395,7 +3830,9 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
         }
         if (prefix) rawBuffers[prefix].push(line);
         if (isLive) liveRenderers[prefix](line);
-        else termWrite(activeTT, line);
+        // Only mirror to global terminal if it's the active tab and line is noteworthy
+        // (skip bulk output lines to avoid freezing the terminal with thousands of nodes)
+        else if (!prefix || /error|found|open|success|\[\+\]|\[-\]/i.test(line)) termWrite(activeTT, line);
       } else if (msg.type === 'done') {
         const ok = msg.code === 0;
         if (!isLive) {
@@ -3410,7 +3847,12 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
         if (prefix && onDoneHooks[prefix]) onDoneHooks[prefix](msg.code);
         else if (prefix && parsers[prefix] && !isLive) {
           const raw = (rawBuffers[prefix] || []).join('\n');
-          injectParsedTabs(prefix, parsers[prefix](raw));
+          try {
+            injectParsedTabs(prefix, parsers[prefix](raw));
+          } catch(parseErr) {
+            injectParsedTabs(prefix, ph.empty('Error en parser: ' + parseErr.message));
+            console.error('[parser error]', prefix, parseErr);
+          }
         }
       } else if (msg.type === 'error') {
         if (!isLive) appendOut(outCId, '⚠ ' + msg.data, 'err');
@@ -3551,16 +3993,30 @@ async function viewFile(path) {
 }
 
 /* ─── TERMINAL ────────────────────────────────────────── */
+const _termBufs = {};
+const _termRafs = {};
 function termWrite(tabId, text, cls) {
-  const el = document.getElementById('tout-' + tabId);
-  if (!el) return;
-  (text || '').split('\n').forEach(line => {
-    const div = document.createElement('div');
-    div.className = 'tl ' + (cls || '');
-    div.textContent = line;
-    el.appendChild(div);
-  });
-  el.scrollTop = el.scrollHeight;
+  if (!_termBufs[tabId]) _termBufs[tabId] = [];
+  for (const line of (text || '').split('\n')) {
+    _termBufs[tabId].push({ t: line, c: cls || '' });
+  }
+  if (!_termRafs[tabId]) {
+    _termRafs[tabId] = requestAnimationFrame(() => {
+      _termRafs[tabId] = null;
+      const el = document.getElementById('tout-' + tabId);
+      if (!el) { _termBufs[tabId] = []; return; }
+      const frag = document.createDocumentFragment();
+      for (const { t, c } of _termBufs[tabId]) {
+        const div = document.createElement('div');
+        div.className = 'tl' + (c ? ' ' + c : '');
+        div.textContent = t;
+        frag.appendChild(div);
+      }
+      _termBufs[tabId] = [];
+      el.appendChild(frag);
+      el.scrollTop = el.scrollHeight;
+    });
+  }
 }
 function termExec() {
   const inp = document.getElementById('term-input');
