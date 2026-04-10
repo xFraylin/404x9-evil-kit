@@ -38,13 +38,13 @@ Built by [@xFraylin](https://github.com/xFraylin)
 sudo bash -c "$(curl -fsSL https://raw.githubusercontent.com/xFraylin/404x9-evil-kit/main/install.sh)"
 ```
 
-Eso es todo. El script descarga el repo, crea el venv e instala todo solo.
+Eso es todo. El script clona el repo, instala las herramientas necesarias, crea el venv e instala todas las dependencias Python adentro.
 
 ---
 
 ## Requirements
 
-- Kali Linux (or any Debian-based distro with pentesting tools installed)
+- Kali Linux (or any Debian-based distro)
 - Python 3.10+
 - Root access for installation
 
@@ -59,12 +59,13 @@ sudo bash install.sh
 ```
 
 The installer will:
-1. Install `python3-venv` via apt
-2. Copy all files to `/opt/kali-toolkit/`
-3. Create an isolated venv at `/opt/kali-toolkit/venv/`
-4. Install Python dependencies (`flask`, `flask-cors`) inside the venv
-5. Create the `/usr/local/bin/404x9-evil-kit` launcher
-6. Create a desktop shortcut at `/root/Desktop/kali-toolkit.desktop`
+1. Clone the repo automatically if run via `curl`
+2. Install system binaries via `apt` (skips already installed tools)
+3. Copy all files to `/opt/kali-toolkit/`
+4. Create an isolated venv at `/opt/kali-toolkit/venv/`
+5. Activate the venv and install all Python dependencies from `requirements.txt`
+6. Create the `/usr/local/bin/404x9-evil-kit` launcher
+7. Create a desktop shortcut
 
 ---
 
@@ -74,16 +75,35 @@ The installer will:
 404x9-evil-kit
 ```
 
-Then open your browser at `http://localhost:5000`
-
-The launcher auto-opens the browser after 1.5 seconds.
+The launcher activates the venv automatically and opens `http://localhost:5000` in your browser.
 
 ### Manual start
 
 ```bash
+# 1. Activate the venv
+source /opt/kali-toolkit/venv/bin/activate
+
+# 2. Run the server
 cd /opt/kali-toolkit
-/opt/kali-toolkit/venv/bin/python3 server.py
+python3 server.py
 ```
+
+### Virtual environment reference
+
+```bash
+# Activate
+source /opt/kali-toolkit/venv/bin/activate
+
+# Verify it's active (should show venv path)
+which python
+# → /opt/kali-toolkit/venv/bin/python
+
+# Deactivate when done
+deactivate
+```
+
+> **Note:** `source /opt/kali-toolkit/venv` is **wrong** and does nothing.  
+> Always use `source /opt/kali-toolkit/venv/bin/activate`.
 
 ---
 
@@ -92,8 +112,9 @@ cd /opt/kali-toolkit
 ```
 404x9-evil-kit/
 ├── server.py           # Flask backend — SSE streaming, process manager
-├── requirements.txt    # Python dependencies (flask, flask-cors)
-├── install.sh          # Installer script
+├── requirements.txt    # Python dependencies (installed inside venv)
+├── install.sh          # Installer — one-liner compatible
+├── run.sh              # Quick launcher (activates venv + starts server)
 ├── templates/
 │   └── index.html      # Full single-page frontend
 └── static/
