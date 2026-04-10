@@ -224,8 +224,9 @@ textarea.fi{resize:vertical;min-height:48px}
 .tabs{display:flex;flex-wrap:wrap;margin-bottom:9px;border-bottom:1px solid var(--brd)}
 .tab{font-size:7px;padding:4px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:1px;transition:all .1s}
 .tab.on{color:var(--g);border-bottom-color:var(--g)}
-.tab-content{display:none}
+.tab-content:not(.on){display:none!important}
 .tab-content.on{display:block}
+.tab-content.on.plist{display:flex;flex-direction:column;gap:3px}
 
 /* ─── PAYLOAD LIST ───────────────────────────────────── */
 .plist{display:flex;flex-direction:column;gap:3px}
