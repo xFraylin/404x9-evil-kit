@@ -32,11 +32,12 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Recon
 | Tool | Description |
 |---|---|
-| **Nmap** | Network scanner. Discovers open ports, services, OS versions and runs NSE scripts for vulnerability detection. |
+| **Nmap** | Network scanner — open ports, services, OS detection, NSE vulnerability scripts. |
 | **Subfinder** | Passive subdomain enumeration using public sources (DNS, APIs, certificates). |
 | **Amass** | In-depth attack surface mapping — subdomains, ASNs, IPs and relationships. |
+| **theHarvester** | Gathers emails, names, subdomains and IPs from public sources (Google, Bing, Shodan, etc.). |
 | **WhatWeb** | Web technology fingerprinting — CMS, frameworks, server versions, analytics platforms. |
-| **WafW00f** | Detects and identifies Web Application Firewalls (WAF) protecting a target. |
+| **WPScan** | WordPress-specific scanner — enumerates users, plugins, themes and known vulnerabilities. |
 
 ### OSINT
 | Tool | Description |
@@ -49,71 +50,72 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Web
 | Tool | Description |
 |---|---|
-| **Gobuster** | Directory, file and subdomain brute force using wordlists. Fast multi-threaded scanner. |
 | **FFUF** | Highly flexible web fuzzer — supports multiple wordlist positions, filters by size/status/words. |
-| **WFuzz** | Web application fuzzer focused on parameter tampering, LFI, SQLi and XSS fuzzing. |
-| **WPScan** | WordPress-specific scanner — enumerates users, plugins, themes and known vulnerabilities. |
+| **Gobuster** | Directory, file and subdomain brute force using wordlists. Fast multi-threaded scanner. |
 | **Nikto** | Web server scanner that detects dangerous files, outdated software and misconfigurations. |
+| **WFuzz** | Web application fuzzer focused on parameter tampering, LFI, SQLi and XSS fuzzing. |
 | **DalFox** | XSS (Cross-Site Scripting) scanner with parameter analysis and PoC generation. |
-| **HTTPX** | Fast HTTP toolkit — probes URLs for status, title, tech stack, CDNs and redirect chains. |
-| **theHarvester** | Gathers emails, names, subdomains and IPs from public sources (Google, Bing, Shodan, etc.). |
 
 ### Injection
 | Tool | Description |
 |---|---|
 | **SQLMap** | Automated SQL injection detection and exploitation — supports all major database backends. |
 
+### Cracking
+| Tool | Description |
+|---|---|
+| **John the Ripper** | CPU-based password cracker — supports hundreds of hash formats, wordlist + rules modes. |
+| **Hashcat** | GPU-accelerated hash cracker — dictionary, brute force and hybrid attacks. |
+| **HashID** | Identifies unknown hash types by analyzing format and length. |
+
 ### Brute Force
 | Tool | Description |
 |---|---|
 | **Hydra** | Network login brute forcer — supports SSH, FTP, HTTP, RDP, SMB, and 50+ protocols. |
 | **Medusa** | Parallel network login auditor — similar to Hydra, optimized for speed and modularity. |
-| **WFuzz** | Also used for brute forcing web parameters, forms and hidden endpoints. |
-
-### Hash Cracking
-| Tool | Description |
-|---|---|
-| **John the Ripper** | CPU-based password cracker — supports hundreds of hash formats, wordlist + rules modes. |
-| **Hashcat** | GPU-accelerated hash cracker — fastest available, supports dictionary, brute force and hybrid attacks. |
-| **HashID** | Identifies unknown hash types by analyzing the format and length of the hash. |
 
 ### Exploit
 | Tool | Description |
 |---|---|
-| **MSFVenom** | Payload generator from the Metasploit Framework — creates shellcode, executables and reverse shells for any platform. |
-| **SearchSploit** | Offline search engine for Exploit-DB — finds public exploits for software versions without internet. |
+| **MSFVenom** | Payload generator from Metasploit — shellcode, executables and reverse shells for any platform. |
+| **SearchSploit** | Offline search engine for Exploit-DB — finds public exploits without internet. |
 
 ### Active Directory
+| Panel | Tools inside | Description |
+|---|---|---|
+| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch | Full domain enumeration — users, groups, shares, GPOs, password policies. |
+| **SMB Access** | smbmap, crackmapexec, netexec, nxc | Share enumeration, permission mapping, credential spraying, module execution. |
+| **Kerberos** | kerbrute, GetUserSPNs.py, GetNPUsers.py | Username enumeration, Kerberoasting and AS-REP Roasting. |
+| **Execution** | psexec.py, wmiexec.py, smbexec.py, atexec.py | Remote command execution via Impacket. |
+| **Credentials** | secretsdump.py | Dumps SAM hashes, NTDS domain hashes and LSA plaintext credentials. |
+| **BloodHound** | bloodhound-python, rusthound | AD data collection (users, groups, ACLs, sessions) for attack path analysis. |
+| **MITM** | responder, mitm6, ntlmrelayx.py | LLMNR/NBT-NS/DHCPv6 poisoning and NTLM relay attacks. |
+
+### Network
 | Tool | Description |
 |---|---|
-| **NetExec / CrackMapExec** | Swiss army knife for Active Directory — SMB/LDAP/WinRM enumeration, credential spraying, lateral movement. |
-| **SMBMap** | Enumerates SMB shares, permissions and files across a network. |
-| **SMBClient** | Command-line SMB client to browse shares, upload/download files. |
-| **RPCClient** | Queries Windows RPC endpoints — user enumeration, domain info, SID lookups. |
-| **Enum4linux-ng** | Enumerates Windows/Samba hosts — users, groups, shares, password policies via SMB/RPC. |
-| **LDAPDomainDump** | Dumps Active Directory information over LDAP and saves it as HTML/JSON/CSV reports. |
-| **LDAPSearch** | Raw LDAP queries against directory services for users, groups, GPOs and more. |
-| **Kerbrute** | Kerberos-based username enumeration and password spraying without triggering LDAP lockouts. |
-| **BloodHound Python** | Collects AD data (users, groups, ACLs, sessions) to feed into BloodHound for attack path analysis. |
-| **Responder** | LLMNR/NBT-NS/MDNS poisoner — captures NTLMv2 hashes from network broadcast traffic. |
-| **Mitm6** | IPv6-based man-in-the-middle attack that exploits Windows DHCPv6 to capture credentials. |
-| **Evil-WinRM** | WinRM shell for Windows remote management — uploads, downloads, PowerShell bypass and more. |
-| **Impacket suite** | Collection of Python scripts: `psexec`, `wmiexec`, `smbexec`, `secretsdump`, `ntlmrelayx`, `GetUserSPNs`, `GetNPUsers` and more. |
+| **TCPDump** | Packet capture with BPF filters — inspects live traffic and saves to .pcap. |
 
 ### Wireless
-| Tool | Description |
-|---|---|
-| **Airmon-ng** | Puts wireless interfaces into monitor mode, required for all wireless attacks. |
-| **Airodump-ng** | Captures 802.11 frames — shows nearby APs, clients, BSSIDs, channels and signal strength. |
-| **Aireplay-ng** | Injects wireless frames — used for deauthentication attacks and WEP/WPA handshake capture. |
-| **Aircrack-ng** | Cracks WEP keys and WPA/WPA2 handshakes using dictionary attacks. |
-| **WiFi Disconnect** | Automated deauth workflow built into the UI — monitor mode → scan → deauth → crack, all in one flow. |
+| Panel | Tools inside | Description |
+|---|---|---|
+| **Aircrack-NG** | airmon-ng, airodump-ng, aireplay-ng, aircrack-ng | Full WPA attack suite — monitor mode → scan → capture handshake → deauth → crack. |
+| **WiFi Disconnect** | airmon-ng, airodump-ng, aireplay-ng | Automated deauth workflow with live AP table — click a network, disconnect it. |
 
-### Misc
+### Priv Esc
+| Panel | Description |
+|---|---|
+| **Priv Esc** | Cheatsheet Linux (SUID, CRON, writable paths, shadow) / Windows (reg, services, creds) / GTFOBins (sudo + SUID) / TTY Upgrade. |
+| **Rev Shells** | Reverse shell one-liners — Bash, Python, Netcat, PHP, Perl, Ruby, PowerShell + quick listener launcher. |
+| **LINPEAS / WINPEAS** | Download and run commands for PEASS-ng scripts + HTTP server to serve them to targets. |
+
+### Utils
 | Tool | Description |
 |---|---|
-| **TCPDump** | Command-line packet capture — filters and inspects live network traffic. |
-| **cURL** | HTTP client for crafting and sending custom requests, useful for API testing and exploitation. |
+| **cURL** | Advanced HTTP client — custom headers, methods, body, auth, proxy and cookie support. |
+| **Wget** | Recursive file downloader — mirror sites, download files from targets. |
+| **HTTPX** | Fast HTTP toolkit — probes URLs for status, title, tech stack, CDNs and redirect chains. |
+| **Encoder** | Client-side encode/decode chain — Base64, URL, HTML, Hex, ROT13, MD5, SHA1, SHA256. |
 | **Wget** | Recursive file downloader — useful for mirroring sites or downloading exploit files. |
 
 ---
