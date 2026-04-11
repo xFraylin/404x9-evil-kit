@@ -15,14 +15,14 @@
   --glow:0 0 8px rgba(0,255,136,.18);--glow-md:0 0 14px rgba(0,255,136,.22);
   --panel-bg:#050a06;--input-bg:#030604;
 }
-body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#1e4a2a;border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:#2a6a3a}
 
 /* ─── TOPBAR ─────────────────────────────────────────── */
-#topbar{background:linear-gradient(90deg,#040805 0%,var(--bg3) 50%,#040805 100%);border-bottom:1px solid var(--brd);box-shadow:0 1px 0 #0a1a0c,0 2px 12px rgba(0,0,0,.5);padding:0 16px;display:flex;align-items:center;gap:12px;height:50px;flex-shrink:0;position:relative;z-index:10}
+#topbar{background:linear-gradient(90deg,#040805 0%,var(--bg3) 50%,#040805 100%);border-bottom:1px solid var(--brd);box-shadow:0 1px 0 #0a1a0c,0 2px 12px rgba(0,0,0,.5);padding:0 14px;display:flex;align-items:center;gap:10px;height:42px;flex-shrink:0;position:relative;z-index:10}
 .dots{display:flex;gap:5px}
 .dot{width:9px;height:9px;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.5)}
 .dr{background:#ff5f57;box-shadow:0 0 5px rgba(255,95,87,.4)}.dy{background:#febc2e;box-shadow:0 0 5px rgba(254,188,46,.3)}.dg{background:#28c840;box-shadow:0 0 5px rgba(40,200,64,.4)}
@@ -37,20 +37,20 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 #layout{display:flex;flex:1;overflow:hidden}
 
 /* ─── SIDEBAR ────────────────────────────────────────── */
-#sidebar{width:215px;background:var(--bg2);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0;padding-bottom:20px;display:flex;flex-direction:column}
-.sb-brand{padding:12px 14px 10px;border-bottom:1px solid var(--brd);display:flex;flex-direction:column;gap:3px;background:linear-gradient(180deg,#070f08 0%,var(--bg2) 100%)}
+#sidebar{width:190px;background:var(--bg2);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0;padding-bottom:16px;display:flex;flex-direction:column}
+.sb-brand{padding:9px 12px 8px;border-bottom:1px solid var(--brd);display:flex;flex-direction:column;gap:2px;background:linear-gradient(180deg,#070f08 0%,var(--bg2) 100%)}
 .sb-brand-name{font-size:14px;color:var(--g);font-weight:700;letter-spacing:3px;text-shadow:0 0 10px rgba(0,255,136,.25)}
 .sb-brand-by{font-size:12px;color:var(--mut);letter-spacing:2px}
 
 /* accordion */
-.acc-cat{cursor:pointer;padding:8px 12px;font-size:12px;color:var(--mut);letter-spacing:3px;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:all .15s;border-bottom:1px solid #0a1209;margin-top:1px}
+.acc-cat{cursor:pointer;padding:6px 10px;font-size:11px;color:var(--mut);letter-spacing:3px;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:all .15s;border-bottom:1px solid #0a1209;margin-top:1px}
 .acc-cat:hover{color:var(--g2);background:#080f09}
 .acc-cat.open{color:var(--g);background:#060d07}
 .acc-arrow{font-size:12px;transition:transform .2s;opacity:.4}
 .acc-cat.open .acc-arrow{transform:rotate(90deg);opacity:.9}
 .acc-items{overflow:hidden;max-height:0;transition:max-height .25s ease}
 .acc-items.open{max-height:500px}
-.s-item{padding:5px 10px 5px 16px;font-size:13px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:7px;border-left:2px solid transparent;white-space:nowrap;transition:all .12s;position:relative;letter-spacing:.5px}
+.s-item{padding:4px 8px 4px 13px;font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;white-space:nowrap;transition:all .12s;position:relative;letter-spacing:.5px}
 .s-item:hover{color:var(--g2);background:#0a160b;border-left-color:#1a3a20}
 .s-item.active{color:var(--g);background:linear-gradient(90deg,#0d1e0f 0%,#080e09 100%);border-left-color:var(--g);box-shadow:inset 0 0 12px rgba(0,255,136,.04)}
 .s-dot{width:4px;height:4px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all .15s}
@@ -63,10 +63,10 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 
 /* ─── MAIN BODY ──────────────────────────────────────── */
 #body{display:flex;flex:1;overflow:hidden}
-#content{flex:1;overflow-y:auto;padding:18px 20px;min-width:0;background:var(--panel-bg);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.008) 2px,rgba(0,255,136,.008) 4px)}
+#content{flex:1;overflow-y:auto;padding:12px 14px;min-width:0;background:var(--panel-bg);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.008) 2px,rgba(0,255,136,.008) 4px)}
 
 /* ─── TWO-COLUMN PANEL LAYOUT ────────────────────────── */
-.panel.active{display:grid;grid-template-columns:1fr 415px;column-gap:18px;align-items:start}
+.panel.active{display:grid;grid-template-columns:1fr 370px;column-gap:14px;align-items:start}
 .panel.active .pt,
 .panel.active .val-msg,
 .panel.active .sdiv,
@@ -89,7 +89,7 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 .panel.active .enc-chain-label{grid-column:1}
 
 /* ─── TERMINAL PANEL ─────────────────────────────────── */
-#term-panel{width:365px;background:#020302;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s ease}
+#term-panel{width:310px;background:#020302;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s ease}
 #term-panel.collapsed{width:26px}
 #term-topbar{background:#040805;border-bottom:1px solid var(--brd);padding:6px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0}
 #term-title{font-size:13px;color:var(--mut);flex:1;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
@@ -122,7 +122,7 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 #term-run-btn:hover{background:#0a1a0c;border-color:#254530}
 
 /* ─── ENCODER AUX PANEL (right, replaces terminal) ────── */
-#enc-aux-panel{width:490px;background:#020403;border-left:1px solid var(--brd);display:none;flex-direction:column;flex-shrink:0}
+#enc-aux-panel{width:420px;background:#020403;border-left:1px solid var(--brd);display:none;flex-direction:column;flex-shrink:0}
 #enc-aux-panel.active{display:flex}
 #enc-aux-topbar{background:var(--bg3);border-bottom:1px solid var(--brd);padding:5px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0}
 #enc-aux-title{font-size:13px;color:var(--cyan);flex:1;letter-spacing:1px;font-weight:700}
@@ -137,15 +137,15 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 .panel{display:none}
 .panel.active{display:block;animation:panelIn .15s ease}
 @keyframes panelIn{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.pt{font-size:18px;color:var(--g);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid #163019;animation:titleGlow 5s ease-in-out infinite}
+.pt{font-size:15px;color:var(--g);font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:8px;border-bottom:1px solid #163019;animation:titleGlow 5s ease-in-out infinite}
 @keyframes titleGlow{0%,100%{text-shadow:0 0 10px rgba(0,255,136,.15)}50%{text-shadow:0 0 22px rgba(0,255,136,.35),0 0 40px rgba(0,255,136,.1)}}
-.pt::before{content:'';width:3px;height:20px;background:linear-gradient(180deg,var(--g) 0%,rgba(0,255,136,.1) 100%);border-radius:2px;flex-shrink:0;box-shadow:0 0 10px rgba(0,255,136,.5)}
+.pt::before{content:'';width:3px;height:16px;background:linear-gradient(180deg,var(--g) 0%,rgba(0,255,136,.1) 100%);border-radius:2px;flex-shrink:0;box-shadow:0 0 10px rgba(0,255,136,.5)}
 .ptd{font-size:13px;color:var(--mut);font-weight:400;letter-spacing:.5px;animation:none}
-.row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.row{display:flex;gap:7px;margin-bottom:6px;flex-wrap:wrap}
 .ig{display:flex;flex-direction:column;gap:4px;flex:1;min-width:70px}
 .ig.w2{flex:2}.ig.w3{flex:3}.ig.w4{flex:4}
 .lbl{font-size:12px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase}
-input.fi,select.fi,textarea.fi{background:var(--input-bg);border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:14px;padding:5px 8px;width:100%;border-radius:3px;outline:none;transition:border .15s,box-shadow .15s}
+input.fi,select.fi,textarea.fi{background:var(--input-bg);border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:13px;padding:4px 7px;width:100%;border-radius:3px;outline:none;transition:border .15s,box-shadow .15s}
 input.fi:hover,select.fi:hover{border-color:#254530}
 input.fi:focus,select.fi:focus,textarea.fi:focus{border-color:var(--g);box-shadow:0 0 0 2px rgba(0,255,136,.08),inset 0 1px 4px rgba(0,0,0,.4)}
 textarea.fi{resize:vertical;min-height:48px}
@@ -159,14 +159,14 @@ textarea.fi{resize:vertical;min-height:48px}
 .cmd-lbl{background:#030806;border-bottom:1px solid #163019;padding:6px 12px;font-size:12px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
 .cmd-lbl::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px rgba(0,255,136,.6);flex-shrink:0}
 .cmd-lbl::after{content:'COMMAND';margin-left:auto;font-size:11px;color:var(--dim);letter-spacing:3px}
-.cmd-text{color:var(--g2);word-break:break-all;line-height:2;font-size:15px;min-height:20px;padding:10px 14px;font-family:'JetBrains Mono',monospace}
+.cmd-text{color:var(--g2);word-break:break-all;line-height:1.8;font-size:13px;min-height:18px;padding:7px 11px;font-family:'JetBrains Mono',monospace}
 .cmd-text .b{color:var(--g);font-weight:700;text-shadow:0 0 8px rgba(0,255,136,.3)}
 .cmd-text .f{color:var(--cyan)}
 .cmd-text .v{color:var(--ora)}
 
 /* ─── RUN BUTTONS ────────────────────────────────────── */
-.run-row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #0d1a0f}
-.rbtn{background:linear-gradient(180deg,#0f2412 0%,#07120a 100%);border:1px solid var(--g);color:var(--g);font-family:inherit;font-size:14px;padding:9px 24px;border-radius:3px;cursor:pointer;letter-spacing:2px;transition:all .2s;display:flex;align-items:center;gap:7px;box-shadow:0 0 12px rgba(0,255,136,.15),inset 0 1px 0 rgba(0,255,136,.12);position:relative;overflow:hidden}
+.run-row{display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;padding-top:8px;border-top:1px solid #0d1a0f}
+.rbtn{background:linear-gradient(180deg,#0f2412 0%,#07120a 100%);border:1px solid var(--g);color:var(--g);font-family:inherit;font-size:13px;padding:7px 18px;border-radius:3px;cursor:pointer;letter-spacing:2px;transition:all .2s;display:flex;align-items:center;gap:6px;box-shadow:0 0 12px rgba(0,255,136,.15),inset 0 1px 0 rgba(0,255,136,.12);position:relative;overflow:hidden}
 .rbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(0,255,136,.04) 50%,transparent 100%);transform:translateX(-100%);transition:transform .4s}
 .rbtn:hover{background:linear-gradient(180deg,#162e18 0%,#0d1e0f 100%);box-shadow:0 0 22px rgba(0,255,136,.28),inset 0 1px 0 rgba(0,255,136,.2);transform:translateY(-1px)}
 .rbtn:hover::after{transform:translateX(100%)}
@@ -188,7 +188,7 @@ textarea.fi{resize:vertical;min-height:48px}
 .out-hdr::before{content:'';width:6px;height:6px;border-radius:50%;background:#1a3a20;border:1px solid #2a5030;flex-shrink:0}
 .out-area[style*="block"] .out-hdr::before,.out-area.active .out-hdr::before{background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.5);border-color:var(--g)}
 .out-title{font-size:12px;color:var(--mut);letter-spacing:2px;flex:1;text-transform:uppercase}
-.out-content{padding:9px 11px;max-height:250px;overflow-y:auto;font-size:14px;line-height:1.7;color:#9dccb0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace}
+.out-content{padding:7px 9px;max-height:220px;overflow-y:auto;font-size:13px;line-height:1.6;color:#9dccb0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace}
 .out-err{color:#ff7070}
 .out-ok{color:var(--g)}
 .out-sys{color:var(--mut);font-style:italic}
@@ -205,6 +205,7 @@ textarea.fi{resize:vertical;min-height:48px}
 .p-pill.warn{color:var(--yellow);border-color:#3a2d08;background:#080700}
 .p-pill.crit{color:var(--red);border-color:#3a1010;background:#060202}
 .p-pill.info{color:var(--cyan);border-color:#163340;background:#020508}
+.p-pill.ora{color:var(--ora);border-color:#3a2008;background:#060300}
 .p-section{margin-bottom:12px}
 .p-sec-hdr{font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #0d160f;text-transform:uppercase}
 .p-sec-body{font-size:13px}
@@ -255,7 +256,7 @@ textarea.fi{resize:vertical;min-height:48px}
 .header-row .del-btn:hover{opacity:.7}
 
 /* ─── SDIV ───────────────────────────────────────────── */
-.sdiv{font-size:12px;color:var(--mut);letter-spacing:3px;margin:12px 0 7px;padding-bottom:4px;border-bottom:1px solid #0d160f;text-transform:uppercase}
+.sdiv{font-size:11px;color:var(--mut);letter-spacing:3px;margin:8px 0 5px;padding-bottom:3px;border-bottom:1px solid #0d160f;text-transform:uppercase}
 
 /* ─── STATUSBAR ──────────────────────────────────────── */
 #statusbar{background:#030604;border-top:1px solid var(--brd);padding:3px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dim);flex-shrink:0;letter-spacing:.5px}
@@ -2571,6 +2572,7 @@ function sw(id, el) {
     }
   }
   updateRightPanel(id);
+  try { localStorage.setItem('x9panel', id); } catch(_) {}
 }
 function updateRightPanel(id) {
   const term = document.getElementById('term-panel');
@@ -3603,35 +3605,52 @@ parsers.ae = r => {
     // ── findings ─────────────────────────────────────────
     const flags = [];
 
-    // Groups whose CN membership = real domain admin
-    const ADMIN_GROUPS = [
-      'domain admins','administrators','enterprise admins','schema admins',
-      'account operators','server operators','backup operators','print operators',
-      'group policy creator owners'
-    ];
-    // Built-in accounts that are always considered admin regardless of memberOf
-    const ADMIN_BUILTINS = ['administrador','administrator','krbtgt'];
-    const isRealAdmin = a => {
-      const sam = v1(a,'sAMAccountName').toLowerCase();
-      if (ADMIN_BUILTINS.includes(sam)) return true;
-      return vv(a,'memberOf').some(dn=>{
-        const cn = (dn.match(/^CN=([^,]+)/i)||[])[1]||'';
-        return ADMIN_GROUPS.includes(cn.toLowerCase());
-      });
+    // Case-insensitive attribute getter (handles MemberOf / memberOf / MEMBEROF)
+    const vvCI = (a,k) => {
+      const kl = k.toLowerCase();
+      const key = Object.keys(a).find(x => x.toLowerCase() === kl);
+      return key ? a[key] : [];
     };
 
-    const realAdmins = users.filter(a=>isRealAdmin(a));
-    const privUsers  = users.filter(a=>v1(a,'adminCount')==='1' && !isRealAdmin(a));
+    // Domain-level admin groups — membership verified via LDAP memberOf only.
+    // LOCAL ADMIN is intentionally NOT detected here: it requires host-side
+    // enumeration (net localgroup, netexec smb, Get-LocalGroupMember) and
+    // must be tied to a specific hostname. LDAP memberOf cannot prove it.
+    const DOMAIN_ADMIN_GROUPS = [
+      'domain admins','enterprise admins','schema admins',
+      'administrators',                          // built-in Administrators (DC-level)
+      'account operators','server operators','backup operators','print operators',
+      'group policy creator owners',
+      // Spanish locale equivalents
+      'admins. del dominio','administradores de organización','administradores de esquema',
+      'administradores',
+      'operadores de cuentas','operadores de servidor',
+      'operadores de copia de seguridad','operadores de impresión'
+    ];
+    // Built-in accounts always flagged as ADMIN regardless of memberOf
+    const ADMIN_BUILTINS = ['administrador','administrator','krbtgt'];
+
+    const getMem = a => vvCI(a,'memberOf').join('\n').toLowerCase();
+
+    const isDomainAdmin = a => {
+      const sam = v1(a,'sAMAccountName').toLowerCase();
+      if (ADMIN_BUILTINS.includes(sam)) return true;
+      const mem = getMem(a);
+      return DOMAIN_ADMIN_GROUPS.some(g => mem.includes('cn='+g));
+    };
+
+    const domainAdmins = users.filter(a => isDomainAdmin(a));
+    const privUsers    = users.filter(a => !isDomainAdmin(a) && v1(a,'adminCount')==='1');
     const noPwd      = users.filter(a=>v1(a,'pwdLastSet')==='0');
     const disabledU  = users.filter(a=>uacBit(a,0x0002));
     const neverLog   = users.filter(a=>{const l=v1(a,'lastLogonTimestamp'),ll=v1(a,'lastLogon');return(!l||l==='0')&&(!ll||ll==='0');});
     const spnUsers   = users.filter(a=>vv(a,'servicePrincipalName').length>0);
     const spnComps   = comps.filter(a=>vv(a,'servicePrincipalName').length>0);
 
-    if (realAdmins.length)
-      flags.push(ph.find(`Domain Admin → <b>${realAdmins.length}</b> cuenta(s) admin real: <b>${realAdmins.slice(0,8).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${realAdmins.length>8?'…':''}</b>`,'crit'));
+    if (domainAdmins.length)
+      flags.push(ph.find(`Domain Admin → <b>${domainAdmins.length}</b> cuenta(s): <b>${domainAdmins.slice(0,8).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${domainAdmins.length>8?'…':''}</b>`,'crit'));
     if (privUsers.length)
-      flags.push(ph.find(`adminCount=1 → <b>${privUsers.length}</b> cuenta(s) protegida(s)/privilegiada(s): <b>${privUsers.slice(0,8).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${privUsers.length>8?'…':''}</b>`,'warn'));
+      flags.push(ph.find(`adminCount=1 → <b>${privUsers.length}</b> cuenta(s) protegida(s) (sin grupo admin verificado): <b>${privUsers.slice(0,8).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${privUsers.length>8?'…':''}</b>`,'warn'));
     if (noPwd.length)
       flags.push(ph.find(`pwdLastSet=0 → <b>${noPwd.length}</b> cuenta(s) sin contraseña: <b>${noPwd.slice(0,8).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${noPwd.length>8?'…':''}</b>`,'crit'));
     if (disabledU.length)
@@ -3649,9 +3668,9 @@ parsers.ae = r => {
     const sumContent =
       ph.sum([
         ph.pill(entries.length+' objetos totales','info'),
-        users.length  ? ph.pill(users.length +' usuarios','info'):'',
-        realAdmins.length ? ph.pill(realAdmins.length+' admins','crit'):'',
-        privUsers.length  ? ph.pill(privUsers.length+' privilegiados','warn'):'',
+        users.length        ? ph.pill(users.length+' usuarios','info'):'',
+        domainAdmins.length ? ph.pill(domainAdmins.length+' admins','crit'):'',
+        privUsers.length    ? ph.pill(privUsers.length+' privilegiados','warn'):'',
         comps.length  ? ph.pill(comps.length +' equipos','warn'):'',
         groups.length ? ph.pill(groups.length+' grupos','info'):'',
         ous.length    ? ph.pill(ous.length   +' OUs','info'):'',
@@ -3671,8 +3690,9 @@ parsers.ae = r => {
       const dn   = v1(a,'distinguishedName')||v1(a,'dn');
       const pwdS = pls==='0' ? ph.pill('NEVER','crit') : (wDate(pls)||'—');
       const stP  = dis ? ph.pill('off','warn') : ph.pill('on','ok');
-      // Role pill: ADMIN (real group member) > PRIV (adminCount=1 only) > nothing
-      const roleP = isRealAdmin(a)
+      // Role pill: ADMIN (domain group / built-in) > PRIV (adminCount=1) > nothing
+      // LOCAL ADMIN is not shown here — requires host-side enumeration, not LDAP
+      const roleP = isDomainAdmin(a)
         ? ' '+ph.pill('ADMIN','crit')
         : v1(a,'adminCount')==='1'
           ? ' '+ph.pill('PRIV','warn')
@@ -5138,6 +5158,15 @@ gobMode();
 bindGobDns();
 // bind new checks
 bc('gb-dns-op', bGob); bc('gb-vhost-op', bGob);
+// ── restore last active panel across reloads ────────────
+(function restoreNav() {
+  let saved;
+  try { saved = localStorage.getItem('x9panel'); } catch(_) {}
+  if (saved && document.getElementById('p-' + saved)) {
+    const sItem = document.querySelector(`.s-item[onclick*="'${saved}'"]`);
+    sw(saved, sItem);
+  }
+})();
 </script>
 
 <!-- ══ FILE BROWSER MODAL ══ -->
