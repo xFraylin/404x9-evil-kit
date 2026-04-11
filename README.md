@@ -36,7 +36,7 @@ Built by [@xFraylin](https://github.com/xFraylin)
 | **Subfinder** | Passive subdomain enumeration using public sources (DNS, APIs, certificates). |
 | **Amass** | In-depth attack surface mapping — subdomains, ASNs, IPs and relationships. |
 | **theHarvester** | Gathers emails, names, subdomains and IPs from public sources (Google, Bing, Shodan, etc.). |
-| **WhatWeb** | Web technology fingerprinting — CMS, frameworks, server versions, analytics platforms. |
+| **WhatWeb / WAFW00F** | Web technology fingerprinting (WhatWeb) and WAF/protection detection (WAFW00F) — selectable from the same panel. |
 | **WPScan** | WordPress-specific scanner — enumerates users, plugins, themes and known vulnerabilities. |
 
 ### OSINT
@@ -83,12 +83,12 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Active Directory
 | Panel | Tools inside | Description |
 |---|---|---|
-| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch | Full domain enumeration — users, groups, shares, GPOs, password policies. |
-| **SMB Access** | smbmap, crackmapexec, netexec, nxc | Share enumeration, permission mapping, credential spraying, module execution. |
+| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch | Full domain enumeration — users, groups, shares, GPOs, password policies. Parsed LDAP output with tabs: Summary / Users / Computers / OUs / Findings. |
+| **SMB Access** | smbmap, crackmapexec, netexec, nxc | Share enumeration, permission mapping, credential spraying, module execution (lsassy, bloodhound, pass-pol, rid-brute, etc.). |
 | **Kerberos** | kerbrute, GetUserSPNs.py, GetNPUsers.py | Username enumeration, Kerberoasting and AS-REP Roasting. |
 | **Execution** | psexec.py, wmiexec.py, smbexec.py, atexec.py | Remote command execution via Impacket. |
 | **Credentials** | secretsdump.py | Dumps SAM hashes, NTDS domain hashes and LSA plaintext credentials. |
-| **BloodHound** | bloodhound-python, rusthound | AD data collection (users, groups, ACLs, sessions) for attack path analysis. |
+| **BloodHound** | bloodhound-python, rusthound | AD data collection (users, groups, ACLs, sessions) for attack path analysis. Built-in Neo4j and BloodHound UI launchers. |
 | **MITM** | responder, mitm6, ntlmrelayx.py | LLMNR/NBT-NS/DHCPv6 poisoning and NTLM relay attacks. |
 
 ### Network
@@ -105,9 +105,9 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Priv Esc
 | Panel | Description |
 |---|---|
-| **Priv Esc** | Cheatsheet Linux (SUID, CRON, writable paths, shadow) / Windows (reg, services, creds) / GTFOBins (sudo + SUID) / TTY Upgrade. |
-| **Rev Shells** | Reverse shell one-liners — Bash, Python, Netcat, PHP, Perl, Ruby, PowerShell + quick listener launcher. |
-| **LINPEAS / WINPEAS** | Download and run commands for PEASS-ng scripts + HTTP server to serve them to targets. |
+| **Priv Esc** | Cheatsheet tabs — Linux (identity, SUID/SGID, cron, writable paths, shadow) / Windows (registry, services, stored credentials) / GTFOBins (sudo + SUID one-liners) / TTY Upgrade (Python pty, stty). |
+| **Rev Shells** | Reverse shell one-liners with tabs — Bash, Python, Netcat, PHP/Perl, Windows/PowerShell, Listeners. Quick netcat listener launcher included. |
+| **LINPEAS / WINPEAS** | Download and run commands for PEASS-ng scripts (linpeas, winpeas) + built-in HTTP server to serve them to targets. |
 
 ### Utils
 | Tool | Description |
@@ -115,8 +115,14 @@ Built by [@xFraylin](https://github.com/xFraylin)
 | **cURL** | Advanced HTTP client — custom headers, methods, body, auth, proxy and cookie support. |
 | **Wget** | Recursive file downloader — mirror sites, download files from targets. |
 | **HTTPX** | Fast HTTP toolkit — probes URLs for status, title, tech stack, CDNs and redirect chains. |
-| **Encoder** | Client-side encode/decode chain — Base64, URL, HTML, Hex, ROT13, MD5, SHA1, SHA256. |
-| **Wget** | Recursive file downloader — useful for mirroring sites or downloading exploit files. |
+| **Encoder** | Client-side encode/decode and transform chain — URL, HTML entities, Base64, Hex, Unicode escape, JSON escape, ROT13, MD5, SHA1, SHA256. Transformations chain sequentially. |
+
+### System
+| Panel | Description |
+|---|---|
+| **Herramientas** | Checks which tools are installed on your Kali — visual status grid with one-click install shortcuts. |
+| **Archivos** | File browser for `/tmp` and `/root` — lists files in the active working directories. |
+| **Historial** | Session command history — all commands run in the current session, with a clear option. |
 
 ---
 

@@ -299,6 +299,11 @@ textarea.fi{resize:vertical;min-height:48px}
 .psearch .pclear:hover{color:var(--g);border-color:var(--g)}
 .pcnt{font-size:12px;color:var(--mut);flex-shrink:0}
 .pitem.hidden{display:none!important}
+/* LDAP parsed output */
+.ldap-hidden{display:none!important}
+.ldap-more{display:block;margin:6px 0 2px;font-size:11px;color:var(--g);cursor:pointer;padding:4px 10px;background:#020403;border:1px solid var(--brd);border-radius:3px;width:100%;text-align:left;font-family:inherit;letter-spacing:1px;transition:all .1s}
+.ldap-more:hover{border-color:var(--g);background:#060f07}
+.ldap-dn{font-size:11px;color:var(--mut);letter-spacing:.3px}
 
 /* ─── ENCODER MODULE ─────────────────────────────────── */
 .enc-transforms{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
@@ -2862,6 +2867,23 @@ function swOut(prefix,view,el){
   if (rc) rc.style.display=view==='raw'?'block':'none';
   if (pc) pc.style.display=view==='parsed'?'block':'none';
 }
+/* LDAP section tab switcher — used by parsed LDAP output */
+function ldapTab(el, gid, sec) {
+  const grp = document.getElementById(gid); if(!grp) return;
+  grp.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  const wrap = grp.parentElement;
+  wrap.querySelectorAll(':scope > .tab-content').forEach(c=>c.classList.remove('on'));
+  const tc = document.getElementById(gid+'-'+sec);
+  if (tc) tc.classList.add('on');
+}
+/* LDAP "show more" toggle — expands hidden rows in a table */
+function ldapMore(btn, id) {
+  const box = document.getElementById(id); if(!box) return;
+  const hidden = box.querySelectorAll('.ldap-hidden');
+  hidden.forEach(r=>r.classList.remove('ldap-hidden'));
+  btn.style.display='none';
+}
 
 // ─── PARSERS ───────────────────────────────────────────
 const parsers = {};
@@ -3494,25 +3516,238 @@ parsers.ae = r => {
     return o;
   }
 
-  // ── ldapsearch parser ─────────────────────────────────
+  // ── ldapsearch full parser ────────────────────────────
   if (isLdap) {
-    const objs = r.split(/\n\n+/).filter(b => /^dn:/m.test(b));
-    const users = objs.filter(b => /objectClass: user|objectClass: person/i.test(b));
-    const comps = objs.filter(b => /objectClass: computer/i.test(b));
-    const ous   = objs.filter(b => /objectClass: organizationalUnit/i.test(b));
-    let o = ph.sum([ph.pill(objs.length+' objetos','info'), ph.pill(users.length+' usuarios','crit'), ph.pill(comps.length+' equipos','warn')]);
-    const uRows = users.slice(0,50).map(b => {
-      const dn  = (b.match(/^dn:\s*(.+)/m)||[])[1]||'';
-      const sam = (b.match(/sAMAccountName:\s*(.+)/i)||[])[1]||'';
-      const upn = (b.match(/userPrincipalName:\s*(.+)/i)||[])[1]||'';
-      return [e(sam.trim()), e(upn.trim().slice(0,40)), e(dn.trim().slice(0,60))];
+
+    // ── helpers ──────────────────────────────────────────
+
+    // Unfold RFC-2849 continuations: line starting with space = value continues
+    const raw2 = r.replace(/\r\n|\r/g,'\n').replace(/\n /g,'');
+
+    // Parse each LDIF block → { attr: [val, ...] }
+    const parseEntry = blk => {
+      const attrs = {};
+      for (const line of blk.split('\n')) {
+        if (!line || line[0]==='#') continue;
+        const b64 = line.match(/^([\w-]+)::\s*(.+)/);
+        if (b64) {
+          let val='[binary]';
+          try { val = atob(b64[2].trim()).replace(/\0/g,'').replace(/[\x01-\x08\x0b\x0c\x0e-\x1f\x7f]/g,'').trim()||'[binary]'; } catch(_){}
+          (attrs[b64[1]]||(attrs[b64[1]]=[])).push(val); continue;
+        }
+        const m = line.match(/^([\w-]+):\s*(.*)/);
+        if (m) (attrs[m[1]]||(attrs[m[1]]=[])).push(m[2].trim());
+      }
+      return attrs;
+    };
+
+    const v1  = (a,k)=>(a[k]||[])[0]||'';
+    const vv  = (a,k)=>a[k]||[];
+    const cls = (a,c)=>vv(a,'objectClass').some(x=>x.toLowerCase()===c.toLowerCase());
+
+    // Windows FILETIME → YYYY-MM-DD
+    const wDate = ts => {
+      if (!ts||ts==='0') return null;
+      if (ts.length>=18&&ts[0]==='9') return null;
+      const n=parseInt(ts); if(!n||isNaN(n)) return null;
+      const ms=n/10000-11644473600000;
+      if(ms<=0||ms>32503680000000) return null;
+      try{return new Date(ms).toISOString().slice(0,10);}catch(_){return null;}
+    };
+
+    // DN → "CN | OU path | domain.local"
+    const fmtDN = dn => {
+      if (!dn) return '—';
+      const parts = dn.split(/,(?=[A-Z]+=)/i);
+      const cn = parts.filter(p=>/^CN=/i.test(p)).map(p=>p.slice(3)).join('/');
+      const ou = parts.filter(p=>/^OU=/i.test(p)).map(p=>p.slice(3)).reverse().join(' › ');
+      const dc = parts.filter(p=>/^DC=/i.test(p)).map(p=>p.slice(3)).join('.');
+      return [cn,ou,dc].filter(Boolean).join(' │ ');
+    };
+
+    const uacBit = (a,bit)=>!!((parseInt(v1(a,'userAccountControl'))||0)&bit);
+
+    // ── categorize ───────────────────────────────────────
+    const blocks  = raw2.split(/\n{2,}/).filter(b=>/^dn:/m.test(b));
+    if (!blocks.length) return ph.empty('Sin objetos LDAP. Verifica credenciales, base DN y conectividad.');
+    const entries = blocks.map(parseEntry);
+
+    // Priority: organizationalUnit → OU | computer or sAMAccountName$→ Computer | user/person without $ → User
+    const isComp = a => cls(a,'computer') || v1(a,'sAMAccountName').endsWith('$');
+    const isOU   = a => cls(a,'organizationalUnit');
+    const users  = entries.filter(a=> !isOU(a) && !isComp(a) && (cls(a,'user') || cls(a,'person')));
+    const comps  = entries.filter(a=> !isOU(a) && isComp(a));
+    const groups = entries.filter(a=> cls(a,'group'));
+    const ous    = entries.filter(a=> isOU(a));
+    const others = entries.filter(a=>!isOU(a)&&!isComp(a)&&!cls(a,'user')&&!cls(a,'person')&&!cls(a,'group'));
+
+    const TOP = 50;
+    const uid = 'ldp'+Date.now().toString(36); // unique per run
+
+    // ── table builder with show-more ─────────────────────
+    const mkTable = (id, headers, allRows) => {
+      if (!allRows.length) return ph.empty('Sin datos.');
+      const visible = allRows.slice(0, TOP);
+      const rest    = allRows.slice(TOP);
+      let html = ph.tbl(headers, visible);
+      if (rest.length) {
+        // hidden rows injected as extra p-row divs with ldap-hidden class
+        const hidId = id+'h';
+        const hidRows = rest.map(r=>`<div class="p-row ldap-hidden">${r.map(c=>`<div class="p-cell">${c}</div>`).join('')}</div>`).join('');
+        html += `<div id="${hidId}">${hidRows}</div>`;
+        html += `<button class="ldap-more" onclick="ldapMore(this,'${hidId}')">▼ MOSTRAR TODO (${rest.length} más)</button>`;
+      }
+      return html;
+    };
+
+    // ── findings ─────────────────────────────────────────
+    const flags = [];
+
+    // Groups whose CN membership = real domain admin
+    const ADMIN_GROUPS = [
+      'domain admins','administrators','enterprise admins','schema admins',
+      'account operators','server operators','backup operators','print operators',
+      'group policy creator owners'
+    ];
+    // Built-in accounts that are always considered admin regardless of memberOf
+    const ADMIN_BUILTINS = ['administrador','administrator','krbtgt'];
+    const isRealAdmin = a => {
+      const sam = v1(a,'sAMAccountName').toLowerCase();
+      if (ADMIN_BUILTINS.includes(sam)) return true;
+      return vv(a,'memberOf').some(dn=>{
+        const cn = (dn.match(/^CN=([^,]+)/i)||[])[1]||'';
+        return ADMIN_GROUPS.includes(cn.toLowerCase());
+      });
+    };
+
+    const realAdmins = users.filter(a=>isRealAdmin(a));
+    const privUsers  = users.filter(a=>v1(a,'adminCount')==='1' && !isRealAdmin(a));
+    const noPwd      = users.filter(a=>v1(a,'pwdLastSet')==='0');
+    const disabledU  = users.filter(a=>uacBit(a,0x0002));
+    const neverLog   = users.filter(a=>{const l=v1(a,'lastLogonTimestamp'),ll=v1(a,'lastLogon');return(!l||l==='0')&&(!ll||ll==='0');});
+    const spnUsers   = users.filter(a=>vv(a,'servicePrincipalName').length>0);
+    const spnComps   = comps.filter(a=>vv(a,'servicePrincipalName').length>0);
+
+    if (realAdmins.length)
+      flags.push(ph.find(`Domain Admin → <b>${realAdmins.length}</b> cuenta(s) admin real: <b>${realAdmins.slice(0,8).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${realAdmins.length>8?'…':''}</b>`,'crit'));
+    if (privUsers.length)
+      flags.push(ph.find(`adminCount=1 → <b>${privUsers.length}</b> cuenta(s) protegida(s)/privilegiada(s): <b>${privUsers.slice(0,8).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${privUsers.length>8?'…':''}</b>`,'warn'));
+    if (noPwd.length)
+      flags.push(ph.find(`pwdLastSet=0 → <b>${noPwd.length}</b> cuenta(s) sin contraseña: <b>${noPwd.slice(0,8).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${noPwd.length>8?'…':''}</b>`,'crit'));
+    if (disabledU.length)
+      flags.push(ph.find(`${disabledU.length} cuenta(s) de usuario deshabilitadas`,'warn'));
+    if (neverLog.length)
+      flags.push(ph.find(`${neverLog.length} cuenta(s) que nunca iniciaron sesión (lastLogon=0)`,'warn'));
+    if (spnUsers.length)
+      flags.push(ph.find(`SPN en usuario → <b>${spnUsers.length}</b> target(s) Kerberoastable(s): <b>${spnUsers.slice(0,5).map(a=>e(v1(a,'sAMAccountName'))).join(', ')}${spnUsers.length>5?'…':''}</b>`,'warn'));
+    if (spnComps.length)
+      flags.push(ph.find(`${spnComps.length} equipo(s) con SPNs registrados`,'info'));
+
+    // ── section content ───────────────────────────────────
+
+    // SUMMARY tab
+    const sumContent =
+      ph.sum([
+        ph.pill(entries.length+' objetos totales','info'),
+        users.length  ? ph.pill(users.length +' usuarios','info'):'',
+        realAdmins.length ? ph.pill(realAdmins.length+' admins','crit'):'',
+        privUsers.length  ? ph.pill(privUsers.length+' privilegiados','warn'):'',
+        comps.length  ? ph.pill(comps.length +' equipos','warn'):'',
+        groups.length ? ph.pill(groups.length+' grupos','info'):'',
+        ous.length    ? ph.pill(ous.length   +' OUs','info'):'',
+        others.length ? ph.pill(others.length+' otros',''):'',
+      ])+
+      (flags.length
+        ? ph.sec('⚠ Flags críticos',flags.slice(0,3).join(''))
+        : ph.sec('Estado',ph.find('Sin flags críticos detectados.','ok')));
+
+    // USERS tab
+    const uRows = users.map(a => {
+      const sam  = v1(a,'sAMAccountName');
+      const upn  = v1(a,'userPrincipalName');
+      const dis  = uacBit(a,0x0002);
+      const llt  = wDate(v1(a,'lastLogonTimestamp'))||wDate(v1(a,'lastLogon'))||'—';
+      const pls  = v1(a,'pwdLastSet');
+      const dn   = v1(a,'distinguishedName')||v1(a,'dn');
+      const pwdS = pls==='0' ? ph.pill('NEVER','crit') : (wDate(pls)||'—');
+      const stP  = dis ? ph.pill('off','warn') : ph.pill('on','ok');
+      // Role pill: ADMIN (real group member) > PRIV (adminCount=1 only) > nothing
+      const roleP = isRealAdmin(a)
+        ? ' '+ph.pill('ADMIN','crit')
+        : v1(a,'adminCount')==='1'
+          ? ' '+ph.pill('PRIV','warn')
+          : '';
+      return [e(sam)+roleP, e(upn.slice(0,36)), stP, llt, pwdS, `<span class="ldap-dn">${e(fmtDN(dn))}</span>`];
     });
-    if (uRows.length) o += ph.sec('Usuarios AD (top 50)', ph.tbl(['sAMAccountName','UPN','DN'], uRows));
-    if (ous.length) {
-      const ouRows = ous.map(b => { const dn=(b.match(/^dn:\s*(.+)/m)||[])[1]||''; return [e(dn.trim())]; });
-      o += ph.sec('Unidades Organizativas', ph.tbl(['DN'], ouRows));
-    }
-    return o;
+    const usrContent = users.length
+      ? mkTable(uid+'u', ['sAMAccountName','UPN','Estado','lastLogon','pwdLastSet','DN'], uRows)
+      : ph.empty('Sin usuarios en el output.');
+
+    // COMPUTERS tab
+    const cRows = comps.map(a => {
+      const nam = v1(a,'sAMAccountName').replace(/\$$/,'');
+      const dns = v1(a,'dNSHostName');
+      const os  = v1(a,'operatingSystem');
+      const osv = v1(a,'operatingSystemVersion');
+      const llt = wDate(v1(a,'lastLogonTimestamp'))||wDate(v1(a,'lastLogon'))||'—';
+      const dn  = v1(a,'distinguishedName')||v1(a,'dn');
+      const spB = vv(a,'servicePrincipalName').length ? ph.pill(vv(a,'servicePrincipalName').length+' SPNs','warn') : '—';
+      return [e(nam), e(dns.slice(0,36)), e(os.slice(0,26)), e(osv), llt, spB, `<span class="ldap-dn">${e(fmtDN(dn))}</span>`];
+    });
+    const cmpContent = comps.length
+      ? mkTable(uid+'c', ['Equipo','DNS','OS','Ver','lastLogon','SPNs','DN'], cRows)
+      : ph.empty('Sin equipos en el output.');
+
+    // OUs tab
+    const ouContent = ous.length ? (() => {
+      const rows = ous.map(a => {
+        const dn   = v1(a,'distinguishedName')||v1(a,'dn');
+        const name = v1(a,'ou')||v1(a,'name')||(dn.match(/^OU=([^,]+)/i)||[])[1]||'';
+        const path = dn.split(/,(?=[A-Z]+=)/i).filter(p=>/^OU=/i.test(p)).map(p=>p.slice(3)).reverse().join(' › ');
+        const desc = v1(a,'description');
+        return [e(name), e(path||'—'), desc?e(desc.slice(0,48)):'—', `<span class="ldap-dn">${e(dn.slice(0,60))}</span>`];
+      });
+      return mkTable(uid+'o', ['OU','Ruta','Descripción','DN'], rows);
+    })() : ph.empty('Sin OUs en el output.');
+
+    // FINDINGS tab
+    const fndContent = flags.length
+      ? flags.join('')
+      : ph.find('Sin flags de seguridad detectados en este output.','ok');
+
+    // ── assemble tabs ─────────────────────────────────────
+    const fndLabel = flags.length ? `FINDINGS <span style="color:var(--red)">(${flags.length})</span>` : 'FINDINGS';
+    const tabBar =
+      `<div class="tabs" id="${uid}">` +
+        `<div class="tab on"  onclick="ldapTab(this,'${uid}','sum')">SUMMARY</div>`+
+        `<div class="tab" onclick="ldapTab(this,'${uid}','usr')">USERS (${users.length})</div>`+
+        `<div class="tab" onclick="ldapTab(this,'${uid}','cmp')">COMPUTERS (${comps.length})</div>`+
+        (groups.length?`<div class="tab" onclick="ldapTab(this,'${uid}','grp')">GROUPS (${groups.length})</div>`:'')+
+        `<div class="tab" onclick="ldapTab(this,'${uid}','ous')">OUs (${ous.length})</div>`+
+        `<div class="tab" onclick="ldapTab(this,'${uid}','fnd')">${fndLabel}</div>`+
+      `</div>`;
+
+    // GROUPS tab (optional)
+    const grpRows = groups.slice(0,200).map(a=>{
+      const cn  = v1(a,'cn')||v1(a,'name');
+      const mem = vv(a,'member').length;
+      const dn  = v1(a,'distinguishedName')||v1(a,'dn');
+      return [e(cn), mem||'—', `<span class="ldap-dn">${e(fmtDN(dn))}</span>`];
+    });
+    const grpContent = groups.length
+      ? mkTable(uid+'g', ['Grupo','Miembros','DN'], grpRows)
+      : '';
+    const grpTab = groups.length
+      ? `<div id="${uid}-grp" class="tab-content">${ph.sec('Grupos ('+groups.length+')', grpContent)}</div>`
+      : '';
+
+    return tabBar +
+      `<div id="${uid}-sum" class="tab-content on">${ph.sec('Resumen',sumContent)}</div>`+
+      `<div id="${uid}-usr" class="tab-content">${ph.sec('Usuarios AD'+(users.length>TOP?' — top '+TOP+' / '+users.length:' ('+users.length+')'), usrContent)}</div>`+
+      `<div id="${uid}-cmp" class="tab-content">${ph.sec('Equipos AD'+(comps.length>TOP?' — top '+TOP+' / '+comps.length:' ('+comps.length+')'), cmpContent)}</div>`+
+      grpTab+
+      `<div id="${uid}-ous" class="tab-content">${ph.sec('Unidades Organizativas ('+ous.length+')', ouContent)}</div>`+
+      `<div id="${uid}-fnd" class="tab-content">${ph.sec('Hallazgos / Security Flags', fndContent)}</div>`;
   }
 
   // ── Generic fallback ─────────────────────────────────
