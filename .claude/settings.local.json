@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(python3:*)",
-      "Bash(awk -F: '$1>=1995 && $1<=2210')"
+      "Bash(awk -F: '$1>=1995 && $1<=2210')",
+      "Bash(sed -i \"/sw\\('sqli',this\\).*SQL PAYLOADS/d\" /home/xnueve/Desktop/v2/kali-toolkit/templates/index.html)",
+      "Bash(sed -i \"/sw\\('xss',this\\).*XSS PAYLOADS/d\" /home/xnueve/Desktop/v2/kali-toolkit/templates/index.html)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(chmod +x /home/xnueve/Desktop/v2/kali-toolkit/run.sh)"
     ]
   }
 }
