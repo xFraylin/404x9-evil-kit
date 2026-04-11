@@ -1,6 +1,6 @@
 # 404x9-evil-kit
 
-**A local web-based pentesting toolkit for Kali Linux.**  
+**A local web-based pentesting toolkit for Kali Linux, Parrot OS, Ubuntu and Debian.**  
 Built by [@xFraylin](https://github.com/xFraylin)
 
 ---
@@ -136,11 +136,27 @@ El script clona el repo, instala las herramientas necesarias, crea el venv e ins
 
 ---
 
+## Sistemas operativos compatibles
+
+| Sistema | Versión | Estado |
+|---|---|---|
+| **Kali Linux** | Rolling | ✅ Recomendado — entorno nativo |
+| **Parrot OS** | 5.x / 6.x | ✅ Compatible |
+| **Ubuntu** | 20.04 / 22.04 / 24.04 | ✅ Compatible |
+| **Debian** | 11 (Bullseye) / 12 (Bookworm) | ✅ Compatible |
+| **Linux Mint** | 21.x / 22.x | ✅ Compatible (base Ubuntu) |
+| **Zorin OS** | 16 / 17 | ✅ Compatible (base Ubuntu) |
+| **Pop!\_OS** | 22.04 | ✅ Compatible |
+| Otro derivado Debian/Ubuntu | — | ⚠️ Probablemente compatible |
+| Arch / Fedora / openSUSE / etc. | — | ❌ No soportado (requiere `apt`) |
+
+> El instalador detecta automáticamente el sistema operativo y avisa si la distro no está en la lista. Si tu sistema tiene `apt` pero no está listado, el script preguntará si deseas continuar igualmente.
+
 ## Requirements
 
-- Kali Linux (or any Debian-based distro)
+- Sistema Debian/Ubuntu (ver tabla arriba)
 - Python 3.10+
-- Root access for installation
+- Root access para la instalación
 
 ---
 

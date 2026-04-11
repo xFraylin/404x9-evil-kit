@@ -8,7 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+<<<<<<< HEAD
 html{zoom:1.25}
+=======
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
 :root{
   --g:#00ff88;--g2:#7fffc0;--bg:#030604;--bg2:#060c08;--bg3:#09110a;
   --brd:#163019;--txt:#c8ffdc;--mut:#3d8a56;--dim:#163320;
@@ -704,7 +707,11 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="ig w3"><div class="lbl">URL</div><input class="fi" id="wp-u" placeholder="http://target.com" oninput="bWp()"></div>
     <div class="ig"><div class="lbl">MODO</div>
       <select class="fi" id="wp-m" onchange="bWp()"><option>passive</option><option>mixed</option><option>aggressive</option></select></div>
+<<<<<<< HEAD
     <div class="ig" style="max-width:80px"><div class="lbl">MAX-THREADS</div><input class="fi" id="wp-th" value="5" oninput="bWp()"></div>
+=======
+    <div class="ig" style="max-width:60px"><div class="lbl">THREADS</div><input class="fi" id="wp-th" value="5" oninput="bWp()"></div>
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
   </div>
   <div class="row">
     <div class="ig w4">
@@ -2774,6 +2781,7 @@ function appendOut(elId, text, cls) {
       _outBufs[elId] = [];
       el.appendChild(frag);
       // Prune oldest nodes if output grows too large (keep last 3000 lines)
+<<<<<<< HEAD
       const over = el.childElementCount - 3000;
       if (over > 0) {
         const range = document.createRange();
@@ -2781,6 +2789,9 @@ function appendOut(elId, text, cls) {
         range.setEndBefore(el.children[over]);
         range.deleteContents();
       }
+=======
+      while (el.childElementCount > 3000) el.removeChild(el.firstChild);
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
       el.scrollTop = el.scrollHeight;
     });
   }
@@ -2945,6 +2956,7 @@ parsers.ww = r => {
 
 /* WHATWEB */
 parsers._whatweb = r => {
+<<<<<<< HEAD
   const SKIP_TECH = new Set(['Status','IP','Country','RedirectLocation','Email','Title','Country']);
   // Words that appear in HTTP status text — not tech names
   const STATUS_WORDS = new Set(['OK','Moved','Permanently','Found','See','Other','Bad','Not','Forbidden',
@@ -3123,6 +3135,13 @@ parsers._whatweb = r => {
     o += ph.sec(secHdr, body);
   }
 
+=======
+  const techs=[];
+  for (const l of r.split('\n')){const ms=[...l.matchAll(/([\w][\w.-]{1,})\[([^\]]{0,80})\]/g)];for(const m of ms){if(!['Status','IP','Country'].includes(m[1]))techs.push([ph.esc(m[1]),ph.esc(m[2])]);}};
+  const uniq=[...new Map(techs.map(t=>[t[0],t])).values()];
+  let o=ph.sum([ph.pill(uniq.length+' tecnologías','info')]);
+  o+=uniq.length?ph.sec('Tecnologías',ph.tbl(['TECH','INFO'],uniq)):ph.empty('Sin tecnologías reconocidas.');
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
   return o;
 };
 
@@ -3179,6 +3198,7 @@ parsers._waf = r => {
 
 /* WPSCAN */
 parsers.wp = r => {
+<<<<<<< HEAD
   const L = r.split('\n');
 
   // Lines that look like [!] but are NOT vulnerabilities
@@ -3385,6 +3405,18 @@ parsers.wp = r => {
     ])));
   }
 
+=======
+  const L=r.split('\n');
+  const wpV=r.match(/WordPress version ([\d.]+)/i);
+  const vulns=L.filter(l=>/\[!\]|\[VULNERABILITY\]/i.test(l)).map(l=>ph.esc(l.replace(/\[.+?\]/g,'').trim()));
+  const good=L.filter(l=>/\[.\+.\]|\[\+\]/.test(l)&&!l.includes('[!')).map(l=>ph.esc(l.replace(/\[.*?\]/g,'').trim())).filter(Boolean);
+  const users=L.filter(l=>/User.*Found|Found.*user|Identified/i.test(l)).map(l=>ph.esc(l.trim()));
+  let o=ph.sum([wpV?ph.pill('WP '+wpV[1],'info'):'',ph.pill(vulns.length+' vulns',vulns.length>0?'crit':'ok'),ph.pill(good.length+' hallazgos',good.length>0?'warn':'ok')]);
+  if (vulns.length) o+=ph.sec('Vulnerabilidades',vulns.slice(0,30).map(v=>ph.find(v,'crit')).join(''));
+  if (good.length)  o+=ph.sec('Hallazgos',good.slice(0,30).map(f=>ph.find(f,'warn')).join(''));
+  if (users.length) o+=ph.sec('Usuarios',users.map(u=>ph.find(u,'info')).join(''));
+  if (!vulns.length&&!good.length) o+=ph.empty('Sin hallazgos relevantes detectados.');
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
   return o;
 };
 
@@ -4518,7 +4550,10 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
   const stopBtn  = prefix ? document.getElementById(prefix + '-stop') : null;
 
   const isLive = !!(prefix && liveRenderers[prefix]);
+<<<<<<< HEAD
   let _mirrorCount = 0;          // limit terminal mirroring per run
+=======
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
   if (prefix) rawBuffers[prefix] = [];
   if (prefix && !isLive) {
     // Reset parsed state so re-runs always show fresh parsed output
@@ -4577,6 +4612,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
           const isErr = /error|failed|refused|timeout|denied|unknown|traceback|exception/i.test(line);
           appendOut(outCId, line, isErr ? 'err' : '');
         }
+<<<<<<< HEAD
         if (prefix) {
           rawBuffers[prefix].push(line);
           // Cap buffer at 60k lines to prevent memory bloat on huge scans
@@ -4588,6 +4624,13 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
           termWrite(activeTT, line);
           _mirrorCount++;
         }
+=======
+        if (prefix) rawBuffers[prefix].push(line);
+        if (isLive) liveRenderers[prefix](line);
+        // Only mirror to global terminal if it's the active tab and line is noteworthy
+        // (skip bulk output lines to avoid freezing the terminal with thousands of nodes)
+        else if (!prefix || /error|found|open|success|\[\+\]|\[-\]/i.test(line)) termWrite(activeTT, line);
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
       } else if (msg.type === 'done') {
         const ok = msg.code === 0;
         if (!isLive) {
@@ -4601,6 +4644,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
         es.close();
         if (prefix && onDoneHooks[prefix]) onDoneHooks[prefix](msg.code);
         else if (prefix && parsers[prefix] && !isLive) {
+<<<<<<< HEAD
           // Defer parser off the hot path so the UI can update (exit status, buttons)
           // before spending time on potentially expensive regex work
           const raw = (rawBuffers[prefix] || []).join('\n');
@@ -4615,6 +4659,15 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
               console.error('[parser error]', prefix, parseErr);
             }
           });
+=======
+          const raw = (rawBuffers[prefix] || []).join('\n');
+          try {
+            injectParsedTabs(prefix, parsers[prefix](raw));
+          } catch(parseErr) {
+            injectParsedTabs(prefix, ph.empty('Error en parser: ' + parseErr.message));
+            console.error('[parser error]', prefix, parseErr);
+          }
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
         }
       } else if (msg.type === 'error') {
         if (!isLive) appendOut(outCId, '⚠ ' + msg.data, 'err');
@@ -4776,6 +4829,7 @@ function termWrite(tabId, text, cls) {
       }
       _termBufs[tabId] = [];
       el.appendChild(frag);
+<<<<<<< HEAD
       // Prune terminal to last 1500 lines to prevent unbounded DOM growth
       const over = el.childElementCount - 1500;
       if (over > 0) {
@@ -4784,6 +4838,8 @@ function termWrite(tabId, text, cls) {
         range.setEndBefore(el.children[over]);
         range.deleteContents();
       }
+=======
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
       el.scrollTop = el.scrollHeight;
     });
   }
@@ -4924,7 +4980,11 @@ function bWp() {
   const flags=[...document.querySelectorAll('#wp-fl .ck.on')].map(c=>c.dataset.v).join(',');
   const xfl=chks('wp-xfl');
   const usr=gv('wp-usr'), pw=gv('wp-pw'), api=gv('wp-api');
+<<<<<<< HEAD
   let c=`<span class="b">wpscan</span> <span class="f">--url</span> <span class="v">${u}</span> <span class="f">--detection-mode ${m}</span> <span class="f">--max-threads ${th}</span>`;
+=======
+  let c=`<span class="b">wpscan</span> <span class="f">--url</span> <span class="v">${u}</span> <span class="f">--detection-mode ${m}</span> <span class="f">--threads ${th}</span>`;
+>>>>>>> 85a2e502affaa8eb0dfbb921f821881bbc8b91ad
   if(flags) c+=` <span class="f">--enumerate</span> <span class="v">${flags}</span>`;
   if(api) c+=` <span class="f">--api-token</span> <span class="v">${api}</span>`;
   if(xfl) c+=` <span class="f">${xfl}</span>`;
