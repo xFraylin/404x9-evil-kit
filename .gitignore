@@ -1,12 +1,4 @@
 data/
 __pycache__/
 *.pyc
-.env
-data/
-__pycache__/
-*.pyc
-.env
-data/
-__pycache__/
-*.pyc
-.env
+*.pycache
