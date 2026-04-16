@@ -24,6 +24,7 @@ Built by [@xFraylin](https://github.com/xFraylin)
 - Scalable wordlist picker — file browser modal + custom path input
 - Isolated Python venv — zero system Python pollution
 - Kill switch for any running process (including sudo'd tools)
+- **State persistence** — all sessions, campaigns, credentials and config survive server restarts (`data/state.json`)
 
 ---
 
@@ -36,7 +37,7 @@ Built by [@xFraylin](https://github.com/xFraylin)
 | **Subfinder** | Passive subdomain enumeration using public sources (DNS, APIs, certificates). |
 | **Amass** | In-depth attack surface mapping — subdomains, ASNs, IPs and relationships. |
 | **theHarvester** | Gathers emails, names, subdomains and IPs from public sources (Google, Bing, Shodan, etc.). |
-| **WhatWeb / WAFW00F** | Web technology fingerprinting (WhatWeb) and WAF/protection detection (WAFW00F) — selectable from the same panel. |
+| **WhatWeb / WAFW00F** | Web technology fingerprinting (WhatWeb) and WAF/protection detection (WAFW00F). |
 | **WPScan** | WordPress-specific scanner — enumerates users, plugins, themes and known vulnerabilities. |
 
 ### OSINT
@@ -50,11 +51,11 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Web
 | Tool | Description |
 |---|---|
-| **FFUF** | Highly flexible web fuzzer — supports multiple wordlist positions, filters by size/status/words. |
+| **FFUF** | Highly flexible web fuzzer — multiple wordlist positions, filters by size/status/words. |
 | **Gobuster** | Directory, file and subdomain brute force using wordlists. Fast multi-threaded scanner. |
 | **Nikto** | Web server scanner that detects dangerous files, outdated software and misconfigurations. |
 | **WFuzz** | Web application fuzzer focused on parameter tampering, LFI, SQLi and XSS fuzzing. |
-| **DalFox** | XSS (Cross-Site Scripting) scanner with parameter analysis and PoC generation. |
+| **DalFox** | XSS scanner with parameter analysis and PoC generation. |
 
 ### Injection
 | Tool | Description |
@@ -64,15 +65,15 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Cracking
 | Tool | Description |
 |---|---|
-| **John the Ripper** | CPU-based password cracker — supports hundreds of hash formats, wordlist + rules modes. |
+| **John the Ripper** | CPU-based password cracker — hundreds of hash formats, wordlist + rules modes. |
 | **Hashcat** | GPU-accelerated hash cracker — dictionary, brute force and hybrid attacks. |
 | **HashID** | Identifies unknown hash types by analyzing format and length. |
 
 ### Brute Force
 | Tool | Description |
 |---|---|
-| **Hydra** | Network login brute forcer — supports SSH, FTP, HTTP, RDP, SMB, and 50+ protocols. |
-| **Medusa** | Parallel network login auditor — similar to Hydra, optimized for speed and modularity. |
+| **Hydra** | Network login brute forcer — SSH, FTP, HTTP, RDP, SMB, and 50+ protocols. |
+| **Medusa** | Parallel network login auditor — optimized for speed and modularity. |
 
 ### Exploit
 | Tool | Description |
@@ -83,46 +84,170 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Active Directory
 | Panel | Tools inside | Description |
 |---|---|---|
-| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch | Full domain enumeration — users, groups, shares, GPOs, password policies. Parsed LDAP output with tabs: Summary / Users / Computers / OUs / Findings. |
-| **SMB Access** | smbmap, crackmapexec, netexec, nxc | Share enumeration, permission mapping, credential spraying, module execution (lsassy, bloodhound, pass-pol, rid-brute, etc.). |
+| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch | Full domain enumeration — users, groups, shares, GPOs, password policies. |
+| **SMB Access** | smbmap, crackmapexec, netexec, nxc | Share enumeration, permission mapping, credential spraying. |
 | **Kerberos** | kerbrute, GetUserSPNs.py, GetNPUsers.py | Username enumeration, Kerberoasting and AS-REP Roasting. |
 | **Execution** | psexec.py, wmiexec.py, smbexec.py, atexec.py | Remote command execution via Impacket. |
 | **Credentials** | secretsdump.py | Dumps SAM hashes, NTDS domain hashes and LSA plaintext credentials. |
-| **BloodHound** | bloodhound-python, rusthound | AD data collection (users, groups, ACLs, sessions) for attack path analysis. Built-in Neo4j and BloodHound UI launchers. |
+| **BloodHound** | bloodhound-python, rusthound | AD data collection for attack path analysis. Built-in Neo4j and BloodHound launchers. |
 | **MITM** | responder, mitm6, ntlmrelayx.py | LLMNR/NBT-NS/DHCPv6 poisoning and NTLM relay attacks. |
 
 ### Network
 | Tool | Description |
 |---|---|
-| **TCPDump** | Packet capture with BPF filters — inspects live traffic and saves to .pcap. |
+| **TCPDump** | Packet capture with BPF filters — inspects live traffic, saves to .pcap. |
 
 ### Wireless
 | Panel | Tools inside | Description |
 |---|---|---|
-| **Aircrack-NG** | airmon-ng, airodump-ng, aireplay-ng, aircrack-ng | Full WPA attack suite — monitor mode → scan → capture handshake → deauth → crack. |
-| **WiFi Disconnect** | airmon-ng, airodump-ng, aireplay-ng | Automated deauth workflow with live AP table — click a network, disconnect it. |
+| **Aircrack-NG** | airmon-ng, airodump-ng, aireplay-ng, aircrack-ng | Full WPA attack suite — monitor → scan → handshake → deauth → crack. |
+| **WiFi Disconnect** | airmon-ng, airodump-ng, aireplay-ng | Automated deauth workflow with live AP table. |
+
+---
+
+### Mobile Attack Platform (Phishing)
+
+> All features are intended for authorized penetration testing and lab environments only.
+
+A full mobile-focused phishing and credential harvesting platform, accessible from the **Phishing** section of the Spyware module.
+
+#### Templates — Fake Login Pages (12 mobile-optimized)
+
+| Template | Real redirect |
+|---|---|
+| WhatsApp, Instagram, Facebook, Google, Apple ID | Respective official sites |
+| TikTok, Snapchat, Netflix, Twitter/X, Telegram | Respective official sites |
+| PayPal, Spotify | Respective official sites |
+
+#### Templates — Social Engineering (12 realistic lures)
+
+| Template | Scenario |
+|---|---|
+| **Google Survey / SurveyMonkey** | Fake satisfaction survey — collects name, email, phone, DOB |
+| **Reddit Forum** | Fake Reddit login with convincing posts about "security breach" |
+| **Community Forum** | Generic dark forum login |
+| **Amazon Checkout** | Fake cart with item — collects full card details |
+| **Shopify Store** | Fake clothing store checkout |
+| **News Paywall** | Leaked documents article behind a paywall login |
+| **Job Application** | Collects name, DOB, SSN, CV upload |
+| **Giveaway / Prize** | Countdown timer, collects name, address, DOB, card |
+| **Crypto Wallet (MetaMask)** | Wallet recovery — collects seed phrase + password |
+| **Bank Verify** | Fake bank identity check — collects SSN, card, PIN, password |
+| **Parcel Tracking (FedEx)** | Failed delivery + $2.99 re-delivery fee — collects card + address |
+
+#### Steal Payloads (JS, inject into any page)
+
+| Payload | What it captures |
+|---|---|
+| **Cookie Steal** | All cookies via `document.cookie` + image beacon fallback |
+| **Session/Storage** | localStorage, sessionStorage, IndexedDB keys |
+| **Form Hijacker** | Intercepts all form submits, captures every field |
+| **Keylogger** | Buffered keystrokes with active field name |
+| **Camera Capture** | Silent photo via `getUserMedia` (640×480 JPEG → C2) |
+| **Mic Record** | 15s audio recording → base64 → C2 |
+| **FULL Payload** | All of the above combined + geolocation |
+| **Clickjacking** | Logs every click (XY, element, text), form submits, focus/blur |
+| **Permission Reuse** | Checks `navigator.permissions.query` — captures silently if camera/mic/geo already granted |
+| **XSS Probe** | 5 ready-to-paste variants: reflected, onerror, SVG, eval(atob), full stored |
+| **Obfuscated** | base64+eval wrapper, anti-bot gate, self-deletes from DOM, viewport check |
+| **Anti-Detect** | Headless browser kill, right-click block, F12 trap, console wipe, URL/title spoof |
+
+#### Exfil Config
+
+- **C2 Local** — LHOST + PORT (default `localhost:5000`)
+- **Custom URL** — full endpoint, e.g. `https://xxxx.ngrok.io/api/phish/capture`
+- **Telegram Exfil** — bot token + chat ID stored server-side; all captures forwarded automatically via Telegram Bot API. Token is never exposed in the JS payload delivered to the victim.
+
+#### Deploy System
+
+- **DEPLOY TO C2** — saves HTML to server, returns a clean public URL (`/p/<id>`)
+- **Auto-inject FULL payload** — injects the steal script before `</body>` automatically on deploy
+- **Redirect URL** — auto-filled per template (Instagram → instagram.com, Amazon → amazon.com, etc.); editable manually. Victim is redirected to the real site after submitting — no error shown.
+- **Deployed Sites panel** — live status (ACTIVE / STOPPED) with STOP / RESTART / LOAD / ⎘ URL buttons; persists across restarts
+
+#### APK Builder
+
+Generates `msfvenom android/meterpreter/reverse_tcp` command with feature flags:
+
+| Feature | Meterpreter post command |
+|---|---|
+| SMS exfil | `dump_sms` |
+| Contacts | `dump_contacts` |
+| GPS | `geolocate` |
+| Camera | `webcam_snap` |
+| Microphone | `record_mic -d 30` |
+| File access | `download /sdcard` |
+| Persistence | `run app_install` |
+
+#### Termux Beacon Generator
+
+Python beacon for Android (via Termux) — checks in to C2, runs `termux-sms-list`, `termux-contact-list`, `termux-location`, `termux-camera-photo`, `termux-microphone-record` based on selected features.
+
+#### Campaigns, Tracker & Logs
+
+- **Campaigns** — create campaigns with name, template, redirect URL, targets (email / phone); start/stop per campaign
+- **Tracker** — per-target status: pending → sent → opened → clicked → captured
+- **Logs** — real-time log of all hits, submits and captures with IP, UA, timestamp and data
+
+#### GUIDE Tab
+
+Step-by-step usage guide for every attack technique — Clickjacking setup, Permission Reuse with ngrok, XSS injection types, Obfuscation payload generation, Anti-forensics combos, APK delivery + Meterpreter post-exploitation, full campaign flow.
+
+---
+
+### Spyware (Post-Exploitation C2)
+
+| Panel | Description |
+|---|---|
+| **Payload Builder** | Generates Python HTTP beacons, MSFVenom stagers, PowerShell download cradles / AMSI bypasses. |
+| **C2 Server** | Built-in HTTP C2. Sessions table with alive/dead status, command console with result polling, full session history. |
+
+**How the C2 works:**
+1. Generate a Python beacon from **Payload Builder → HTTP Beacon**
+2. Deploy it on the target (`python3 beacon.py`)
+3. Session appears in **C2 Server → Sessions** within seconds
+4. Send commands from the **Console** tab — results arrive on next check-in
+
+---
 
 ### Priv Esc
 | Panel | Description |
 |---|---|
-| **Priv Esc** | Cheatsheet tabs — Linux (identity, SUID/SGID, cron, writable paths, shadow) / Windows (registry, services, stored credentials) / GTFOBins (sudo + SUID one-liners) / TTY Upgrade (Python pty, stty). |
-| **Rev Shells** | Reverse shell one-liners with tabs — Bash, Python, Netcat, PHP/Perl, Windows/PowerShell, Listeners. Quick netcat listener launcher included. |
-| **LINPEAS / WINPEAS** | Download and run commands for PEASS-ng scripts (linpeas, winpeas) + built-in HTTP server to serve them to targets. |
+| **Priv Esc** | Cheatsheet — Linux (SUID/SGID, cron, writable paths, shadow) / Windows (registry, services, stored creds) / GTFOBins / TTY Upgrade. |
+| **Rev Shells** | Reverse shell one-liners — Bash, Python, Netcat, PHP/Perl, Windows/PowerShell, Listeners. |
+| **LINPEAS / WINPEAS** | Download + run commands for PEASS-ng scripts + built-in HTTP server to serve them. |
 
 ### Utils
 | Tool | Description |
 |---|---|
-| **cURL** | Advanced HTTP client — custom headers, methods, body, auth, proxy and cookie support. |
+| **cURL** | Advanced HTTP client — custom headers, methods, body, auth, proxy, cookies. |
 | **Wget** | Recursive file downloader — mirror sites, download files from targets. |
-| **HTTPX** | Fast HTTP toolkit — probes URLs for status, title, tech stack, CDNs and redirect chains. |
-| **Encoder** | Client-side encode/decode and transform chain — URL, HTML entities, Base64, Hex, Unicode escape, JSON escape, ROT13, MD5, SHA1, SHA256. Transformations chain sequentially. |
+| **HTTPX** | Fast HTTP toolkit — probes URLs for status, title, tech, CDNs and redirect chains. |
+| **Encoder** | Client-side encode/decode chain — URL, HTML, Base64, Hex, Unicode, JSON, ROT13, MD5, SHA1/256. |
 
 ### System
 | Panel | Description |
 |---|---|
-| **Herramientas** | Checks which tools are installed on your Kali — visual status grid with one-click install shortcuts. |
-| **Archivos** | File browser for `/tmp` and `/root` — lists files in the active working directories. |
-| **Historial** | Session command history — all commands run in the current session, with a clear option. |
+| **Herramientas** | Visual status grid of installed tools with one-click install shortcuts. |
+| **Archivos** | File browser for `/tmp` and `/root`. |
+| **Historial** | Session command history with clear option. |
+
+---
+
+## State Persistence
+
+All mutable data is automatically saved to `data/state.json` after every mutation and restored on server startup:
+
+| Data | Persists |
+|---|---|
+| Campaigns, targets, stats | ✓ |
+| Captured credentials (logs) | ✓ |
+| Deployed pages + active/stopped state | ✓ |
+| Telegram config (token, chat ID, enabled) | ✓ |
+| Cloned sites metadata | ✓ |
+| Phishing tracking IDs | ✓ |
+
+Saves are atomic (write to `.tmp` → `os.replace`) — no corruption on crash.
 
 ---
 
@@ -149,8 +274,6 @@ El script clona el repo, instala las herramientas necesarias, crea el venv e ins
 | **Pop!\_OS** | 22.04 | ✅ Compatible |
 | Otro derivado Debian/Ubuntu | — | ⚠️ Probablemente compatible |
 | Arch / Fedora / openSUSE / etc. | — | ❌ No soportado (requiere `apt`) |
-
-> El instalador detecta automáticamente el sistema operativo y avisa si la distro no está en la lista. Si tu sistema tiene `apt` pero no está listado, el script preguntará si deseas continuar igualmente.
 
 ## Requirements
 
@@ -190,30 +313,10 @@ The launcher activates the venv automatically and opens `http://localhost:5000` 
 ### Manual start
 
 ```bash
-# 1. Activate the venv
 source /opt/x9-evilkit/venv/bin/activate
-
-# 2. Run the server
 cd /opt/x9-evilkit
 python3 server.py
 ```
-
-### Virtual environment reference
-
-```bash
-# Activate
-source /opt/x9-evilkit/venv/bin/activate
-
-# Verify it's active (should show venv path)
-which python
-# → /opt/x9-evilkit/venv/bin/python
-
-# Deactivate when done
-deactivate
-```
-
-> **Note:** `source /opt/x9-evilkit/venv` is **wrong** and does nothing.  
-> Always use `source /opt/x9-evilkit/venv/bin/activate`.
 
 ---
 
@@ -221,10 +324,12 @@ deactivate
 
 ```
 404x9-evil-kit/
-├── server.py           # Flask backend — SSE streaming, process manager
+├── server.py           # Flask backend — SSE streaming, phishing engine, C2, persistence
 ├── requirements.txt    # Python dependencies (installed inside venv)
 ├── install.sh          # Installer — one-liner compatible
 ├── run.sh              # Quick launcher (activates venv + starts server)
+├── data/
+│   └── state.json      # Persistent state (auto-created on first run)
 ├── templates/
 │   └── index.html      # Full single-page frontend
 └── static/
@@ -238,7 +343,8 @@ deactivate
 1. **Frontend** (`index.html`) sends commands to the Flask backend via POST to `/api/run`
 2. **Backend** spawns the process and streams output line-by-line via `/api/stream/<job_id>` (SSE)
 3. **Frontend** buffers all output and runs tool-specific parsers on completion to render clean tables
-4. **Kill** — `/api/kill/<job_id>` sends SIGTERM + SIGKILL to the entire process group (handles sudo'd tools)
+4. **Kill** — `/api/kill/<job_id>` sends SIGTERM + SIGKILL to the entire process group
+5. **Phishing** — deployed pages served at `/p/<id>`; form submits captured server-side and forwarded to Telegram if configured
 
 ---
 

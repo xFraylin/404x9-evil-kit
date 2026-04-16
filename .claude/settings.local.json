@@ -11,7 +11,12 @@
       "Bash(chmod +x /home/xnueve/Desktop/v2/kali-toolkit/run.sh)",
       "Bash(awk -F: '$2 >= 3620 && $2 <= 3670')",
       "Bash(awk -F: '{if \\($2+0 >= 3610 && $2+0 <= 3650\\) print}')",
-      "Bash(chmod +x:*)"
+      "Bash(chmod +x:*)",
+      "Bash(node --check /tmp/check.js)",
+      "Bash(git config *)",
+      "Bash(git -C /home/xnueve/Desktop/v2/404x9-evil-kit-main log --oneline -5)",
+      "Bash(sudo git *)",
+      "Bash(sudo git -C /home/xnueve/Desktop/v2/404x9-evil-kit-main commit -m ' *)"
     ]
   }
 }

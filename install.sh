@@ -38,15 +38,27 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+# ── Bootstrap desde curl ──────────────────────────────────
+# Este bloque corre ANTES del banner para que el exec no duplique
+# la salida. Si no hay server.py en el CWD, clona el repo y
+# re-ejecuta este mismo script desde la copia fresca.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
+if [ ! -f "${SCRIPT_DIR}/server.py" ]; then
+  echo -e "${CYAN}[*] Descargando 404x9-evil-kit...${NC}"
+  apt-get install -y git -qq
+  TMP_DIR="$(mktemp -d)"
+  git clone --depth=1 "${REPO_URL}" "${TMP_DIR}/repo" -q
+  exec bash "${TMP_DIR}/repo/install.sh" "$@"
+fi
+
+# ── Banner ────────────────────────────────────────────────
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════╗${NC}"
 echo -e "${GREEN}║   404x9-evil-kit — by @xfraylin         ║${NC}"
 echo -e "${GREEN}╚══════════════════════════════════════════╝${NC}"
 echo ""
 
-# ── Detección y compatibilidad del sistema operativo ─────
-# Lee /etc/os-release para identificar la distro.
-# El toolkit usa apt-get, por lo que requiere sistemas Debian/Ubuntu.
+# ── Detección de sistema operativo ───────────────────────
 OS_ID=""
 OS_VERSION_ID=""
 OS_PRETTY=""
@@ -57,61 +69,31 @@ if [ -f /etc/os-release ]; then
 fi
 OS_ID_LIKE=$(grep -oP '(?<=^ID_LIKE=)[^\n]+' /etc/os-release 2>/dev/null | tr -d '"' | tr '[:upper:]' '[:lower:]')
 
-# Sistemas totalmente compatibles (probados)
 case "$OS_ID" in
   kali)
-    OS_STATUS="ok"
-    OS_NOTE="Compatibilidad total — entorno recomendado"
-    ;;
+    OS_STATUS="ok"; OS_NOTE="Compatibilidad total — entorno recomendado" ;;
   parrot)
-    OS_STATUS="ok"
-    OS_NOTE="Compatibilidad total"
-    ;;
+    OS_STATUS="ok"; OS_NOTE="Compatibilidad total" ;;
   ubuntu)
     case "$OS_VERSION_ID" in
-      22.04|24.04|24.10)
-        OS_STATUS="ok"
-        OS_NOTE="Compatibilidad total"
-        ;;
-      20.04)
-        OS_STATUS="ok"
-        OS_NOTE="Compatibilidad total"
-        ;;
-      *)
-        OS_STATUS="warn"
-        OS_NOTE="Versión no probada — puede funcionar"
-        ;;
-    esac
-    ;;
+      20.04|22.04|24.04|24.10) OS_STATUS="ok"; OS_NOTE="Compatibilidad total" ;;
+      *) OS_STATUS="warn"; OS_NOTE="Versión no probada — puede funcionar" ;;
+    esac ;;
   debian)
     case "$OS_VERSION_ID" in
-      11|12|13)
-        OS_STATUS="ok"
-        OS_NOTE="Compatible"
-        ;;
-      *)
-        OS_STATUS="warn"
-        OS_NOTE="Versión no probada — puede funcionar"
-        ;;
-    esac
-    ;;
+      11|12|13) OS_STATUS="ok"; OS_NOTE="Compatible" ;;
+      *) OS_STATUS="warn"; OS_NOTE="Versión no probada — puede funcionar" ;;
+    esac ;;
   linuxmint|zorin|pop)
-    OS_STATUS="ok"
-    OS_NOTE="Basado en Ubuntu/Debian — compatible"
-    ;;
+    OS_STATUS="ok"; OS_NOTE="Basado en Ubuntu/Debian — compatible" ;;
   *)
-    # Comprobar si es derivado de Debian/Ubuntu por ID_LIKE
     if echo "$OS_ID_LIKE" | grep -qE 'debian|ubuntu'; then
-      OS_STATUS="warn"
-      OS_NOTE="Derivado Debian/Ubuntu — probablemente compatible"
+      OS_STATUS="warn"; OS_NOTE="Derivado Debian/Ubuntu — probablemente compatible"
     else
-      OS_STATUS="fail"
-      OS_NOTE="No soportado — el toolkit requiere apt (Debian/Ubuntu)"
-    fi
-    ;;
+      OS_STATUS="fail"; OS_NOTE="No soportado — el toolkit requiere apt (Debian/Ubuntu)"
+    fi ;;
 esac
 
-# Mostrar resultado de compatibilidad
 DETECTED_NAME="${OS_PRETTY:-${OS_ID} ${OS_VERSION_ID}}"
 case "$OS_STATUS" in
   ok)
@@ -141,7 +123,6 @@ esac
 echo ""
 
 # ── Detectar modo: update vs fresh install ────────────────
-# Un venv existente y válido indica instalación previa.
 IS_UPDATE=false
 if [ -d "${VENV_DIR}" ] && [ -f "${VENV_DIR}/bin/python3" ]; then
   IS_UPDATE=true
@@ -159,20 +140,7 @@ else
 fi
 echo ""
 
-# ── 1. Bootstrap desde curl (no hay server.py en el CWD) ─
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
-if [ ! -f "${SCRIPT_DIR}/server.py" ]; then
-  echo -e "${CYAN}[*] Clonando repositorio...${NC}"
-  apt-get install -y git -qq
-  TMP_DIR="$(mktemp -d)"
-  git clone --depth=1 "${REPO_URL}" "${TMP_DIR}/repo" 2>&1 | tail -2
-  exec bash "${TMP_DIR}/repo/install.sh" "$@"
-fi
-
-# ── 2. Herramientas de sistema ────────────────────────────
-# Solo en instalación nueva. apt es lento y las herramientas
-# ya están presentes después del primer install.
-# Usa --force para reinstalar si alguna herramienta falta.
+# ── 1. Herramientas de sistema ────────────────────────────
 if [ "$IS_UPDATE" = false ]; then
   echo -e "${CYAN}[*] Instalando herramientas de sistema...${NC}"
   apt-get update -qq 2>/dev/null
@@ -194,9 +162,7 @@ else
 fi
 echo ""
 
-# ── 3. Copiar archivos del proyecto ──────────────────────
-# Siempre se ejecuta — es rápido e idempotente.
-# Esto es lo que propaga los cambios de código tras un git pull.
+# ── 2. Copiar archivos del proyecto ──────────────────────
 echo -e "${CYAN}[*] Sincronizando archivos...${NC}"
 mkdir -p "${INSTALL_DIR}/templates" "${INSTALL_DIR}/static"
 cp "${SCRIPT_DIR}/server.py"            "${INSTALL_DIR}/"
@@ -206,8 +172,7 @@ cp "${SCRIPT_DIR}/templates/index.html" "${INSTALL_DIR}/templates/"
 echo -e "${GREEN}[✓] Archivos sincronizados${NC}"
 echo ""
 
-# ── 4. Entorno virtual ────────────────────────────────────
-# Se crea solo si no existe. El venv se mantiene entre updates.
+# ── 3. Entorno virtual ────────────────────────────────────
 if [ ! -d "${VENV_DIR}" ] || [ ! -f "${VENV_DIR}/bin/python3" ]; then
   echo -e "${CYAN}[*] Creando entorno virtual...${NC}"
   python3 -m venv "${VENV_DIR}"
@@ -217,26 +182,24 @@ else
 fi
 echo ""
 
-# ── 5. Dependencias Python ────────────────────────────────
-# Solo se reinstalan si requirements.txt cambió (hash MD5).
-# Esto evita pip install en cada update cuando las deps no cambiaron.
+# ── 4. Dependencias Python ────────────────────────────────
 CURRENT_HASH=$(md5sum "${INSTALL_DIR}/requirements.txt" | awk '{print $1}')
 STORED_HASH=$(cat "${REQ_HASH_FILE}" 2>/dev/null || echo "")
 
 if [ "$CURRENT_HASH" != "$STORED_HASH" ] || [ "$FORCE" = true ]; then
-  echo -e "${CYAN}[*] Actualizando dependencias Python...${NC}"
+  echo -e "${CYAN}[*] Instalando dependencias Python...${NC}"
   source "${VENV_DIR}/bin/activate"
   pip install --upgrade pip -q
   pip install -r "${INSTALL_DIR}/requirements.txt" -q
   deactivate
   echo "$CURRENT_HASH" > "${REQ_HASH_FILE}"
-  echo -e "${GREEN}[✓] Dependencias Python actualizadas${NC}"
+  echo -e "${GREEN}[✓] Dependencias Python listas${NC}"
 else
   echo -e "${DIM}[~] requirements.txt sin cambios → pip install omitido${NC}"
 fi
 echo ""
 
-# ── 6. Lanzador del sistema ───────────────────────────────
+# ── 5. Lanzador del sistema ───────────────────────────────
 cat > /usr/local/bin/404x9-evil-kit << EOF
 #!/bin/bash
 cd ${INSTALL_DIR}
@@ -247,7 +210,7 @@ EOF
 chmod +x /usr/local/bin/404x9-evil-kit
 ln -sf /usr/local/bin/404x9-evil-kit /usr/local/bin/x9-evilkit 2>/dev/null
 
-# ── 7. Acceso directo en el escritorio ───────────────────
+# ── 6. Acceso directo en el escritorio ───────────────────
 REAL_HOME=$(getent passwd "${SUDO_USER:-$USER}" | cut -d: -f6)
 mkdir -p "${REAL_HOME}/Desktop"
 cat > "${REAL_HOME}/Desktop/x9-evilkit.desktop" << 'DEOF'
