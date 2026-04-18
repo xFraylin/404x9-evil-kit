@@ -155,6 +155,15 @@ textarea.fi{resize:vertical;min-height:48px}
 .ck:hover{border-color:#2d6040;color:var(--g2);background:#080f09}
 .ck.on{background:#091509;border-color:var(--g);color:var(--g);box-shadow:inset 0 0 8px rgba(0,255,136,.06)}
 
+/* ─── TARGET PICKER ─────────────────────────────────── */
+.tp-bar{display:flex;gap:3px;margin-bottom:5px;flex-wrap:wrap}
+.tp-btn{font-size:11px;padding:2px 10px;border:1px solid var(--brd);border-radius:2px;color:var(--mut);cursor:pointer;background:var(--input-bg);letter-spacing:.8px;transition:all .12s;white-space:nowrap}
+.tp-btn:hover{border-color:#2d6040;color:var(--g2);background:#080f09}
+.tp-btn.on{border-color:var(--g);color:var(--g);background:#091509;box-shadow:inset 0 0 6px rgba(0,255,136,.06)}
+.tp-pane{display:none}
+.tp-pane.on{display:block}
+.nc-tag-section{margin-bottom:4px;font-size:10px;color:var(--dim);letter-spacing:1px;text-transform:uppercase;padding-top:4px}
+
 /* ─── CMD PREVIEW ────────────────────────────────────── */
 .cmd-preview{background:#010302;border:1px solid #1e4428;border-radius:4px;margin-top:12px;overflow:hidden;box-shadow:0 0 20px rgba(0,255,136,.06),inset 0 0 40px rgba(0,0,0,.4)}
 .cmd-lbl{background:#030806;border-bottom:1px solid #163019;padding:6px 12px;font-size:12px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
@@ -2328,15 +2337,40 @@ textarea.fi{resize:vertical;min-height:48px}
 <!-- ══ KATANA ══ -->
 <div id="p-katana" class="panel">
   <div class="pt">KATANA <span class="ptd">— Web crawler & spider (ProjectDiscovery)</span></div>
-  <div class="row">
-    <div class="ig w4">
-      <div class="lbl" style="display:flex;align-items:center;gap:6px">URL / LISTA <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="useSubs('kt-u',bKatana,'list')" title="Usar lista de subdominios">≡ SUBS</button></div>
-      <input class="fi" id="kt-u" placeholder="https://target.com o /tmp/subs.txt" oninput="bKatana()">
+
+  <!-- TARGET PICKER -->
+  <div style="margin-bottom:10px">
+    <div class="lbl" style="display:flex;align-items:center;gap:6px;margin-bottom:5px">TARGET
+      <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="tpUseSubs('kt')" title="Usar lista guardada de SUBLIST">≡ SUBS</button>
     </div>
-    <div class="ig" style="max-width:70px"><div class="lbl">DEPTH</div><input class="fi" id="kt-d" value="3" oninput="bKatana()"></div>
-    <div class="ig" style="max-width:70px"><div class="lbl">CONCURRENCY</div><input class="fi" id="kt-c" value="10" oninput="bKatana()"></div>
+    <div class="tp-bar">
+      <button class="tp-btn on" id="kt-tp-url" onclick="tpSwitch('kt','url',this)">URL</button>
+      <button class="tp-btn" id="kt-tp-list" onclick="tpSwitch('kt','list',this)">PEGAR LISTA</button>
+      <button class="tp-btn" id="kt-tp-file" onclick="tpSwitch('kt','file',this)">ARCHIVO</button>
+      <span id="kt-tp-info" style="font-size:10px;color:var(--mut);align-self:center;margin-left:4px"></span>
+    </div>
+    <div class="tp-pane on" id="kt-tp-pane-url">
+      <input class="fi" id="kt-u" placeholder="https://target.com" oninput="bKatana()">
+    </div>
+    <div class="tp-pane" id="kt-tp-pane-list">
+      <textarea class="fi" id="kt-list" rows="4" style="font-family:'JetBrains Mono',monospace;font-size:12px" placeholder="https://sub1.target.com&#10;https://sub2.target.com&#10;..." oninput="tpListChanged('kt')"></textarea>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span id="kt-list-cnt" style="font-size:11px;color:var(--mut)"></span>
+        <button class="kbtn" style="font-size:10px" onclick="tpSaveList('kt')">💾 GUARDAR EN /tmp/kt-targets.txt</button>
+      </div>
+    </div>
+    <div class="tp-pane" id="kt-tp-pane-file">
+      <div style="display:flex;gap:6px">
+        <input class="fi" id="kt-file" placeholder="/tmp/subs.txt" style="flex:1" oninput="bKatana()">
+        <button class="kbtn" onclick="wlBrowse('kt-file', bKatana)" title="Explorar">📂</button>
+      </div>
+      <div id="kt-file-status" style="font-size:11px;color:var(--mut);margin-top:3px"></div>
+    </div>
   </div>
+
   <div class="row">
+    <div class="ig" style="max-width:70px"><div class="lbl">DEPTH</div><input class="fi" id="kt-d" value="3" oninput="bKatana()"></div>
+    <div class="ig" style="max-width:80px"><div class="lbl">CONCURRENCY</div><input class="fi" id="kt-c" value="10" oninput="bKatana()"></div>
     <div class="ig"><div class="lbl">PROXY</div><input class="fi" id="kt-proxy" placeholder="http://127.0.0.1:8080" oninput="bKatana()"></div>
     <div class="ig"><div class="lbl">HEADERS (-H)</div><input class="fi" id="kt-hdr" placeholder="'Authorization: Bearer TOKEN'" oninput="bKatana()"></div>
   </div>
@@ -2364,17 +2398,55 @@ textarea.fi{resize:vertical;min-height:48px}
 <!-- ══ NUCLEI ══ -->
 <div id="p-nuclei" class="panel">
   <div class="pt">NUCLEI <span class="ptd">— Vulnerability scanner con templates (ProjectDiscovery)</span></div>
-  <div class="row">
-    <div class="ig w4">
-      <div class="lbl" style="display:flex;align-items:center;gap:6px">URL / LISTA (-l) <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="useSubs('nc-u',bNuclei,'list')" title="Usar lista de subdominios">≡ SUBS</button></div>
-      <input class="fi" id="nc-u" placeholder="https://target.com o /tmp/subs.txt" oninput="bNuclei()">
+
+  <!-- ── TARGET PICKER ── -->
+  <div style="margin-bottom:10px">
+    <div class="lbl" style="display:flex;align-items:center;gap:6px;margin-bottom:5px">TARGET
+      <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="tpUseSubs('nc')" title="Usar lista guardada de SUBLIST">≡ SUBS</button>
     </div>
-    <div class="ig" style="max-width:70px"><div class="lbl">THREADS</div><input class="fi" id="nc-t" value="25" oninput="bNuclei()"></div>
+    <div class="tp-bar">
+      <button class="tp-btn on" id="nc-tp-url" onclick="tpSwitch('nc','url',this)">URL</button>
+      <button class="tp-btn" id="nc-tp-list" onclick="tpSwitch('nc','list',this)">PEGAR LISTA</button>
+      <button class="tp-btn" id="nc-tp-file" onclick="tpSwitch('nc','file',this)">ARCHIVO</button>
+      <span id="nc-tp-info" style="font-size:10px;color:var(--mut);align-self:center;margin-left:4px"></span>
+    </div>
+    <div class="tp-pane on" id="nc-tp-pane-url">
+      <input class="fi" id="nc-u" placeholder="https://target.com" oninput="bNuclei()">
+    </div>
+    <div class="tp-pane" id="nc-tp-pane-list">
+      <textarea class="fi" id="nc-list" rows="4" style="font-family:'JetBrains Mono',monospace;font-size:12px" placeholder="https://sub1.target.com&#10;https://sub2.target.com&#10;https://api.target.com&#10;..." oninput="tpListChanged('nc')"></textarea>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span id="nc-list-cnt" style="font-size:11px;color:var(--mut)"></span>
+        <button class="kbtn" style="font-size:10px" onclick="tpSaveList('nc')">💾 GUARDAR EN /tmp/nc-targets.txt</button>
+      </div>
+    </div>
+    <div class="tp-pane" id="nc-tp-pane-file">
+      <div style="display:flex;gap:6px">
+        <input class="fi" id="nc-file" placeholder="/tmp/subs.txt" style="flex:1" oninput="bNuclei()">
+        <button class="kbtn" onclick="wlBrowse('nc-file', bNuclei)" title="Explorar">📂</button>
+      </div>
+      <div id="nc-file-status" style="font-size:11px;color:var(--mut);margin-top:3px"></div>
+    </div>
   </div>
-  <div class="row">
-    <div class="ig w2">
+
+  <!-- ── OPCIONES RÁPIDAS ── -->
+  <div class="row" style="margin-bottom:6px">
+    <div class="ig" style="max-width:70px"><div class="lbl">THREADS</div><input class="fi" id="nc-t" value="25" oninput="bNuclei()"></div>
+    <div class="ig">
+      <div class="lbl">SEVERIDAD</div>
+      <select class="fi" id="nc-sev" onchange="bNuclei()">
+        <option value="">todas</option>
+        <option value="critical">critical</option>
+        <option value="critical,high">critical,high</option>
+        <option value="critical,high,medium">critical,high,medium</option>
+        <option value="medium">medium</option>
+        <option value="low">low</option>
+        <option value="info">info</option>
+      </select>
+    </div>
+    <div class="ig">
       <div class="lbl">TEMPLATES (-t)</div>
-      <select class="fi" id="nc-tpl" onchange="bNuclei()">
+      <select class="fi" id="nc-tpl" onchange="ncTplChange()">
         <option value="">todos (default)</option>
         <option value="cves/">CVEs</option>
         <option value="exposures/">exposures</option>
@@ -2385,25 +2457,108 @@ textarea.fi{resize:vertical;min-height:48px}
         <option value="default-logins/">default-logins</option>
         <option value="dns/">dns</option>
         <option value="network/">network</option>
-        <option value="__custom__">✏ Personalizado...</option>
+        <option value="http/">http</option>
+        <option value="__custom__">✏ Ruta personalizada...</option>
       </select>
     </div>
-    <div class="ig wl-row" id="nc-tpl-custom-row" style="display:none">
+    <div class="ig" id="nc-tpl-custom-row" style="display:none">
       <div class="lbl">RUTA TEMPLATE</div>
       <input class="fi" id="nc-tpl-c" placeholder="/ruta/template.yaml" oninput="bNuclei()">
     </div>
-    <div class="ig"><div class="lbl">SEVERIDAD (-severity)</div>
-      <select class="fi" id="nc-sev" onchange="bNuclei()">
-        <option value="">todas</option>
-        <option value="critical">critical</option>
-        <option value="critical,high">critical,high</option>
-        <option value="critical,high,medium">critical,high,medium</option>
-        <option value="medium">medium</option>
-        <option value="low">low</option>
-        <option value="info">info</option>
-      </select></div>
     <div class="ig"><div class="lbl">PROXY</div><input class="fi" id="nc-proxy" placeholder="http://127.0.0.1:8080" oninput="bNuclei()"></div>
   </div>
+
+  <!-- ── TAGS ── -->
+  <div style="margin-bottom:8px">
+    <div class="lbl" style="display:flex;align-items:center;gap:8px;margin-bottom:5px">TAGS (-tags)
+      <span style="font-size:10px;color:var(--dim);font-weight:normal;letter-spacing:0">— selecciona uno o varios</span>
+      <button class="kbtn" style="font-size:10px;padding:1px 7px;margin-left:auto" onclick="ncClearTags()">LIMPIAR</button>
+    </div>
+    <div class="nc-tag-section">— INJECTION —</div>
+    <div class="checks" style="margin-bottom:5px" id="nc-tags-inj">
+      <div class="ck" data-v="xss">xss</div>
+      <div class="ck" data-v="sqli">sqli</div>
+      <div class="ck" data-v="ssrf">ssrf</div>
+      <div class="ck" data-v="ssti">ssti</div>
+      <div class="ck" data-v="xxe">xxe</div>
+      <div class="ck" data-v="rce">rce</div>
+      <div class="ck" data-v="lfi">lfi</div>
+      <div class="ck" data-v="rfi">rfi</div>
+      <div class="ck" data-v="open-redirect">open-redirect</div>
+      <div class="ck" data-v="cors">cors</div>
+      <div class="ck" data-v="csrf">csrf</div>
+      <div class="ck" data-v="crlf">crlf</div>
+      <div class="ck" data-v="traversal">traversal</div>
+    </div>
+    <div class="nc-tag-section">— AUTH / ACCESS —</div>
+    <div class="checks" style="margin-bottom:5px" id="nc-tags-auth">
+      <div class="ck" data-v="auth-bypass">auth-bypass</div>
+      <div class="ck" data-v="default-login">default-login</div>
+      <div class="ck" data-v="idor">idor</div>
+      <div class="ck" data-v="jwt">jwt</div>
+      <div class="ck" data-v="oauth">oauth</div>
+      <div class="ck" data-v="login">login</div>
+      <div class="ck" data-v="token">token</div>
+      <div class="ck" data-v="api-key">api-key</div>
+    </div>
+    <div class="nc-tag-section">— EXPOSURE / MISCONFIG —</div>
+    <div class="checks" style="margin-bottom:5px" id="nc-tags-exp">
+      <div class="ck" data-v="exposure">exposure</div>
+      <div class="ck" data-v="takeover">takeover</div>
+      <div class="ck" data-v="misconfig">misconfig</div>
+      <div class="ck" data-v="backup">backup</div>
+      <div class="ck" data-v="config">config</div>
+      <div class="ck" data-v="panel">panel</div>
+      <div class="ck" data-v="upload">upload</div>
+      <div class="ck" data-v="file">file</div>
+      <div class="ck" data-v="debug">debug</div>
+      <div class="ck" data-v="redirect">redirect</div>
+    </div>
+    <div class="nc-tag-section">— CLOUD / APIs —</div>
+    <div class="checks" style="margin-bottom:5px" id="nc-tags-cloud">
+      <div class="ck" data-v="aws">aws</div>
+      <div class="ck" data-v="s3">s3</div>
+      <div class="ck" data-v="gcp">gcp</div>
+      <div class="ck" data-v="azure">azure</div>
+      <div class="ck" data-v="graphql">graphql</div>
+      <div class="ck" data-v="api">api</div>
+      <div class="ck" data-v="swagger">swagger</div>
+    </div>
+    <div class="nc-tag-section">— TECH / PANELES —</div>
+    <div class="checks" style="margin-bottom:5px" id="nc-tags-tech">
+      <div class="ck" data-v="wordpress">wordpress</div>
+      <div class="ck" data-v="drupal">drupal</div>
+      <div class="ck" data-v="jira">jira</div>
+      <div class="ck" data-v="jenkins">jenkins</div>
+      <div class="ck" data-v="confluence">confluence</div>
+      <div class="ck" data-v="gitlab">gitlab</div>
+      <div class="ck" data-v="apache">apache</div>
+      <div class="ck" data-v="nginx">nginx</div>
+      <div class="ck" data-v="php">php</div>
+      <div class="ck" data-v="iis">iis</div>
+      <div class="ck" data-v="tomcat">tomcat</div>
+      <div class="ck" data-v="spring">spring</div>
+    </div>
+    <div class="nc-tag-section">— CVEs CRÍTICOS —</div>
+    <div class="checks" style="margin-bottom:5px" id="nc-tags-cve">
+      <div class="ck" data-v="log4j">log4j</div>
+      <div class="ck" data-v="log4shell">log4shell</div>
+      <div class="ck" data-v="spring4shell">spring4shell</div>
+      <div class="ck" data-v="shellshock">shellshock</div>
+      <div class="ck" data-v="struts">struts</div>
+      <div class="ck" data-v="proxylogon">proxylogon</div>
+      <div class="ck" data-v="heartbleed">heartbleed</div>
+      <div class="ck" data-v="eternalblue">eternalblue</div>
+    </div>
+    <!-- Custom tags -->
+    <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+      <span style="font-size:11px;color:var(--mut);white-space:nowrap;letter-spacing:.5px">+ CUSTOM:</span>
+      <input class="fi" id="nc-tags-custom" placeholder="tag1,tag2,tag3 — separados por coma" style="flex:1;font-size:12px" oninput="bNuclei()">
+    </div>
+    <div id="nc-tags-active" style="font-size:11px;color:var(--g2);margin-top:5px;min-height:14px"></div>
+  </div>
+
+  <!-- ── FLAGS ── -->
   <div class="checks" id="nc-op">
     <div class="ck" data-v="-silent">-silent</div>
     <div class="ck" data-v="-no-color">-no-color</div>
@@ -2413,9 +2568,11 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="ck" data-v="-retries 2">-retries 2</div>
     <div class="ck" data-v="-timeout 10">-timeout 10</div>
     <div class="ck" data-v="-headless">-headless</div>
-    <div class="ck" data-v="-tags xss,sqli,ssrf,rce,lfi">-tags críticos</div>
     <div class="ck" data-v="-exclude-severity info">-excl. info</div>
+    <div class="ck" data-v="-passive">-passive</div>
+    <div class="ck" data-v="-duc">-duc (disable update check)</div>
   </div>
+
   <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="nc-cmd"></div></div>
   <div class="run-row">
     <button class="rbtn" id="nc-run" onclick="runTool('nc')">▶ EJECUTAR</button>
@@ -6133,12 +6290,12 @@ function subsUseInTools() {
   useSubs('kt-u', bKatana, 'list');
 }
 
+/* legacy useSubs for dalfox / httpx / ffuf */
 function useSubs(inputId, rebuildFn, mode) {
   const path = _subsPath || '/tmp/subs.txt';
   const el = document.getElementById(inputId);
   if (!el) return;
   el.value = path;
-  // For dalfox file mode: also set the mode select
   if (mode === 'file') {
     const mEl = document.getElementById('df-m');
     if (mEl) mEl.value = 'file';
@@ -6146,16 +6303,85 @@ function useSubs(inputId, rebuildFn, mode) {
   if (rebuildFn) rebuildFn();
 }
 
+/* ─── TARGET PICKER ───────────────────────────────────── */
+var _tpSaveTimer = {};
+
+function tpSwitch(prefix, mode, el) {
+  ['url','list','file'].forEach(m => {
+    const btn  = document.getElementById(prefix + '-tp-' + m);
+    const pane = document.getElementById(prefix + '-tp-pane-' + m);
+    const isActive = m === mode;
+    if (btn)  btn.classList.toggle('on', isActive);
+    if (pane) { pane.classList.toggle('on', isActive); pane.style.display = isActive ? 'block' : 'none'; }
+  });
+  const info = document.getElementById(prefix + '-tp-info');
+  if (info) info.textContent = mode === 'url' ? '— target único' : mode === 'list' ? '— pega múltiples targets' : '— ruta de archivo .txt';
+  var builders = {nc: bNuclei, kt: bKatana, hx: bHttpx};
+  if (builders[prefix]) builders[prefix]();
+}
+
+function tpGetTarget(prefix) {
+  var urlBtn  = document.getElementById(prefix + '-tp-url');
+  var listBtn = document.getElementById(prefix + '-tp-list');
+  var fileBtn = document.getElementById(prefix + '-tp-file');
+  if (fileBtn && fileBtn.classList.contains('on')) {
+    var v = gv(prefix + '-file') || '/tmp/subs.txt';
+    return {flag: '-l ' + v, raw: v};
+  }
+  if (listBtn && listBtn.classList.contains('on')) {
+    var ta = document.getElementById(prefix + '-list');
+    var lines = ta ? ta.value.split('\n').map(function(l){return l.trim();}).filter(Boolean) : [];
+    var cnt = document.getElementById(prefix + '-list-cnt');
+    if (cnt) cnt.textContent = lines.length ? lines.length + ' targets' : '';
+    var path = '/tmp/' + prefix + '-targets.txt';
+    return {flag: '-l ' + path, raw: path, needsSave: true, lines: lines};
+  }
+  var v = gv(prefix + '-u') || 'https://target.com';
+  return {flag: '-u ' + v, raw: v};
+}
+
+function tpListChanged(prefix) {
+  var ta = document.getElementById(prefix + '-list');
+  if (!ta) return;
+  var lines = ta.value.split('\n').map(function(l){return l.trim();}).filter(Boolean);
+  var cnt = document.getElementById(prefix + '-list-cnt');
+  if (cnt) cnt.textContent = lines.length ? lines.length + ' targets' : '';
+  clearTimeout(_tpSaveTimer[prefix]);
+  _tpSaveTimer[prefix] = setTimeout(function() { tpSaveList(prefix); }, 700);
+  var builders = {nc: bNuclei, kt: bKatana, hx: bHttpx};
+  if (builders[prefix]) builders[prefix]();
+}
+
+function tpSaveList(prefix) {
+  var ta = document.getElementById(prefix + '-list');
+  if (!ta || !ta.value.trim()) return;
+  var path = '/tmp/' + prefix + '-targets.txt';
+  fetch(API + '/subs/save', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({text: ta.value, path: path})
+  }).then(function(r){return r.json();}).then(function(d){
+    var cnt = document.getElementById(prefix + '-list-cnt');
+    if (cnt && d.count) cnt.textContent = d.count + ' targets guardados → ' + path;
+  }).catch(function(){});
+}
+
+function tpUseSubs(prefix) {
+  var path = _subsPath || '/tmp/subs.txt';
+  tpSwitch(prefix, 'file', document.getElementById(prefix + '-tp-file'));
+  var fi = document.getElementById(prefix + '-file');
+  if (fi) fi.value = path;
+  var builders = {nc: bNuclei, kt: bKatana, hx: bHttpx};
+  if (builders[prefix]) builders[prefix]();
+}
+
 /* ─── KATANA BUILDER ──────────────────────────────────── */
 function bKatana() {
-  const u = gv('kt-u') || 'https://target.com';
+  const tgt = tpGetTarget('kt');
   const d = gv('kt-d') || '3';
   const c = gv('kt-c') || '10';
   const proxy = gv('kt-proxy'), hdr = gv('kt-hdr');
   const op = chks('kt-op');
-  const isList = u.endsWith('.txt') || u.startsWith('/');
-  const targetFlag = isList ? `-list ${u}` : `-u ${u}`;
-  let cmd = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">katana</span> <span class="f">${targetFlag}</span>`;
+  let cmd = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">katana</span> <span class="f">${tgt.flag}</span>`;
   cmd += ` <span class="f">-depth ${d}</span>`;
   cmd += ` <span class="f">-concurrency ${c}</span>`;
   if (proxy) cmd += ` <span class="f">-proxy</span> <span class="v">${proxy}</span>`;
@@ -6165,32 +6391,52 @@ function bKatana() {
 }
 
 /* ─── NUCLEI BUILDER ──────────────────────────────────── */
+function ncTplChange() {
+  const row = document.getElementById('nc-tpl-custom-row');
+  if (row) row.style.display = gv('nc-tpl') === '__custom__' ? 'flex' : 'none';
+  bNuclei();
+}
+
+function ncGetTags() {
+  const selected = [];
+  ['nc-tags-inj','nc-tags-auth','nc-tags-exp','nc-tags-cloud','nc-tags-tech','nc-tags-cve'].forEach(function(gid) {
+    document.querySelectorAll('#' + gid + ' .ck.on').forEach(function(c) {
+      if (c.dataset.v) selected.push(c.dataset.v);
+    });
+  });
+  const custom = gv('nc-tags-custom');
+  if (custom) custom.split(',').map(function(t){return t.trim();}).filter(Boolean).forEach(function(t){ selected.push(t); });
+  const active = document.getElementById('nc-tags-active');
+  if (active) active.textContent = selected.length ? 'tags activos: ' + selected.join(', ') : '';
+  return selected;
+}
+
+function ncClearTags() {
+  ['nc-tags-inj','nc-tags-auth','nc-tags-exp','nc-tags-cloud','nc-tags-tech','nc-tags-cve'].forEach(function(gid) {
+    document.querySelectorAll('#' + gid + ' .ck').forEach(function(c){ c.classList.remove('on'); });
+  });
+  var ci = document.getElementById('nc-tags-custom'); if (ci) ci.value = '';
+  var ta = document.getElementById('nc-tags-active'); if (ta) ta.textContent = '';
+  bNuclei();
+}
+
 function bNuclei() {
-  const u = gv('nc-u') || 'https://target.com';
+  const tgt = tpGetTarget('nc');
   const t = gv('nc-t') || '25';
   const tplSel = gv('nc-tpl');
   const tplVal = tplSel === '__custom__' ? gv('nc-tpl-c') : tplSel;
   const sev = gv('nc-sev'), proxy = gv('nc-proxy');
   const op = chks('nc-op');
-  const isList = u.endsWith('.txt') || u.startsWith('/');
-  const targetFlag = isList ? `-l ${u}` : `-u ${u}`;
-  let cmd = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">nuclei</span> <span class="f">${targetFlag}</span>`;
+  const tags = ncGetTags();
+  let cmd = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">nuclei</span> <span class="f">${tgt.flag}</span>`;
   if (tplVal) cmd += ` <span class="f">-t</span> <span class="v">${tplVal}</span>`;
   if (sev)    cmd += ` <span class="f">-severity</span> <span class="v">${sev}</span>`;
+  if (tags.length) cmd += ` <span class="f">-tags</span> <span class="v">${tags.join(',')}</span>`;
   cmd += ` <span class="f">-c ${t}</span>`;
   if (proxy)  cmd += ` <span class="f">-proxy</span> <span class="v">${proxy}</span>`;
   if (op)     cmd += ` <span class="f">${op}</span>`;
   setH('nc-cmd', cmd);
 }
-
-/* nuclei: toggle custom template input */
-document.addEventListener('DOMContentLoaded', function() {
-  const tplSel = document.getElementById('nc-tpl');
-  if (tplSel) tplSel.addEventListener('change', function() {
-    const row = document.getElementById('nc-tpl-custom-row');
-    if (row) row.style.display = this.value === '__custom__' ? 'flex' : 'none';
-  });
-});
 
 /* ─── ADVANCED TOGGLE ─────────────────────────────────── */
 function toggleAdv(sectionId, toggleEl) {
@@ -6391,6 +6637,9 @@ bc('sm-mod',bSmb); bc('bh-cm',bBh);
 bc('td-op',bTcpdump); bc('md-op',bMedusa);
 bc('cu-op',bCurl); bc('wg-mode',bWget); bc('wg-net',bWget); bc('wg-ex',bWget);
 bc('hx-op',bHttpx); bc('ff-op',bFfuf);
+bc('kt-op',bKatana);
+bc('nc-op',bNuclei);
+['nc-tags-inj','nc-tags-auth','nc-tags-exp','nc-tags-cloud','nc-tags-tech','nc-tags-cve'].forEach(function(g){bc(g,bNuclei);});
 
 /* ─── CLOCK ───────────────────────────────────────────── */
 function tick() { const e=document.getElementById('clock-pill'); if(e) e.textContent=new Date().toLocaleTimeString('es-DO',{hour12:false}); }
