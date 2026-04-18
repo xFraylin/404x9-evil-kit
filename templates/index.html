@@ -155,6 +155,24 @@ textarea.fi{resize:vertical;min-height:48px}
 .ck:hover{border-color:#2d6040;color:var(--g2);background:#080f09}
 .ck.on{background:#091509;border-color:var(--g);color:var(--g);box-shadow:inset 0 0 8px rgba(0,255,136,.06)}
 
+/* ─── HTTPX RESULTS ─────────────────────────────────── */
+.hx-results{border:1px solid #1a3a1a;border-radius:3px;overflow:hidden;margin-top:10px}
+.hx-results-hdr{background:#030806;border-bottom:1px solid #1a3a1a;padding:6px 10px;font-size:11px;color:var(--g);letter-spacing:1.5px;display:flex;align-items:center;gap:8px}
+.hx-stat{display:flex;align-items:center;gap:7px;padding:5px 11px;border:1px solid var(--brd);border-radius:3px;font-size:12px;cursor:pointer;transition:all .12s;background:var(--input-bg);user-select:none;white-space:nowrap}
+.hx-stat:hover{background:#060e07;transform:translateY(-1px)}
+.hx-stat .hx-cnt{font-size:18px;font-weight:700;font-family:'JetBrains Mono',monospace;line-height:1}
+.hx-stat.s-live{border-color:#1a5020;color:var(--g2)}
+.hx-stat.s-live .hx-cnt{color:var(--g)}
+.hx-stat.s-200{border-color:#1a5020;color:#5ab870}
+.hx-stat.s-200 .hx-cnt{color:var(--g)}
+.hx-stat.s-403{border-color:#3a1515;color:#cc5050}
+.hx-stat.s-403 .hx-cnt{color:var(--red)}
+.hx-stat.s-30x{border-color:#3a2a00;color:#c8a020}
+.hx-stat.s-30x .hx-cnt{color:var(--yellow)}
+.hx-stat.s-oth{border-color:var(--brd);color:var(--mut)}
+.hx-stat.s-oth .hx-cnt{color:var(--cyan)}
+.hx-stat.active{box-shadow:0 0 10px rgba(0,255,136,.15)}
+
 /* ─── TARGET PICKER ─────────────────────────────────── */
 .tp-bar{display:flex;gap:3px;margin-bottom:5px;flex-wrap:wrap}
 .tp-btn{font-size:11px;padding:2px 10px;border:1px solid var(--brd);border-radius:2px;color:var(--mut);cursor:pointer;background:var(--input-bg);letter-spacing:.8px;transition:all .12s;white-space:nowrap}
@@ -2302,28 +2320,62 @@ textarea.fi{resize:vertical;min-height:48px}
 
 <!-- ══ HTTPX ══ -->
 <div id="p-httpx" class="panel">
-  <div class="pt">HTTPX <span class="ptd">— Fast HTTP probe & analyzer</span></div>
-  <div class="row">
-    <div class="ig w3">
-      <div class="lbl" style="display:flex;align-items:center;gap:6px">URL / LISTA (-l) <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="useSubs('hx-u',bHttpx)" title="Usar lista de subdominios guardada">≡ SUBS</button></div>
-      <input class="fi" id="hx-u" placeholder="https://target.com o /tmp/subs.txt" oninput="bHttpx()">
+  <div class="pt">HTTPX <span class="ptd">— HTTP probe · detección de vivos · recon pipeline</span></div>
+
+  <!-- TARGET PICKER -->
+  <div style="margin-bottom:10px">
+    <div class="lbl" style="display:flex;align-items:center;gap:6px;margin-bottom:5px">TARGET
+      <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="tpUseSubs('hx')" title="Usar lista guardada de SUBLIST">≡ SUBS</button>
     </div>
+    <div class="tp-bar">
+      <button class="tp-btn on" id="hx-tp-url" onclick="tpSwitch('hx','url',this)">URL</button>
+      <button class="tp-btn" id="hx-tp-list" onclick="tpSwitch('hx','list',this)">PEGAR LISTA</button>
+      <button class="tp-btn" id="hx-tp-file" onclick="tpSwitch('hx','file',this)">ARCHIVO</button>
+      <span id="hx-tp-info" style="font-size:10px;color:var(--mut);align-self:center;margin-left:4px"></span>
+    </div>
+    <div class="tp-pane on" id="hx-tp-pane-url">
+      <input class="fi" id="hx-u" placeholder="https://target.com" oninput="bHttpx()">
+    </div>
+    <div class="tp-pane" id="hx-tp-pane-list">
+      <textarea class="fi" id="hx-list" rows="4" style="font-family:'JetBrains Mono',monospace;font-size:12px" placeholder="sub1.target.com&#10;sub2.target.com&#10;api.target.com&#10;..." oninput="tpListChanged('hx')"></textarea>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span id="hx-list-cnt" style="font-size:11px;color:var(--mut)"></span>
+        <button class="kbtn" style="font-size:10px" onclick="tpSaveList('hx')">💾 GUARDAR EN /tmp/hx-targets.txt</button>
+      </div>
+    </div>
+    <div class="tp-pane" id="hx-tp-pane-file">
+      <div style="display:flex;gap:6px">
+        <input class="fi" id="hx-file" placeholder="/tmp/subs.txt" style="flex:1" oninput="bHttpx()">
+        <button class="kbtn" onclick="wlBrowse('hx-file', bHttpx)" title="Explorar">📂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLAGS -->
+  <div class="row" style="margin-bottom:6px">
     <div class="ig" style="max-width:60px"><div class="lbl">THREADS</div><input class="fi" id="hx-t" value="50" oninput="bHttpx()"></div>
+    <div class="ig" style="max-width:80px"><div class="lbl">RATE</div><input class="fi" id="hx-rate" placeholder="0" oninput="bHttpx()"></div>
+    <div class="ig"><div class="lbl">OUTPUT <span style="color:var(--dim);font-size:10px">(siempre guardado)</span></div>
+      <input class="fi" id="hx-outpath" value="/tmp/httpx.txt" oninput="bHttpx()">
+    </div>
   </div>
   <div class="checks" id="hx-op">
     <div class="ck on" data-v="-title">-title</div>
     <div class="ck on" data-v="-status-code">-status-code</div>
     <div class="ck on" data-v="-tech-detect">-tech-detect</div>
+    <div class="ck on" data-v="-follow-redirects">-follow-redirects</div>
     <div class="ck" data-v="-content-length">-content-length</div>
     <div class="ck" data-v="-content-type">-content-type</div>
     <div class="ck" data-v="-web-server">-web-server</div>
-    <div class="ck" data-v="-follow-redirects">-follow-redirects</div>
+    <div class="ck" data-v="-ip">-ip</div>
+    <div class="ck" data-v="-cname">-cname</div>
     <div class="ck" data-v="-no-color">-no-color</div>
-    <div class="ck" data-v="-o /tmp/httpx.txt">-o output</div>
     <div class="ck" data-v="-silent">-silent</div>
     <div class="ck" data-v="-tls-probe">-tls-probe</div>
     <div class="ck" data-v="-screenshot">-screenshot</div>
+    <div class="ck" data-v="-probe">-probe</div>
   </div>
+
   <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="hx-cmd"></div></div>
   <div class="run-row">
     <button class="rbtn" id="hx-run" onclick="runTool('hx')">▶ EJECUTAR</button>
@@ -2331,6 +2383,58 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="kbtn" onclick="cpCmd('hx-cmd')">COPY</button>
     <button class="kbtn" style="border-color:#c8a020;color:#c8a020" onclick="execCmd('go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest','hx-out-c','hx-out','hx-inst')">⬇ INSTALAR PD</button>
   </div>
+
+  <!-- RESULTS DASHBOARD -->
+  <div id="hx-results" class="hx-results" style="display:none">
+    <div class="hx-results-hdr">
+      ◎ DOMINIOS VIVOS DETECTADOS
+      <span id="hx-res-path" style="color:var(--dim);font-size:10px;margin-left:auto"></span>
+    </div>
+    <div style="padding:10px">
+      <!-- STATS -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+        <div class="hx-stat s-live" onclick="hxSendTo('all')" title="Click para seleccionar todos en una herramienta">
+          <span class="hx-cnt" id="hx-cnt-total">0</span>
+          <span>live total</span>
+        </div>
+        <div class="hx-stat s-200" onclick="hxSetCat('200')" title="Status 200 — OK">
+          <span class="hx-cnt" id="hx-cnt-200">0</span>
+          <span>200 OK</span>
+        </div>
+        <div class="hx-stat s-403" onclick="hxSetCat('403')" title="Status 403 — Forbidden">
+          <span class="hx-cnt" id="hx-cnt-403">0</span>
+          <span>403</span>
+        </div>
+        <div class="hx-stat s-30x" onclick="hxSetCat('30x')" title="Redirects 3xx">
+          <span class="hx-cnt" id="hx-cnt-30x">0</span>
+          <span>30x redirect</span>
+        </div>
+        <div class="hx-stat s-oth" onclick="hxSetCat('other')" title="Otros status (500, 401, etc.)">
+          <span class="hx-cnt" id="hx-cnt-other">0</span>
+          <span>otros</span>
+        </div>
+      </div>
+      <!-- SEND TO -->
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--mut);letter-spacing:.5px;white-space:nowrap">LISTA:</span>
+        <select class="fi" id="hx-send-cat" style="width:auto;font-size:11px;padding:2px 7px" onchange="bHttpx()">
+          <option value="live">live — todos</option>
+          <option value="200">solo 200</option>
+          <option value="403">solo 403</option>
+          <option value="30x">solo 30x</option>
+        </select>
+        <span style="font-size:11px;color:var(--mut);letter-spacing:.5px;white-space:nowrap">ENVIAR A →</span>
+        <button class="kbtn" onclick="hxSendTo('nuclei')">NUCLEI</button>
+        <button class="kbtn" onclick="hxSendTo('katana')">KATANA</button>
+        <button class="kbtn" onclick="hxSendTo('ffuf')">FFUF</button>
+        <button class="kbtn" onclick="hxSendTo('dalfox')">DALFOX</button>
+        <button class="kbtn" onclick="hxSendTo('subs')">SUBLIST</button>
+      </div>
+      <!-- SAMPLES -->
+      <div id="hx-samples" style="margin-top:8px;font-size:11px;color:var(--dim);font-family:'JetBrains Mono',monospace;line-height:1.7;max-height:80px;overflow-y:auto"></div>
+    </div>
+  </div>
+
   <div class="out-area" id="hx-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('hx-out')">CLEAR</button></div><div class="out-content" id="hx-out-c"></div></div>
 </div>
 
@@ -6195,15 +6299,121 @@ function bWget() {
   setH('wg-cmd', c);
 }
 
-/* ─── HTTPX BUILDER ───────────────────────────────────── */
+/* ─── HTTPX BUILDER + PIPELINE ────────────────────────── */
+var _hxFiles = {};  // category → file path from last parse
+
 function bHttpx() {
-  const u=gv('hx-u')||'https://target.com', t=gv('hx-t')||'50', op=chks('hx-op');
-  const flag = u.endsWith('.txt') || u.startsWith('/') ? `-l ${u}` : `-u ${u}`;
-  let c=`<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">httpx</span> <span class="f">${flag}</span>`;
-  if(op) c+=` <span class="f">${op}</span>`;
-  c+=` <span class="f">-threads ${t}</span>`;
+  const tgt    = tpGetTarget('hx');
+  const t      = gv('hx-t')       || '50';
+  const rate   = gv('hx-rate');
+  const outPath= gv('hx-outpath') || '/tmp/httpx.txt';
+  const op     = chks('hx-op');
+  let c = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">httpx</span> <span class="f">${tgt.flag}</span>`;
+  if (op)   c += ` <span class="f">${op}</span>`;
+  c += ` <span class="f">-threads ${t}</span>`;
+  if (rate) c += ` <span class="f">-rate-limit ${rate}</span>`;
+  // always save output so parse can run
+  c += ` <span class="f">-o</span> <span class="v">${outPath}</span>`;
   setH('hx-cmd', c);
 }
+
+// Called automatically when httpx finishes (via onDoneHooks)
+function hxParseResults(exitCode) {
+  if (exitCode !== 0) return;
+  const outPath = gv('hx-outpath') || '/tmp/httpx.txt';
+  fetch(API + '/httpx/parse', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({path: outPath})
+  }).then(function(r){ return r.json(); }).then(function(d) {
+    if (d.error) return;
+    _hxFiles = d.files;
+    // Update counts
+    var cnt = function(id, v){ var e=document.getElementById(id); if(e) e.textContent=v; };
+    cnt('hx-cnt-total', d.total);
+    cnt('hx-cnt-200',   d.counts['200']);
+    cnt('hx-cnt-403',   d.counts['403']);
+    cnt('hx-cnt-30x',   d.counts['30x']);
+    cnt('hx-cnt-other', d.counts['other']);
+    var rp = document.getElementById('hx-res-path');
+    if (rp) rp.textContent = outPath;
+    // Show samples
+    var samp = document.getElementById('hx-samples');
+    if (samp) {
+      var lines = [];
+      if (d.samples['200'].length) lines.push('<span style="color:var(--g)">200:</span> ' + d.samples['200'].join(', '));
+      if (d.samples['403'].length) lines.push('<span style="color:var(--red)">403:</span> ' + d.samples['403'].join(', '));
+      if (d.samples['30x'].length) lines.push('<span style="color:var(--yellow)">30x:</span> ' + d.samples['30x'].join(', '));
+      samp.innerHTML = lines.join('<br>');
+    }
+    // Show dashboard
+    var res = document.getElementById('hx-results');
+    if (res) res.style.display = 'block';
+    // Notify in output
+    appendOut('hx-out-c', '\n→ ' + d.total + ' dominios vivos | 200:' + d.counts['200'] + ' 403:' + d.counts['403'] + ' 30x:' + d.counts['30x'], 'ok');
+  }).catch(function(){});
+}
+
+function hxSetCat(cat) {
+  var sel = document.getElementById('hx-send-cat');
+  var map = {'200':'200','403':'403','30x':'30x','other':'live'};
+  if (sel) sel.value = map[cat] || 'live';
+}
+
+function hxSendTo(toolId) {
+  var cat    = (document.getElementById('hx-send-cat') || {}).value || 'live';
+  var catMap = {'live':'live','200':'200','403':'403','30x':'30x'};
+  var fileCat= catMap[cat] || 'live';
+  var path   = (_hxFiles && _hxFiles[fileCat]) || '/tmp/httpx-live.txt';
+
+  if (toolId === 'all') { toolId = 'nuclei'; }  // default "all" → nuclei
+
+  if (toolId === 'subs') {
+    // Push into SUBLIST panel
+    _subsPath = path;
+    var fi = document.getElementById('subs-filepath');
+    if (fi) fi.value = path;
+    var op = document.getElementById('subs-out-path');
+    if (op) op.value = path;
+    subsShowStats((document.getElementById('hx-cnt-' + (cat === 'live' ? 'total' : cat)) || {}).textContent || '?', path);
+    sw('subs', document.querySelector(".s-item[onclick*=\"'subs'\"]"));
+    return;
+  }
+
+  // Tools with target picker (nc, kt, hx)
+  var tpTools = {nuclei:'nc', katana:'kt'};
+  if (tpTools[toolId]) {
+    var prefix = tpTools[toolId];
+    var fileBtn = document.getElementById(prefix + '-tp-file');
+    if (fileBtn) tpSwitch(prefix, 'file', fileBtn);
+    var fi = document.getElementById(prefix + '-file');
+    if (fi) fi.value = path;
+    var builders = {nc: bNuclei, kt: bKatana};
+    if (builders[prefix]) builders[prefix]();
+  } else if (toolId === 'ffuf') {
+    // ffuf W2 with the list
+    var w2 = document.getElementById('ff-w2');
+    if (w2) { w2.value = path; bFfuf(); }
+    var ffu = document.getElementById('ff-u');
+    if (ffu && !ffu.value) ffu.value = 'FUZZ';
+  } else if (toolId === 'dalfox') {
+    var du = document.getElementById('df-u');
+    if (du) { du.value = path; }
+    var dm = document.getElementById('df-m');
+    if (dm) dm.value = 'file';
+    bDalfox();
+  }
+
+  // Navigate to the tool
+  var toolPanel = {nuclei:'nuclei', katana:'katana', ffuf:'ffuf', dalfox:'dalfox'};
+  var panelId   = toolPanel[toolId];
+  if (panelId) {
+    var sItem = document.querySelector(".s-item[onclick*=\"'" + panelId + "'\"]");
+    sw(panelId, sItem);
+  }
+}
+
+// Register the on-done hook
+onDoneHooks.hx = hxParseResults;
 
 /* ─── SUBLIST ─────────────────────────────────────────── */
 var _subsPath = '/tmp/subs.txt';
@@ -6284,10 +6494,9 @@ function subsCopyPath() {
 }
 
 function subsUseInTools() {
-  // Fill the path in all tools and rebuild commands
-  useSubs('hx-u', bHttpx);
-  useSubs('nc-u', bNuclei, 'list');
-  useSubs('kt-u', bKatana, 'list');
+  tpUseSubs('hx');
+  tpUseSubs('nc');
+  tpUseSubs('kt');
 }
 
 /* legacy useSubs for dalfox / httpx / ffuf */

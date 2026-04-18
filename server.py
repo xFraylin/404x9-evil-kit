@@ -299,6 +299,63 @@ def api_files_read():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/httpx/parse', methods=['POST'])
+def api_httpx_parse():
+    path = (request.json or {}).get('path', '/tmp/httpx.txt')
+    if not os.path.isfile(path):
+        return jsonify({'error': 'Archivo no encontrado: ' + path}), 404
+    try:
+        with open(path, 'r', errors='replace') as f:
+            lines = [l.strip() for l in f if l.strip()]
+
+        ok, forbidden, redirects, other = [], [], [], []
+        for line in lines:
+            m = re.match(r'^(https?://\S+)', line)
+            if not m:
+                continue
+            url = m.group(1).rstrip(',;')
+            sm  = re.search(r'\[(\d{3})\]', line)
+            if not sm:
+                continue
+            code = int(sm.group(1))
+            if code == 200:
+                ok.append(url)
+            elif 300 <= code < 400:
+                redirects.append(url)
+            elif code == 403:
+                forbidden.append(url)
+            elif code > 0:
+                other.append(url)
+
+        all_live = ok + forbidden + redirects + other
+        out_dir  = os.path.dirname(path)
+
+        files = {
+            os.path.join(out_dir, 'httpx-live.txt'): all_live,
+            os.path.join(out_dir, 'httpx-200.txt'):  ok,
+            os.path.join(out_dir, 'httpx-403.txt'):  forbidden,
+            os.path.join(out_dir, 'httpx-30x.txt'):  redirects,
+        }
+        for fpath, urls in files.items():
+            with open(fpath, 'w') as f:
+                f.write('\n'.join(urls) + ('\n' if urls else ''))
+
+        return jsonify({
+            'ok':    True,
+            'total': len(all_live),
+            'counts': {'200': len(ok), '403': len(forbidden),
+                       '30x': len(redirects), 'other': len(other)},
+            'files': {
+                'live': os.path.join(out_dir, 'httpx-live.txt'),
+                '200':  os.path.join(out_dir, 'httpx-200.txt'),
+                '403':  os.path.join(out_dir, 'httpx-403.txt'),
+                '30x':  os.path.join(out_dir, 'httpx-30x.txt'),
+            },
+            'samples': {'200': ok[:3], '403': forbidden[:3], '30x': redirects[:3]},
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/subs/save', methods=['POST'])
 def api_subs_save():
     data = request.json or {}
