@@ -6308,7 +6308,7 @@ function bHttpx() {
   const rate   = gv('hx-rate');
   const outPath= gv('hx-outpath') || '/tmp/httpx.txt';
   const op     = chks('hx-op');
-  let c = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">httpx</span> <span class="f">${tgt.flag}</span>`;
+  let c = `<span class="b">~/go/bin/httpx</span> <span class="f">${tgt.flag}</span>`;
   if (op)   c += ` <span class="f">${op}</span>`;
   c += ` <span class="f">-threads ${t}</span>`;
   if (rate) c += ` <span class="f">-rate-limit ${rate}</span>`;
@@ -6590,7 +6590,7 @@ function bKatana() {
   const c = gv('kt-c') || '10';
   const proxy = gv('kt-proxy'), hdr = gv('kt-hdr');
   const op = chks('kt-op');
-  let cmd = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">katana</span> <span class="f">${tgt.flag}</span>`;
+  let cmd = `<span class="b">~/go/bin/katana</span> <span class="f">${tgt.flag}</span>`;
   cmd += ` <span class="f">-depth ${d}</span>`;
   cmd += ` <span class="f">-concurrency ${c}</span>`;
   if (proxy) cmd += ` <span class="f">-proxy</span> <span class="v">${proxy}</span>`;
@@ -6637,7 +6637,7 @@ function bNuclei() {
   const sev = gv('nc-sev'), proxy = gv('nc-proxy');
   const op = chks('nc-op');
   const tags = ncGetTags();
-  let cmd = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">nuclei</span> <span class="f">${tgt.flag}</span>`;
+  let cmd = `<span class="b">~/go/bin/nuclei</span> <span class="f">${tgt.flag}</span>`;
   if (tplVal) cmd += ` <span class="f">-t</span> <span class="v">${tplVal}</span>`;
   if (sev)    cmd += ` <span class="f">-severity</span> <span class="v">${sev}</span>`;
   if (tags.length) cmd += ` <span class="f">-tags</span> <span class="v">${tags.join(',')}</span>`;
