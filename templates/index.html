@@ -2355,6 +2355,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="rbtn" id="kt-run" onclick="runTool('kt')">▶ EJECUTAR</button>
     <button class="sbtn" id="kt-stop" onclick="stopTool('kt')" disabled>■ STOP</button>
     <button class="kbtn" onclick="cpCmd('kt-cmd')">COPY</button>
+    <button class="kbtn" style="border-color:#c8a020;color:#c8a020" onclick="execCmd('go install -v github.com/projectdiscovery/katana/cmd/katana@latest','kt-out-c','kt-out','kt-inst')">⬇ INSTALAR</button>
   </div>
   <div class="out-area" id="kt-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('kt-out')">CLEAR</button></div><div class="out-content" id="kt-out-c"></div></div>
 </div>
@@ -2419,6 +2420,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="rbtn" id="nc-run" onclick="runTool('nc')">▶ EJECUTAR</button>
     <button class="sbtn" id="nc-stop" onclick="stopTool('nc')" disabled>■ STOP</button>
     <button class="kbtn" onclick="cpCmd('nc-cmd')">COPY</button>
+    <button class="kbtn" style="border-color:#c8a020;color:#c8a020" onclick="execCmd('go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest','nc-out-c','nc-out','nc-inst')">⬇ INSTALAR</button>
   </div>
   <div class="out-area" id="nc-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('nc-out')">CLEAR</button></div><div class="out-content" id="nc-out-c"></div></div>
 </div>
@@ -6152,7 +6154,7 @@ function bKatana() {
   const op = chks('kt-op');
   const isList = u.endsWith('.txt') || u.startsWith('/');
   const targetFlag = isList ? `-list ${u}` : `-u ${u}`;
-  let cmd = `<span class="b">katana</span> <span class="f">${targetFlag}</span>`;
+  let cmd = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">katana</span> <span class="f">${targetFlag}</span>`;
   cmd += ` <span class="f">-depth ${d}</span>`;
   cmd += ` <span class="f">-concurrency ${c}</span>`;
   if (proxy) cmd += ` <span class="f">-proxy</span> <span class="v">${proxy}</span>`;
@@ -6171,7 +6173,7 @@ function bNuclei() {
   const op = chks('nc-op');
   const isList = u.endsWith('.txt') || u.startsWith('/');
   const targetFlag = isList ? `-l ${u}` : `-u ${u}`;
-  let cmd = `<span class="b">nuclei</span> <span class="f">${targetFlag}</span>`;
+  let cmd = `<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">nuclei</span> <span class="f">${targetFlag}</span>`;
   if (tplVal) cmd += ` <span class="f">-t</span> <span class="v">${tplVal}</span>`;
   if (sev)    cmd += ` <span class="f">-severity</span> <span class="v">${sev}</span>`;
   cmd += ` <span class="f">-c ${t}</span>`;
