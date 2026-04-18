@@ -2320,6 +2320,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="rbtn" id="hx-run" onclick="runTool('hx')">▶ EJECUTAR</button>
     <button class="sbtn" id="hx-stop" onclick="stopTool('hx')" disabled>■ STOP</button>
     <button class="kbtn" onclick="cpCmd('hx-cmd')">COPY</button>
+    <button class="kbtn" style="border-color:#c8a020;color:#c8a020" onclick="execCmd('go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest','hx-out-c','hx-out','hx-inst')">⬇ INSTALAR PD</button>
   </div>
   <div class="out-area" id="hx-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('hx-out')">CLEAR</button></div><div class="out-content" id="hx-out-c"></div></div>
 </div>
@@ -6041,7 +6042,7 @@ function bWget() {
 function bHttpx() {
   const u=gv('hx-u')||'https://target.com', t=gv('hx-t')||'50', op=chks('hx-op');
   const flag = u.endsWith('.txt') || u.startsWith('/') ? `-l ${u}` : `-u ${u}`;
-  let c=`<span class="b">httpx</span> <span class="f">${flag}</span>`;
+  let c=`<span class="f">PATH=$PATH:$HOME/go/bin</span> <span class="b">httpx</span> <span class="f">${flag}</span>`;
   if(op) c+=` <span class="f">${op}</span>`;
   c+=` <span class="f">-threads ${t}</span>`;
   setH('hx-cmd', c);
