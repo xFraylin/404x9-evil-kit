@@ -587,9 +587,12 @@ textarea.fi{resize:vertical;min-height:48px}
   <!-- UTILS -->
   <div class="acc-cat" onclick="toggleAcc(this)">UTILS <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
+    <div class="s-item" onclick="sw('subs',this)"><div class="s-dot"></div><span class="s-icon">≡</span>SUBLIST <span class="s-badge">BB</span></div>
     <div class="s-item" onclick="sw('curl-adv',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>CURL <span class="s-badge">ADV</span></div>
     <div class="s-item" onclick="sw('wget-adv',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>WGET <span class="s-badge">ADV</span></div>
     <div class="s-item" onclick="sw('httpx',this)"><div class="s-dot"></div><span class="s-icon">◎</span>HTTPX</div>
+    <div class="s-item" onclick="sw('katana',this)"><div class="s-dot"></div><span class="s-icon">◈</span>KATANA</div>
+    <div class="s-item" onclick="sw('nuclei',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>NUCLEI</div>
     <div class="s-item" onclick="sw('encoder',this)"><div class="s-dot"></div><span class="s-icon">⊞</span>ENCODER <span class="s-badge">NEW</span></div>
   </div>
 
@@ -910,7 +913,10 @@ textarea.fi{resize:vertical;min-height:48px}
   <div id="ffuf-val" class="val-msg"></div>
   <!-- Core -->
   <div class="row">
-    <div class="ig w4"><div class="lbl">URL (usa FUZZ / W2)</div><input class="fi" id="ff-u" placeholder="http://target.com/FUZZ" oninput="bFfuf()"></div>
+    <div class="ig w4">
+      <div class="lbl" style="display:flex;align-items:center;gap:6px">URL (usa FUZZ / W2) <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="useSubs('ff-w2',bFfuf)" title="Poner lista de subs como W2">≡ SUBS→W2</button></div>
+      <input class="fi" id="ff-u" placeholder="http://target.com/FUZZ" oninput="bFfuf()">
+    </div>
     <div class="ig" style="max-width:75px"><div class="lbl">METHOD</div>
       <select class="fi" id="ff-method" onchange="bFfuf()">
         <option>GET</option><option>POST</option><option>PUT</option><option>HEAD</option>
@@ -1144,7 +1150,10 @@ textarea.fi{resize:vertical;min-height:48px}
 <div id="p-dalfox" class="panel">
   <div class="pt">DALFOX <span class="ptd">— XSS parameter analysis & scanner</span></div>
   <div class="row">
-    <div class="ig w3"><div class="lbl">URL TARGET</div><input class="fi" id="df-u" placeholder="http://target.com/search?q=FUZZ" oninput="bDalfox()"></div>
+    <div class="ig w3">
+      <div class="lbl" style="display:flex;align-items:center;gap:6px">URL / ARCHIVO <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="useSubs('df-u',bDalfox,'file')" title="Usar lista de subdominios (modo file)">≡ SUBS</button></div>
+      <input class="fi" id="df-u" placeholder="http://target.com/search?q=FUZZ" oninput="bDalfox()">
+    </div>
     <div class="ig"><div class="lbl">MODO</div>
       <select class="fi" id="df-m" onchange="bDalfox()">
         <option>url</option><option>pipe</option><option>file</option><option>sxss</option>
@@ -2222,11 +2231,74 @@ textarea.fi{resize:vertical;min-height:48px}
   </div>
 </div>
 
+<!-- ══ SUBLIST ══ -->
+<div id="p-subs" class="panel">
+  <div class="pt">SUBLIST <span class="ptd">— Gestión de subdominios para Bug Bounty</span></div>
+  <div class="tabs">
+    <div class="tab on" onclick="stab('subs-tab','paste',this)">PEGAR</div>
+    <div class="tab" onclick="stab('subs-tab','upload',this)">SUBIR ARCHIVO</div>
+    <div class="tab" onclick="stab('subs-tab','file',this)">ARCHIVO EXISTENTE</div>
+  </div>
+
+  <!-- PEGAR -->
+  <div id="subs-tab-paste" class="tab-content on">
+    <div class="lbl" style="margin-bottom:4px">LISTA DE SUBDOMINIOS <span style="color:var(--dim);font-size:10px">— uno por línea, se limpian y deduplicarán</span></div>
+    <textarea class="fi" id="subs-paste" rows="8" style="width:100%;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px" placeholder="sub1.target.com&#10;sub2.target.com&#10;api.target.com&#10;..."></textarea>
+  </div>
+
+  <!-- SUBIR ARCHIVO -->
+  <div id="subs-tab-upload" class="tab-content">
+    <div class="lbl" style="margin-bottom:6px">SUBIR ARCHIVO .TXT</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <input type="file" id="subs-file-input" accept=".txt,.csv" style="display:none" onchange="subsReadFile(this)">
+      <button class="kbtn" onclick="document.getElementById('subs-file-input').click()">📂 SELECCIONAR ARCHIVO</button>
+      <span id="subs-file-name" style="font-size:12px;color:var(--mut)">Ningún archivo seleccionado</span>
+    </div>
+    <div class="lbl" style="margin:8px 0 4px">PREVIEW <span id="subs-upload-cnt" style="color:var(--g2)"></span></div>
+    <textarea class="fi" id="subs-upload-preview" rows="6" style="width:100%;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:12px;padding:7px;color:var(--mut)" readonly placeholder="El contenido del archivo aparecerá aquí..."></textarea>
+  </div>
+
+  <!-- ARCHIVO EXISTENTE -->
+  <div id="subs-tab-file" class="tab-content">
+    <div class="lbl" style="margin-bottom:4px">RUTA DEL ARCHIVO</div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <input class="fi" id="subs-filepath" placeholder="/tmp/subs.txt" style="flex:1" value="/tmp/subs.txt">
+      <button class="kbtn" onclick="subsLoadFile()">▶ CARGAR</button>
+      <button class="kbtn" onclick="wlBrowse('subs-filepath', subsLoadFile)" title="Explorar">📂</button>
+    </div>
+    <div id="subs-file-status" style="font-size:12px;color:var(--mut);margin-top:6px"></div>
+  </div>
+
+  <!-- SAVE ROW -->
+  <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid #1a2a1a">
+    <div style="flex:1">
+      <div class="lbl" style="margin-bottom:3px">GUARDAR EN</div>
+      <input class="fi" id="subs-out-path" value="/tmp/subs.txt" style="width:100%">
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px;margin-top:14px">
+      <button class="rbtn" style="white-space:nowrap" onclick="subsSave()">💾 GUARDAR LISTA</button>
+    </div>
+  </div>
+  <div id="subs-status" style="font-size:12px;margin-top:6px;min-height:16px"></div>
+
+  <!-- STATS BAR -->
+  <div id="subs-stats" style="display:none;margin-top:8px;padding:7px 10px;background:#040a04;border:1px solid #1a3a1a;border-radius:3px;font-size:12px">
+    <span style="color:var(--g2)" id="subs-count">0</span> subdominios guardados en
+    <span style="color:var(--cyan)" id="subs-saved-path">/tmp/subs.txt</span>
+    &nbsp;—&nbsp;
+    <button class="kbtn" style="font-size:10px;padding:1px 8px" onclick="subsCopyPath()">⎘ COPIAR RUTA</button>
+    <button class="kbtn" style="font-size:10px;padding:1px 8px;margin-left:4px" onclick="subsUseInTools()">→ USAR EN HERRAMIENTAS</button>
+  </div>
+</div>
+
 <!-- ══ HTTPX ══ -->
 <div id="p-httpx" class="panel">
   <div class="pt">HTTPX <span class="ptd">— Fast HTTP probe & analyzer</span></div>
   <div class="row">
-    <div class="ig w3"><div class="lbl">URL / LISTA (-l)</div><input class="fi" id="hx-u" placeholder="https://target.com o /tmp/subs.txt" oninput="bHttpx()"></div>
+    <div class="ig w3">
+      <div class="lbl" style="display:flex;align-items:center;gap:6px">URL / LISTA (-l) <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="useSubs('hx-u',bHttpx)" title="Usar lista de subdominios guardada">≡ SUBS</button></div>
+      <input class="fi" id="hx-u" placeholder="https://target.com o /tmp/subs.txt" oninput="bHttpx()">
+    </div>
     <div class="ig" style="max-width:60px"><div class="lbl">THREADS</div><input class="fi" id="hx-t" value="50" oninput="bHttpx()"></div>
   </div>
   <div class="checks" id="hx-op">
@@ -2250,6 +2322,105 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="kbtn" onclick="cpCmd('hx-cmd')">COPY</button>
   </div>
   <div class="out-area" id="hx-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('hx-out')">CLEAR</button></div><div class="out-content" id="hx-out-c"></div></div>
+</div>
+
+<!-- ══ KATANA ══ -->
+<div id="p-katana" class="panel">
+  <div class="pt">KATANA <span class="ptd">— Web crawler & spider (ProjectDiscovery)</span></div>
+  <div class="row">
+    <div class="ig w4">
+      <div class="lbl" style="display:flex;align-items:center;gap:6px">URL / LISTA <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="useSubs('kt-u',bKatana,'list')" title="Usar lista de subdominios">≡ SUBS</button></div>
+      <input class="fi" id="kt-u" placeholder="https://target.com o /tmp/subs.txt" oninput="bKatana()">
+    </div>
+    <div class="ig" style="max-width:70px"><div class="lbl">DEPTH</div><input class="fi" id="kt-d" value="3" oninput="bKatana()"></div>
+    <div class="ig" style="max-width:70px"><div class="lbl">CONCURRENCY</div><input class="fi" id="kt-c" value="10" oninput="bKatana()"></div>
+  </div>
+  <div class="row">
+    <div class="ig"><div class="lbl">PROXY</div><input class="fi" id="kt-proxy" placeholder="http://127.0.0.1:8080" oninput="bKatana()"></div>
+    <div class="ig"><div class="lbl">HEADERS (-H)</div><input class="fi" id="kt-hdr" placeholder="'Authorization: Bearer TOKEN'" oninput="bKatana()"></div>
+  </div>
+  <div class="checks" id="kt-op">
+    <div class="ck on" data-v="-js-crawl">-js-crawl</div>
+    <div class="ck" data-v="-headless">-headless</div>
+    <div class="ck" data-v="-no-color">-no-color</div>
+    <div class="ck" data-v="-silent">-silent</div>
+    <div class="ck" data-v="-known-files all">-known-files</div>
+    <div class="ck" data-v="-form-extraction">-form-extraction</div>
+    <div class="ck" data-v="-automatic-form-fill">-auto-form-fill</div>
+    <div class="ck" data-v="-o /tmp/katana.txt">-o output</div>
+    <div class="ck" data-v="-ef woff,css,png,svg,jpg,gif">-ef assets</div>
+  </div>
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="kt-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="kt-run" onclick="runTool('kt')">▶ EJECUTAR</button>
+    <button class="sbtn" id="kt-stop" onclick="stopTool('kt')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('kt-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="kt-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('kt-out')">CLEAR</button></div><div class="out-content" id="kt-out-c"></div></div>
+</div>
+
+<!-- ══ NUCLEI ══ -->
+<div id="p-nuclei" class="panel">
+  <div class="pt">NUCLEI <span class="ptd">— Vulnerability scanner con templates (ProjectDiscovery)</span></div>
+  <div class="row">
+    <div class="ig w4">
+      <div class="lbl" style="display:flex;align-items:center;gap:6px">URL / LISTA (-l) <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="useSubs('nc-u',bNuclei,'list')" title="Usar lista de subdominios">≡ SUBS</button></div>
+      <input class="fi" id="nc-u" placeholder="https://target.com o /tmp/subs.txt" oninput="bNuclei()">
+    </div>
+    <div class="ig" style="max-width:70px"><div class="lbl">THREADS</div><input class="fi" id="nc-t" value="25" oninput="bNuclei()"></div>
+  </div>
+  <div class="row">
+    <div class="ig w2">
+      <div class="lbl">TEMPLATES (-t)</div>
+      <select class="fi" id="nc-tpl" onchange="bNuclei()">
+        <option value="">todos (default)</option>
+        <option value="cves/">CVEs</option>
+        <option value="exposures/">exposures</option>
+        <option value="misconfiguration/">misconfiguration</option>
+        <option value="vulnerabilities/">vulnerabilities</option>
+        <option value="technologies/">technologies</option>
+        <option value="takeovers/">takeovers</option>
+        <option value="default-logins/">default-logins</option>
+        <option value="dns/">dns</option>
+        <option value="network/">network</option>
+        <option value="__custom__">✏ Personalizado...</option>
+      </select>
+    </div>
+    <div class="ig wl-row" id="nc-tpl-custom-row" style="display:none">
+      <div class="lbl">RUTA TEMPLATE</div>
+      <input class="fi" id="nc-tpl-c" placeholder="/ruta/template.yaml" oninput="bNuclei()">
+    </div>
+    <div class="ig"><div class="lbl">SEVERIDAD (-severity)</div>
+      <select class="fi" id="nc-sev" onchange="bNuclei()">
+        <option value="">todas</option>
+        <option value="critical">critical</option>
+        <option value="critical,high">critical,high</option>
+        <option value="critical,high,medium">critical,high,medium</option>
+        <option value="medium">medium</option>
+        <option value="low">low</option>
+        <option value="info">info</option>
+      </select></div>
+    <div class="ig"><div class="lbl">PROXY</div><input class="fi" id="nc-proxy" placeholder="http://127.0.0.1:8080" oninput="bNuclei()"></div>
+  </div>
+  <div class="checks" id="nc-op">
+    <div class="ck" data-v="-silent">-silent</div>
+    <div class="ck" data-v="-no-color">-no-color</div>
+    <div class="ck" data-v="-stats">-stats</div>
+    <div class="ck on" data-v="-o /tmp/nuclei.txt">-o output</div>
+    <div class="ck" data-v="-jsonl">-jsonl</div>
+    <div class="ck" data-v="-retries 2">-retries 2</div>
+    <div class="ck" data-v="-timeout 10">-timeout 10</div>
+    <div class="ck" data-v="-headless">-headless</div>
+    <div class="ck" data-v="-tags xss,sqli,ssrf,rce,lfi">-tags críticos</div>
+    <div class="ck" data-v="-exclude-severity info">-excl. info</div>
+  </div>
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="nc-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="nc-run" onclick="runTool('nc')">▶ EJECUTAR</button>
+    <button class="sbtn" id="nc-stop" onclick="stopTool('nc')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('nc-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="nc-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('nc-out')">CLEAR</button></div><div class="out-content" id="nc-out-c"></div></div>
 </div>
 
 <!-- ══ TOOLS STATUS ══ -->
@@ -5873,6 +6044,150 @@ function bHttpx() {
   c+=` <span class="f">-threads ${t}</span>`;
   setH('hx-cmd', c);
 }
+
+/* ─── SUBLIST ─────────────────────────────────────────── */
+var _subsPath = '/tmp/subs.txt';
+
+function subsReadFile(input) {
+  const f = input.files[0]; if (!f) return;
+  document.getElementById('subs-file-name').textContent = f.name;
+  const r = new FileReader();
+  r.onload = function(e) {
+    const lines = e.target.result.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'));
+    const deduped = [...new Set(lines)];
+    document.getElementById('subs-upload-preview').value = deduped.join('\n');
+    document.getElementById('subs-upload-cnt').textContent = '(' + deduped.length + ' subdominios)';
+  };
+  r.readAsText(f);
+}
+
+function subsGetText() {
+  // Return the active tab's content
+  if (document.getElementById('subs-tab-paste').classList.contains('on'))
+    return document.getElementById('subs-paste').value;
+  if (document.getElementById('subs-tab-upload').classList.contains('on'))
+    return document.getElementById('subs-upload-preview').value;
+  return null; // file tab — saved already
+}
+
+function subsLoadFile() {
+  const path = gv('subs-filepath');
+  const st = document.getElementById('subs-file-status');
+  if (!path) { if(st) st.textContent='Ingresa una ruta.'; return; }
+  fetch(API + '/subs/load', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path})})
+    .then(r=>r.json()).then(d=>{
+      if (d.error) { if(st) { st.style.color='var(--red)'; st.textContent='Error: ' + d.error; } return; }
+      if(st) { st.style.color='var(--g2)'; st.textContent='✓ ' + d.count + ' subdominios cargados desde ' + path; }
+      _subsPath = path;
+      document.getElementById('subs-out-path').value = path;
+      subsShowStats(d.count, path);
+    }).catch(()=>{ if(st) { st.style.color='var(--red)'; st.textContent='Error de conexión.'; } });
+}
+
+function subsSave() {
+  const outPath = gv('subs-out-path') || '/tmp/subs.txt';
+  const st = document.getElementById('subs-status');
+
+  // File tab: just set path and confirm
+  if (document.getElementById('subs-tab-file').classList.contains('on')) {
+    const fp = gv('subs-filepath');
+    if (!fp) { if(st) { st.style.color='var(--red)'; st.textContent='Ingresa una ruta de archivo.'; } return; }
+    _subsPath = fp;
+    document.getElementById('subs-out-path').value = fp;
+    subsLoadFile();
+    return;
+  }
+
+  const text = subsGetText();
+  if (!text || !text.trim()) { if(st) { st.style.color='var(--red)'; st.textContent='La lista está vacía.'; } return; }
+  if(st) { st.style.color='var(--mut)'; st.textContent='Guardando...'; }
+  fetch(API + '/subs/save', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text, path: outPath})})
+    .then(r=>r.json()).then(d=>{
+      if (d.error) { if(st) { st.style.color='var(--red)'; st.textContent='Error: '+d.error; } return; }
+      _subsPath = d.path;
+      if(st) { st.style.color='var(--g2)'; st.textContent='✓ ' + d.count + ' subdominios guardados en ' + d.path; }
+      setTimeout(()=>{ if(st&&st.textContent.startsWith('✓')) st.textContent=''; }, 4000);
+      subsShowStats(d.count, d.path);
+    }).catch(()=>{ if(st) { st.style.color='var(--red)'; st.textContent='Error de conexión.'; } });
+}
+
+function subsShowStats(count, path) {
+  const bar = document.getElementById('subs-stats');
+  if (!bar) return;
+  bar.style.display = 'block';
+  const c = document.getElementById('subs-count'); if(c) c.textContent = count;
+  const p = document.getElementById('subs-saved-path'); if(p) p.textContent = path;
+}
+
+function subsCopyPath() {
+  navigator.clipboard.writeText(_subsPath).catch(()=>{});
+}
+
+function subsUseInTools() {
+  // Fill the path in all tools and rebuild commands
+  useSubs('hx-u', bHttpx);
+  useSubs('nc-u', bNuclei, 'list');
+  useSubs('kt-u', bKatana, 'list');
+}
+
+function useSubs(inputId, rebuildFn, mode) {
+  const path = _subsPath || '/tmp/subs.txt';
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  el.value = path;
+  // For dalfox file mode: also set the mode select
+  if (mode === 'file') {
+    const mEl = document.getElementById('df-m');
+    if (mEl) mEl.value = 'file';
+  }
+  if (rebuildFn) rebuildFn();
+}
+
+/* ─── KATANA BUILDER ──────────────────────────────────── */
+function bKatana() {
+  const u = gv('kt-u') || 'https://target.com';
+  const d = gv('kt-d') || '3';
+  const c = gv('kt-c') || '10';
+  const proxy = gv('kt-proxy'), hdr = gv('kt-hdr');
+  const op = chks('kt-op');
+  const isList = u.endsWith('.txt') || u.startsWith('/');
+  const targetFlag = isList ? `-list ${u}` : `-u ${u}`;
+  let cmd = `<span class="b">katana</span> <span class="f">${targetFlag}</span>`;
+  cmd += ` <span class="f">-depth ${d}</span>`;
+  cmd += ` <span class="f">-concurrency ${c}</span>`;
+  if (proxy) cmd += ` <span class="f">-proxy</span> <span class="v">${proxy}</span>`;
+  if (hdr)   cmd += ` <span class="f">-H</span> <span class="v">${hdr}</span>`;
+  if (op)    cmd += ` <span class="f">${op}</span>`;
+  setH('kt-cmd', cmd);
+}
+
+/* ─── NUCLEI BUILDER ──────────────────────────────────── */
+function bNuclei() {
+  const u = gv('nc-u') || 'https://target.com';
+  const t = gv('nc-t') || '25';
+  const tplSel = gv('nc-tpl');
+  const tplVal = tplSel === '__custom__' ? gv('nc-tpl-c') : tplSel;
+  const sev = gv('nc-sev'), proxy = gv('nc-proxy');
+  const op = chks('nc-op');
+  const isList = u.endsWith('.txt') || u.startsWith('/');
+  const targetFlag = isList ? `-l ${u}` : `-u ${u}`;
+  let cmd = `<span class="b">nuclei</span> <span class="f">${targetFlag}</span>`;
+  if (tplVal) cmd += ` <span class="f">-t</span> <span class="v">${tplVal}</span>`;
+  if (sev)    cmd += ` <span class="f">-severity</span> <span class="v">${sev}</span>`;
+  cmd += ` <span class="f">-c ${t}</span>`;
+  if (proxy)  cmd += ` <span class="f">-proxy</span> <span class="v">${proxy}</span>`;
+  if (op)     cmd += ` <span class="f">${op}</span>`;
+  setH('nc-cmd', cmd);
+}
+
+/* nuclei: toggle custom template input */
+document.addEventListener('DOMContentLoaded', function() {
+  const tplSel = document.getElementById('nc-tpl');
+  if (tplSel) tplSel.addEventListener('change', function() {
+    const row = document.getElementById('nc-tpl-custom-row');
+    if (row) row.style.display = this.value === '__custom__' ? 'flex' : 'none';
+  });
+});
 
 /* ─── ADVANCED TOGGLE ─────────────────────────────────── */
 function toggleAdv(sectionId, toggleEl) {

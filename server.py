@@ -234,6 +234,7 @@ def api_tools_status():
         'impacket-psexec','evil-winrm','hashid','tcpdump',
         'medusa','wfuzz','dalfox','httpx','theharvester',
         'sherlock','holehe','dnsrecon','exiftool',
+        'katana','nuclei',
     ]
     status = {}
     for t in tools:
@@ -295,6 +296,41 @@ def api_files_read():
         with open(path, 'r', errors='replace') as f:
             content = f.read(500_000)
         return jsonify({'path': path, 'content': content})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/subs/save', methods=['POST'])
+def api_subs_save():
+    data = request.json or {}
+    raw  = data.get('text', '')
+    path = data.get('path', '/tmp/subs.txt')
+    lines = [l.strip() for l in raw.splitlines()]
+    lines = [l for l in lines if l and not l.startswith('#')]
+    seen = set(); deduped = []
+    for l in lines:
+        if l not in seen:
+            seen.add(l); deduped.append(l)
+    try:
+        with open(path, 'w') as f:
+            f.write('\n'.join(deduped) + ('\n' if deduped else ''))
+        return jsonify({'ok': True, 'count': len(deduped), 'path': path})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/subs/load', methods=['POST'])
+def api_subs_load():
+    path = (request.json or {}).get('path', '')
+    if not path or not os.path.isfile(path):
+        return jsonify({'error': 'Archivo no encontrado'}), 404
+    try:
+        with open(path, 'r', errors='replace') as f:
+            content = f.read(2_000_000)
+        lines = [l.strip() for l in content.splitlines() if l.strip() and not l.startswith('#')]
+        seen = set(); deduped = []
+        for l in lines:
+            if l not in seen:
+                seen.add(l); deduped.append(l)
+        return jsonify({'ok': True, 'count': len(deduped), 'lines': deduped})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
