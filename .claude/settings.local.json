@@ -16,7 +16,12 @@
       "Bash(git config *)",
       "Bash(git -C /home/xnueve/Desktop/v2/404x9-evil-kit-main log --oneline -5)",
       "Bash(sudo git *)",
-      "Bash(sudo git -C /home/xnueve/Desktop/v2/404x9-evil-kit-main commit -m ' *)"
+      "Bash(sudo git -C /home/xnueve/Desktop/v2/404x9-evil-kit-main commit -m ' *)",
+      "Bash(node --check /home/xnueve/Desktop/v2/404x9-evil-kit-main/templates/index.html)",
+      "Bash(node --check /tmp/check_beacon.js)",
+      "Bash(go env *)",
+      "Read(//home/xnueve/go/**)",
+      "Bash(grep -n 'PATH=$PATH:$HOME/go/bin.*httpx\\\\|PATH=$PATH:$HOME/go/bin.*katana\\\\|PATH=$PATH:$HOME/go/bin.*nuclei' /home/xnueve/Desktop/v2/404x9-evil-kit-main/templates/index.html)"
     ]
   }
 }

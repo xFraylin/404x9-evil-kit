@@ -171,7 +171,13 @@ textarea.fi{resize:vertical;min-height:48px}
 .hx-stat.s-30x .hx-cnt{color:var(--yellow)}
 .hx-stat.s-oth{border-color:var(--brd);color:var(--mut)}
 .hx-stat.s-oth .hx-cnt{color:var(--cyan)}
+@keyframes hxpulse{0%,100%{opacity:1}50%{opacity:.4}}
 .hx-stat.active{box-shadow:0 0 10px rgba(0,255,136,.15)}
+
+/* ─── LISTS REGISTRY ────────────────────────────────── */
+.lists-sel{font-size:11px;margin-top:4px;color:var(--cyan);border-color:#1a3a4a;background:#010406}
+.lists-sel option{background:#020508}
+.lists-sel:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(45,162,255,.08)}
 
 /* ─── TARGET PICKER ─────────────────────────────────── */
 .tp-bar{display:flex;gap:3px;margin-bottom:5px;flex-wrap:wrap}
@@ -1185,6 +1191,11 @@ textarea.fi{resize:vertical;min-height:48px}
       <select class="fi" id="df-m" onchange="bDalfox()">
         <option>url</option><option>pipe</option><option>file</option><option>sxss</option>
       </select></div>
+  </div>
+  <div style="margin-bottom:6px">
+    <select class="fi lists-sel" id="df-avail-lists" onchange="listsSelectDalfox(this)">
+      <option value="">📋 usar lista del sistema (modo file)...</option>
+    </select>
   </div>
   <div class="checks" id="df-op">
     <div class="ck" data-v="--skip-bav">--skip-bav</div>
@@ -2293,6 +2304,9 @@ textarea.fi{resize:vertical;min-height:48px}
       <button class="kbtn" onclick="subsLoadFile()">▶ CARGAR</button>
       <button class="kbtn" onclick="wlBrowse('subs-filepath', subsLoadFile)" title="Explorar">📂</button>
     </div>
+    <select class="fi lists-sel" id="subs-avail-lists" onchange="listsSelectSublist(this)" style="margin-top:4px">
+      <option value="">📋 listas disponibles en el sistema...</option>
+    </select>
     <div id="subs-file-status" style="font-size:12px;color:var(--mut);margin-top:6px"></div>
   </div>
 
@@ -2348,6 +2362,9 @@ textarea.fi{resize:vertical;min-height:48px}
         <input class="fi" id="hx-file" placeholder="/tmp/subs.txt" style="flex:1" oninput="bHttpx()">
         <button class="kbtn" onclick="wlBrowse('hx-file', bHttpx)" title="Explorar">📂</button>
       </div>
+      <select class="fi lists-sel" id="hx-avail-lists" onchange="listsSelectFromPicker('hx',this)">
+        <option value="">📋 listas disponibles en el sistema...</option>
+      </select>
     </div>
   </div>
 
@@ -2388,6 +2405,7 @@ textarea.fi{resize:vertical;min-height:48px}
   <div id="hx-results" class="hx-results" style="display:none">
     <div class="hx-results-hdr">
       ◎ DOMINIOS VIVOS DETECTADOS
+      <span id="hx-live-badge" style="display:none;font-size:10px;padding:1px 6px;border-radius:2px;background:#0a2a10;border:1px solid #1a6030;color:var(--g);animation:hxpulse 1s ease-in-out infinite;margin-left:6px">● LIVE</span>
       <span id="hx-res-path" style="color:var(--dim);font-size:10px;margin-left:auto"></span>
     </div>
     <div style="padding:10px">
@@ -2468,6 +2486,9 @@ textarea.fi{resize:vertical;min-height:48px}
         <input class="fi" id="kt-file" placeholder="/tmp/subs.txt" style="flex:1" oninput="bKatana()">
         <button class="kbtn" onclick="wlBrowse('kt-file', bKatana)" title="Explorar">📂</button>
       </div>
+      <select class="fi lists-sel" id="kt-avail-lists" onchange="listsSelectFromPicker('kt',this)">
+        <option value="">📋 listas disponibles en el sistema...</option>
+      </select>
       <div id="kt-file-status" style="font-size:11px;color:var(--mut);margin-top:3px"></div>
     </div>
   </div>
@@ -2529,6 +2550,9 @@ textarea.fi{resize:vertical;min-height:48px}
         <input class="fi" id="nc-file" placeholder="/tmp/subs.txt" style="flex:1" oninput="bNuclei()">
         <button class="kbtn" onclick="wlBrowse('nc-file', bNuclei)" title="Explorar">📂</button>
       </div>
+      <select class="fi lists-sel" id="nc-avail-lists" onchange="listsSelectFromPicker('nc',this)">
+        <option value="">📋 listas disponibles en el sistema...</option>
+      </select>
       <div id="nc-file-status" style="font-size:11px;color:var(--mut);margin-top:3px"></div>
     </div>
   </div>
@@ -2574,9 +2598,13 @@ textarea.fi{resize:vertical;min-height:48px}
 
   <!-- ── TAGS ── -->
   <div style="margin-bottom:8px">
-    <div class="lbl" style="display:flex;align-items:center;gap:8px;margin-bottom:5px">TAGS (-tags)
+    <div class="lbl" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px">TAGS (-tags)
       <span style="font-size:10px;color:var(--dim);font-weight:normal;letter-spacing:0">— selecciona uno o varios</span>
-      <button class="kbtn" style="font-size:10px;padding:1px 7px;margin-left:auto" onclick="ncClearTags()">LIMPIAR</button>
+      <div style="display:flex;gap:4px;margin-left:auto">
+        <button class="kbtn" style="font-size:10px;padding:1px 8px;border-color:#c8a020;color:#c8a020" onclick="ncPreset('highsignal')" title="lfi,sqli,ssrf,xss,rce,open-redirect,takeover · severity medium+">⚡ HIGH SIGNAL</button>
+        <button class="kbtn" style="font-size:10px;padding:1px 8px;border-color:var(--cyan);color:var(--cyan)" onclick="ncPreset('cleanbb')" title="severity critical,high · excluye ruido de headers/sri">🎯 CLEAN BB</button>
+        <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="ncClearTags()">LIMPIAR</button>
+      </div>
     </div>
     <div class="nc-tag-section">— INJECTION —</div>
     <div class="checks" style="margin-bottom:5px" id="nc-tags-inj">
@@ -2659,6 +2687,10 @@ textarea.fi{resize:vertical;min-height:48px}
       <span style="font-size:11px;color:var(--mut);white-space:nowrap;letter-spacing:.5px">+ CUSTOM:</span>
       <input class="fi" id="nc-tags-custom" placeholder="tag1,tag2,tag3 — separados por coma" style="flex:1;font-size:12px" oninput="bNuclei()">
     </div>
+    <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+      <span style="font-size:11px;color:#c85050;white-space:nowrap;letter-spacing:.5px">− EXCLUIR:</span>
+      <input class="fi" id="nc-etags" placeholder="missing-headers,missing-sri,tech,info" style="flex:1;font-size:12px;border-color:#3a1515" oninput="bNuclei()" title="-etags: excluir estos tags del scan">
+    </div>
     <div id="nc-tags-active" style="font-size:11px;color:var(--g2);margin-top:5px;min-height:14px"></div>
   </div>
 
@@ -2672,7 +2704,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="ck" data-v="-retries 2">-retries 2</div>
     <div class="ck" data-v="-timeout 10">-timeout 10</div>
     <div class="ck" data-v="-headless">-headless</div>
-    <div class="ck" data-v="-exclude-severity info">-excl. info</div>
+    <div class="ck" data-v="-exclude-severity info,low">-excl. info+low</div>
     <div class="ck" data-v="-passive">-passive</div>
     <div class="ck" data-v="-duc">-duc (disable update check)</div>
   </div>
@@ -5474,6 +5506,8 @@ function wdClearState(){
 
 // called by execCmd when job finishes naturally (done event)
 const onDoneHooks={};
+const onStartHooks={};
+const onLineHooks={};
 onDoneHooks.wd=function(){
   wdResetBtn('▶ RUN');
   if(wdState.step===1){
@@ -5552,6 +5586,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
       const msg = JSON.parse(e.data);
       if (msg.type === 'start') {
         if (!isLive) appendOut(outCId, '[PID ' + msg.pid + '] running...', 'sys');
+        if (prefix && onStartHooks[prefix]) onStartHooks[prefix]();
       } else if (msg.type === 'output') {
         const line = stripAnsi(msg.data).trimEnd();
         if (!isLive) {
@@ -5562,6 +5597,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
           rawBuffers[prefix].push(line);
           // Cap buffer at 60k lines to prevent memory bloat on huge scans
           if (rawBuffers[prefix].length > 60000) rawBuffers[prefix].splice(0, 5000);
+          if (onLineHooks[prefix]) onLineHooks[prefix](line);
         }
         if (isLive) liveRenderers[prefix](line);
         // Mirror only noteworthy lines to terminal, capped at 400/run to avoid flooding
@@ -6299,6 +6335,74 @@ function bWget() {
   setH('wg-cmd', c);
 }
 
+/* ─── LISTS REGISTRY ─────────────────────────────────── */
+var _listsRegistry = [];
+
+function listsRegister(label, path, count, source) {
+  _listsRegistry = _listsRegistry.filter(function(l){ return l.path !== path; });
+  _listsRegistry.unshift({label: label, path: path, count: count || 0, source: source || '', ts: Date.now()});
+  if (_listsRegistry.length > 30) _listsRegistry = _listsRegistry.slice(0, 30);
+  try { localStorage.setItem('x9lists', JSON.stringify(_listsRegistry)); } catch(e) {}
+  listsRenderAll();
+}
+
+function listsLoad() {
+  try {
+    var stored = JSON.parse(localStorage.getItem('x9lists') || '[]');
+    if (Array.isArray(stored)) _listsRegistry = stored;
+  } catch(e) {}
+  listsRenderAll();
+}
+
+function listsRenderAll() {
+  ['hx','nc','kt','df','subs'].forEach(function(p){ listsRenderPicker(p); });
+}
+
+function listsRenderPicker(prefix) {
+  var sel = document.getElementById(prefix + '-avail-lists');
+  if (!sel) return;
+  var cur = sel.value;
+  while (sel.options.length > 1) sel.remove(1);
+  _listsRegistry.forEach(function(l) {
+    var opt = document.createElement('option');
+    opt.value = l.path;
+    var badge = l.source ? '[' + l.source + '] ' : '';
+    opt.textContent = badge + l.label + (l.count ? ' · ' + l.count + ' targets' : '');
+    sel.appendChild(opt);
+  });
+  if (cur) sel.value = cur;
+}
+
+function listsSelectFromPicker(prefix, sel) {
+  var path = sel.value; if (!path) return;
+  // Switch to file mode
+  var fileBtn = document.getElementById(prefix + '-tp-file');
+  if (fileBtn) tpSwitch(prefix, 'file', fileBtn);
+  var fi = document.getElementById(prefix + '-file');
+  if (fi) { fi.value = path; }
+  var builders = {hx: bHttpx, nc: bNuclei, kt: bKatana};
+  if (builders[prefix]) builders[prefix]();
+  setTimeout(function(){ sel.value = ''; }, 100);
+}
+
+function listsSelectSublist(sel) {
+  var path = sel.value; if (!path) return;
+  var fi = document.getElementById('subs-filepath');
+  if (fi) fi.value = path;
+  subsLoadFile();
+  setTimeout(function(){ sel.value = ''; }, 100);
+}
+
+function listsSelectDalfox(sel) {
+  var path = sel.value; if (!path) return;
+  var du = document.getElementById('df-u');
+  if (du) du.value = path;
+  var dm = document.getElementById('df-m');
+  if (dm) dm.value = 'file';
+  bDalfox();
+  setTimeout(function(){ sel.value = ''; }, 100);
+}
+
 /* ─── HTTPX BUILDER + PIPELINE ────────────────────────── */
 var _hxFiles = {};  // category → file path from last parse
 
@@ -6319,6 +6423,7 @@ function bHttpx() {
 
 // Called automatically when httpx finishes (via onDoneHooks)
 function hxParseResults(exitCode) {
+  hxFlushBuf(); // write any buffered lines before final authoritative parse
   if (exitCode !== 0) return;
   const outPath = gv('hx-outpath') || '/tmp/httpx.txt';
   fetch(API + '/httpx/parse', {
@@ -6348,6 +6453,14 @@ function hxParseResults(exitCode) {
     // Show dashboard
     var res = document.getElementById('hx-results');
     if (res) res.style.display = 'block';
+    var badge = document.getElementById('hx-live-badge'); if(badge) badge.style.display='none';
+    // Register generated lists
+    if (d.total > 0) {
+      listsRegister('httpx · live', d.files.live, d.total, 'httpx');
+      listsRegister('httpx · 200',  d.files['200'], d.counts['200'], 'httpx');
+      listsRegister('httpx · 403',  d.files['403'], d.counts['403'], 'httpx');
+      listsRegister('httpx · 30x',  d.files['30x'], d.counts['30x'], 'httpx');
+    }
     // Notify in output
     appendOut('hx-out-c', '\n→ ' + d.total + ' dominios vivos | 200:' + d.counts['200'] + ' 403:' + d.counts['403'] + ' 30x:' + d.counts['30x'], 'ok');
   }).catch(function(){});
@@ -6411,6 +6524,84 @@ function hxSendTo(toolId) {
     sw(panelId, sItem);
   }
 }
+
+// Real-time line counters + incremental disk writes
+var _hxLive   = {total:0,'200':0,'403':0,'30x':0,other:0};
+var _hxBuf    = {live:[],ok:[],forbidden:[],redirects:[]};
+var _hxSeen   = {};   // dedup within a single scan
+var _hxOutDir = '/tmp';
+var HX_FLUSH_EVERY = 10;
+
+function hxResetCounters() {
+  _hxLive   = {total:0,'200':0,'403':0,'30x':0,other:0};
+  _hxBuf    = {live:[],ok:[],forbidden:[],redirects:[]};
+  _hxSeen   = {};
+  var outPath = gv('hx-outpath') || '/tmp/httpx.txt';
+  _hxOutDir = outPath.lastIndexOf('/') > 0
+    ? outPath.substring(0, outPath.lastIndexOf('/'))
+    : '/tmp';
+  ['total','200','403','30x','other'].forEach(function(k){
+    var e = document.getElementById('hx-cnt-'+k); if(e) e.textContent='0';
+  });
+  var samp = document.getElementById('hx-samples'); if(samp) samp.innerHTML='';
+  var res  = document.getElementById('hx-results'); if(res) res.style.display='block';
+  var rp   = document.getElementById('hx-res-path');
+  if(rp) rp.textContent = outPath;
+  var badge = document.getElementById('hx-live-badge'); if(badge) badge.style.display='inline';
+  // Create empty category files immediately so other tools can reference them
+  fetch(API + '/httpx/init', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({path: outPath})
+  }).catch(function(){});
+}
+
+function hxFlushBuf() {
+  if (!_hxBuf.live.length) return;
+  var payload = {
+    dir:       _hxOutDir,
+    live:      _hxBuf.live.splice(0),
+    ok:        _hxBuf.ok.splice(0),
+    forbidden: _hxBuf.forbidden.splice(0),
+    redirects: _hxBuf.redirects.splice(0)
+  };
+  fetch(API + '/httpx/append', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  }).catch(function(){});
+}
+
+function hxCountLine(line) {
+  if (!/https?:\/\//i.test(line)) return;
+  var urlM = line.match(/^(https?:\/\/\S+)/);
+  var url  = urlM ? urlM[1].replace(/[,;]+$/, '') : null;
+  if (url && _hxSeen[url]) return;
+  if (url) _hxSeen[url] = 1;
+  // Extract all codes from bracket groups: [200], [301,200], [301,302,200]
+  var codes = [], rx = /\[(\d{3}(?:,\d{3})*)\]/g, m2;
+  while ((m2 = rx.exec(line)) !== null) {
+    m2[1].split(',').forEach(function(c){ codes.push(c); });
+  }
+  if (!codes.length) return;
+  var has3xx = codes.some(function(c){ return c[0] === '3'; });
+  var last   = codes[codes.length - 1];
+  _hxLive.total++;
+  if (url) _hxBuf.live.push(url);
+  if      (has3xx)          { _hxLive['30x']++;   if(url) _hxBuf.redirects.push(url); }
+  else if (last === '200')  { _hxLive['200']++;   if(url) _hxBuf.ok.push(url); }
+  else if (last === '403')  { _hxLive['403']++;   if(url) _hxBuf.forbidden.push(url); }
+  else                      { _hxLive.other++; }
+  var cnt = function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
+  cnt('hx-cnt-total', _hxLive.total);
+  cnt('hx-cnt-200',   _hxLive['200']);
+  cnt('hx-cnt-403',   _hxLive['403']);
+  cnt('hx-cnt-30x',   _hxLive['30x']);
+  cnt('hx-cnt-other', _hxLive.other);
+  // Flush to disk every HX_FLUSH_EVERY results
+  if (_hxLive.total % HX_FLUSH_EVERY === 0) hxFlushBuf();
+}
+
+onStartHooks.hx = hxResetCounters;
+onLineHooks.hx  = hxCountLine;
 
 // Register the on-done hook
 onDoneHooks.hx = hxParseResults;
@@ -6629,23 +6820,93 @@ function ncClearTags() {
   bNuclei();
 }
 
+function ncPreset(name) {
+  // Reset tags first
+  ncClearTags();
+  var sev = document.getElementById('nc-sev');
+  var etags = document.getElementById('nc-etags');
+  var NOISE = 'missing-headers,missing-sri,tech,technologies';
+  if (name === 'highsignal') {
+    // Exploitable vulns only — medium+ severity, no noise
+    if (sev) sev.value = 'critical,high,medium';
+    var signalTags = ['xss','sqli','ssrf','lfi','rce','open-redirect','takeover','idor','auth-bypass','ssti'];
+    document.querySelectorAll('#nc-tags-inj .ck, #nc-tags-auth .ck, #nc-tags-exp .ck').forEach(function(c) {
+      if (signalTags.indexOf(c.dataset.v) !== -1) c.classList.add('on');
+    });
+    if (etags) etags.value = NOISE + ',ssl,dns';
+  } else if (name === 'cleanbb') {
+    // BB-focused: critical+high only, exclude all noise
+    if (sev) sev.value = 'critical,high';
+    if (etags) etags.value = NOISE + ',ssl,dns,generic,headless';
+  }
+  bNuclei();
+}
+
 function bNuclei() {
   const tgt = tpGetTarget('nc');
   const t = gv('nc-t') || '25';
   const tplSel = gv('nc-tpl');
   const tplVal = tplSel === '__custom__' ? gv('nc-tpl-c') : tplSel;
   const sev = gv('nc-sev'), proxy = gv('nc-proxy');
+  const etags = gv('nc-etags');
   const op = chks('nc-op');
   const tags = ncGetTags();
   let cmd = `<span class="b">~/go/bin/nuclei</span> <span class="f">${tgt.flag}</span>`;
   if (tplVal) cmd += ` <span class="f">-t</span> <span class="v">${tplVal}</span>`;
   if (sev)    cmd += ` <span class="f">-severity</span> <span class="v">${sev}</span>`;
   if (tags.length) cmd += ` <span class="f">-tags</span> <span class="v">${tags.join(',')}</span>`;
+  if (etags)  cmd += ` <span class="f">-etags</span> <span class="v">${etags.trim()}</span>`;
   cmd += ` <span class="f">-c ${t}</span>`;
   if (proxy)  cmd += ` <span class="f">-proxy</span> <span class="v">${proxy}</span>`;
   if (op)     cmd += ` <span class="f">${op}</span>`;
   setH('nc-cmd', cmd);
 }
+
+/* ─── NUCLEI POST-SCAN SUMMARY ────────────────────────── */
+function ncParseResults(exitCode) {
+  // Extract -o path from rendered command text
+  var cmdEl = document.getElementById('nc-cmd');
+  var cmdTxt = cmdEl ? cmdEl.textContent : '';
+  var oMatch = cmdTxt.match(/-o\s+(\S+)/);
+  var outPath = oMatch ? oMatch[1] : '/tmp/nuclei.txt';
+
+  fetch(API + '/files/read?path=' + encodeURIComponent(outPath))
+    .then(function(r){ return r.json(); })
+    .then(function(d) {
+      if (d.error || !d.content) {
+        appendOut('nc-out-c', '\n→ Sin hallazgos (archivo vacío o no generado)', 'warn');
+        return;
+      }
+      var lines = d.content.split('\n').filter(function(l){ return l.trim(); });
+      if (!lines.length) {
+        appendOut('nc-out-c', '\n→ Sin hallazgos para estos criterios', 'warn');
+        return;
+      }
+      // Count by severity keyword in each finding line
+      var counts = {critical:0, high:0, medium:0, low:0, info:0, other:0};
+      var sevRx = /\[(critical|high|medium|low|info)\]/i;
+      lines.forEach(function(l) {
+        var m = l.match(sevRx);
+        var sev = m ? m[1].toLowerCase() : 'other';
+        counts[sev] = (counts[sev] || 0) + 1;
+      });
+      var parts = [];
+      if (counts.critical) parts.push('CRITICAL:' + counts.critical);
+      if (counts.high)     parts.push('HIGH:'     + counts.high);
+      if (counts.medium)   parts.push('MEDIUM:'   + counts.medium);
+      if (counts.low)      parts.push('LOW:'      + counts.low);
+      if (counts.info)     parts.push('INFO:'     + counts.info);
+      if (counts.other)    parts.push('OTHER:'    + counts.other);
+      appendOut('nc-out-c',
+        '\n→ ' + lines.length + ' hallazgo(s) | ' + parts.join(' ') +
+        '\n→ Guardado en: ' + outPath, 'ok');
+    })
+    .catch(function(){
+      appendOut('nc-out-c', '\n→ No se pudo leer ' + outPath, 'warn');
+    });
+}
+
+onDoneHooks.nc = ncParseResults;
 
 /* ─── ADVANCED TOGGLE ─────────────────────────────────── */
 function toggleAdv(sectionId, toggleEl) {
@@ -9297,6 +9558,7 @@ bc('gb-dns-op', bGob); bc('gb-vhost-op', bGob);
   let saved;
   renderDeployedSites();
   _loadTgStatus();
+  listsLoad();
   _loadPhishHost();
   _renderLangGrid();
   bSpyBeacon();

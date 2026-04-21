@@ -299,6 +299,39 @@ def api_files_read():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/httpx/init', methods=['POST'])
+def api_httpx_init():
+    path    = (request.json or {}).get('path', '/tmp/httpx.txt')
+    out_dir = os.path.dirname(os.path.abspath(path)) or '/tmp'
+    for name in ('httpx-live.txt', 'httpx-200.txt', 'httpx-403.txt', 'httpx-30x.txt'):
+        open(os.path.join(out_dir, name), 'w').close()
+    return jsonify({'ok': True, 'dir': out_dir})
+
+@app.route('/api/httpx/append', methods=['POST'])
+def api_httpx_append():
+    data    = request.json or {}
+    out_dir = data.get('dir', '/tmp')
+    mapping = {
+        'httpx-live.txt': data.get('live',      []),
+        'httpx-200.txt':  data.get('ok',        []),
+        'httpx-403.txt':  data.get('forbidden', []),
+        'httpx-30x.txt':  data.get('redirects', []),
+    }
+    for name, urls in mapping.items():
+        if not urls:
+            continue
+        fpath = os.path.join(out_dir, name)
+        try:
+            with open(fpath, 'r', errors='replace') as f:
+                existing = {l.strip() for l in f if l.strip()}
+        except FileNotFoundError:
+            existing = set()
+        new_urls = [u for u in urls if u not in existing]
+        if new_urls:
+            with open(fpath, 'a') as f:
+                f.write('\n'.join(new_urls) + '\n')
+    return jsonify({'ok': True})
+
 @app.route('/api/httpx/parse', methods=['POST'])
 def api_httpx_parse():
     path = (request.json or {}).get('path', '/tmp/httpx.txt')
@@ -309,22 +342,29 @@ def api_httpx_parse():
             lines = [l.strip() for l in f if l.strip()]
 
         ok, forbidden, redirects, other = [], [], [], []
+        seen = set()
         for line in lines:
             m = re.match(r'^(https?://\S+)', line)
             if not m:
                 continue
             url = m.group(1).rstrip(',;')
-            sm  = re.search(r'\[(\d{3})\]', line)
-            if not sm:
+            if url in seen:
                 continue
-            code = int(sm.group(1))
-            if code == 200:
-                ok.append(url)
-            elif 300 <= code < 400:
+            seen.add(url)
+            # Extract all codes from bracket groups: [200], [301,200], [301,302,200]
+            groups = re.findall(r'\[(\d{3}(?:,\d{3})*)\]', line)
+            if not groups:
+                continue
+            codes = [int(c) for g in groups for c in g.split(',')]
+            has_3xx = any(300 <= c < 400 for c in codes)
+            last    = codes[-1]
+            if has_3xx:
                 redirects.append(url)
-            elif code == 403:
+            elif last == 200:
+                ok.append(url)
+            elif last == 403:
                 forbidden.append(url)
-            elif code > 0:
+            elif last > 0:
                 other.append(url)
 
         all_live = ok + forbidden + redirects + other
