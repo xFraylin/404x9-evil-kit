@@ -51,7 +51,7 @@
   },
   "tg_config": {
     "enabled": true,
-    "token": "8662508888:AAG27sD4N9c2hMTj575l811e_sirhLEnkKI",
-    "chat_id": "1029415994"
+    "token": "token-bot",
+    "chat_id": "tu chat id "
   }
 }
