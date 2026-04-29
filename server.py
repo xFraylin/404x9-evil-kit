@@ -189,6 +189,10 @@ def api_jobs():
     with proc_lock:
         return jsonify({'active': list(active_procs.keys())})
 
+@app.route('/api/is_root')
+def api_is_root():
+    return jsonify({'root': os.getuid() == 0})
+
 @app.route('/api/check', methods=['POST'])
 def api_check():
     tool = (request.json or {}).get('tool', '').split()[0]

