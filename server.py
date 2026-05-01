@@ -36,7 +36,9 @@ IMPACKET_SEARCH_PATHS = [
 ]
 IMPACKET_TOOLS = ['psexec.py','wmiexec.py','smbexec.py','atexec.py',
                   'secretsdump.py','GetUserSPNs.py','GetNPUsers.py',
-                  'ntlmrelayx.py','lookupsid.py','samrdump.py']
+                  'ntlmrelayx.py','lookupsid.py','samrdump.py',
+                  'dacledit.py','owneredit.py','getTGT.py','getST.py',
+                  'ticketer.py','dcomexec.py']
 
 def resolve_impacket(script):
     """Return absolute path for an impacket script or None."""
@@ -225,6 +227,44 @@ def api_validate_file():
     return jsonify({'path': path, 'exists': exists,
                     'size': os.path.getsize(path) if exists else 0})
 
+@app.route('/api/read/file', methods=['POST'])
+def api_read_file():
+    """Read a local text file (max 4 MB). Used to load certipy JSON output."""
+    data     = request.json or {}
+    path     = data.get('path', '')
+    max_size = 4 * 1024 * 1024
+    if not path or '..' in path or not path.startswith('/'):
+        return jsonify({'error': 'Invalid path'}), 400
+    try:
+        if not os.path.isfile(path):
+            return jsonify({'error': 'not_found'}), 404
+        size = os.path.getsize(path)
+        if size > max_size:
+            return jsonify({'error': f'too_large ({size} bytes)'}), 413
+        with open(path, 'r', encoding='utf-8', errors='replace') as fh:
+            content = fh.read()
+        return jsonify({'path': path, 'content': content, 'size': size})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/tools/find-script', methods=['POST'])
+def api_find_script():
+    """Search for a script file inside a directory tree (post-install path discovery)."""
+    data      = request.json or {}
+    directory = data.get('directory', '')
+    name      = data.get('name', '')
+    if not name or not directory or '..' in directory or not directory.startswith('/'):
+        return jsonify({'found': False, 'path': '', 'all': []})
+    try:
+        r = subprocess.run(
+            ['find', directory, '-maxdepth', '4', '-name', name, '-type', 'f'],
+            capture_output=True, text=True, timeout=5
+        )
+        paths = [p.strip() for p in r.stdout.strip().split('\n') if p.strip()]
+        return jsonify({'found': bool(paths), 'path': paths[0] if paths else '', 'all': paths})
+    except Exception as e:
+        return jsonify({'found': False, 'path': '', 'error': str(e)})
+
 @app.route('/api/tools/status')
 def api_tools_status():
     tools = [
@@ -239,6 +279,8 @@ def api_tools_status():
         'medusa','wfuzz','dalfox','httpx','theharvester',
         'sherlock','holehe','dnsrecon','exiftool',
         'katana','nuclei',
+        'certipy','bloodyad','pywhisker','coercer',
+        'adidnsdump','windapsearch','ldeep',
     ]
     status = {}
     for t in tools:

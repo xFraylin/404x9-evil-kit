@@ -4,7 +4,7 @@ flask-cors>=4.0.0
 
 # ── Herramientas Python (aisladas en el venv) ─────────────────────────────────
 sqlmap                  # SQL injection
-impacket                # psexec, secretsdump, ntlmrelayx, etc.
+impacket                # psexec, secretsdump, ntlmrelayx, dacledit, owneredit, getTGT, getST, ticketer, dcomexec
 dnsrecon                # DNS recon
 holehe                  # OSINT - email to accounts
 theharvester            # OSINT - emails, domains, IPs
@@ -12,3 +12,10 @@ sherlock-project        # OSINT - username lookup
 bloodhound              # AD enumeration (bloodhound-python)
 ldapdomaindump          # LDAP dump
 mitm6                   # IPv6 MITM
+
+# ── AD Advanced Tools ─────────────────────────────────────────────────────────
+certipy-ad              # ADCS attacks (ESC1-ESC9)
+bloodyad                # AD attribute modification (GenericAll, RBCD, shadow creds)
+coercer                 # Authentication coercion (PrinterBug, DFSCoerce, etc.)
+adidnsdump              # AD-integrated DNS enumeration via LDAP
+ldeep                   # LDAP enumeration for AD

