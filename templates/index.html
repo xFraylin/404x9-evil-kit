@@ -535,6 +535,17 @@ textarea.fi{resize:vertical;min-height:48px}
 @keyframes labBlink{0%,100%{opacity:1}50%{opacity:.3}}
 .lab-srv-info{flex:1;font-size:12px;color:var(--mut)}
 .lab-srv-info.ok{color:var(--g2)}
+/* Tunnel dep/auth inline block */
+#tun-dep-block{background:#070c07;border:1px solid #1a2a1a;border-radius:3px;padding:9px 11px;margin-bottom:6px}
+.tun-dep-title{font-size:12px;font-weight:700;margin-bottom:5px}
+.tun-dep-title.warn{color:var(--yellow)}
+.tun-dep-title.err{color:var(--red)}
+.tun-dep-title.key{color:#c8a0ff}
+.tun-install-row{display:flex;align-items:center;gap:6px;margin-top:4px}
+.tun-install-lbl{font-size:10px;color:var(--dim);min-width:72px;flex-shrink:0}
+.tun-install-cmd{flex:1;font-size:11px;color:var(--cyan);font-family:'JetBrains Mono',monospace;background:#010304;padding:3px 7px;border-radius:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+.tun-auth-hint{font-size:11px;color:var(--dim);margin:4px 0 6px}
+.tun-token-note{font-size:11px;margin-top:4px;min-height:14px}
 </style>
 </head>
 <body>
@@ -3514,6 +3525,30 @@ textarea.fi{resize:vertical;min-height:48px}
       <button class="mob-tmpl-btn" id="tun-btn-bore"        onclick="startTunnel('bore')"        style="border-color:#2a0a3a">BORE</button>
       <button class="mob-tmpl-btn" id="tun-btn-ssh"         onclick="showSshTunnel()"            style="border-color:#1a1a30">SSH</button>
       <button class="sbtn" style="font-size:11px;padding:4px 12px;margin-left:auto" id="tun-stop-btn" onclick="stopTunnel()" disabled>&#9632; STOP TUNNEL</button>
+    </div>
+
+    <!-- Dependency check / install / auth block -->
+    <div id="tun-dep-block" style="display:none">
+      <!-- NOT INSTALLED -->
+      <div id="tun-dep-notfound" style="display:none">
+        <div class="tun-dep-title err">&#9888; <span id="tun-dep-toolname"></span> no est&#225; instalado</div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:4px">Instala la herramienta y vuelve a intentarlo:</div>
+        <div id="tun-dep-installs"></div>
+      </div>
+      <!-- NGROK AUTH TOKEN -->
+      <div id="tun-auth-ngrok" style="display:none">
+        <div class="tun-dep-title key">&#128273; ngrok requiere un Authtoken</div>
+        <div class="tun-auth-hint">Reg&#237;strate en <b style="color:var(--txt)">ngrok.com</b> y copia tu token desde el Dashboard &#x2192; &ldquo;Your Authtoken&rdquo;.</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input class="fi" id="tun-ngrok-token-input" placeholder="2abc123def_XXXX..." style="flex:1;font-size:11px;font-family:'JetBrains Mono',monospace">
+          <button class="kbtn" style="font-size:10px;padding:2px 9px;flex-shrink:0" onclick="tunApplyNgrokToken()">&#10003; APLICAR TOKEN</button>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:5px;align-items:center">
+          <button class="mob-tmpl-btn" style="font-size:10px;padding:4px 12px;border-color:#6030a0;color:#c8a0ff" onclick="tunStartWithToken()">&#9654; INICIAR TUNNEL</button>
+          <span style="font-size:10px;color:var(--dim)">Token se guarda localmente en tu navegador</span>
+        </div>
+        <div class="tun-token-note" id="tun-token-note"></div>
+      </div>
     </div>
 
     <!-- SSH command (shown on SSH click) -->
@@ -10903,6 +10938,28 @@ var _TUN_CMDS = {
   bore:        function(p){ return 'bore local ' + p + ' --to bore.pub'; }
 };
 
+var _TUN_DEPS = {
+  ngrok:       { bin:'ngrok',       authKey:'tun_ngrok_token',
+    install:[
+      {label:'Snap',  cmd:'sudo snap install ngrok'},
+      {label:'APT',   cmd:'curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list >/dev/null && sudo apt update && sudo apt install ngrok -y'}
+    ]},
+  cloudflared: { bin:'cloudflared',
+    install:[
+      {label:'wget+dpkg', cmd:'wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && sudo dpkg -i cloudflared-linux-amd64.deb'}
+    ]},
+  localtunnel: { bin:'npx',
+    install:[
+      {label:'Node.js/npm', cmd:'sudo apt install nodejs npm -y'},
+      {label:'npm global',  cmd:'npm install -g localtunnel'}
+    ]},
+  bore:        { bin:'bore',
+    install:[
+      {label:'cargo (Rust)', cmd:'cargo install bore-cli'},
+      {label:'Binary x64',   cmd:'curl -sL https://github.com/ekzhang/bore/releases/latest/download/bore-x86_64-unknown-linux-musl.tar.gz | tar xz && sudo mv bore /usr/local/bin/'}
+    ]}
+};
+
 var _TUN_URL_RE = {
   ngrok:       /https:\/\/[a-z0-9-]+\.ngrok[-a-z.]*\.(app|io|dev)/i,
   cloudflared: /https:\/\/[a-z0-9-]+\.trycloudflare\.com/i,
@@ -10922,11 +10979,142 @@ function _tunSetActive(type) {
 }
 
 function startTunnel(type) {
+  if (!_TUN_CMDS[type]) return;
   stopTunnel();
   _tunType = type;
+  _tunSetActive(type);
+  document.getElementById('tun-dep-block').style.display = 'none';
+  document.getElementById('tun-ssh-block').style.display = 'none';
+  document.getElementById('tun-status-row').style.display = '';
+  document.getElementById('tun-out-area').style.display = 'none';
+  document.getElementById('tun-url-box').style.display = 'none';
+  document.getElementById('tun-stop-btn').disabled = true;
+  var dot = document.getElementById('tun-dot');
+  if (dot) dot.className = 'lab-srv-dot checking';
+  _tunSetStatus('Verificando ' + type + '...');
+
+  _tunCheckDep(type, function(installed) {
+    if (!installed) { _tunShowInstall(type); return; }
+    var cfg = _TUN_DEPS[type];
+    if (cfg && cfg.authKey) {
+      var token = localStorage.getItem(cfg.authKey) || '';
+      if (!token) { _tunShowAuth(type); return; }
+    }
+    _tunDoStart(type);
+  });
+}
+
+function _tunCheckDep(type, cb) {
+  var cfg = _TUN_DEPS[type];
+  if (!cfg) { cb(true); return; }
+  var checkId = 'tundep_' + Date.now();
+  fetch(API + '/run', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({cmd:'which ' + cfg.bin, id: checkId})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.error) { cb(false); return; }
+    var attempts = 0;
+    var tmr = setInterval(function() {
+      attempts++;
+      fetch(API + '/output/' + checkId)
+        .then(function(r){ return r.json(); })
+        .then(function(out){
+          if (out.done || attempts > 8) {
+            clearInterval(tmr);
+            fetch(API + '/kill/' + checkId).catch(function(){});
+            var text = Array.isArray(out.output) ? out.output.join('\n') : (out.output || '');
+            cb(text.trim().length > 0 && !/not found|command not found/i.test(text));
+          }
+        })
+        .catch(function(){ clearInterval(tmr); cb(false); });
+    }, 400);
+  })
+  .catch(function(){ cb(false); });
+}
+
+function _tunShowInstall(type) {
+  var cfg = _TUN_DEPS[type];
+  var block = document.getElementById('tun-dep-block');
+  document.getElementById('tun-dep-notfound').style.display = '';
+  document.getElementById('tun-auth-ngrok').style.display = 'none';
+  document.getElementById('tun-dep-toolname').textContent = cfg.bin;
+  var container = document.getElementById('tun-dep-installs');
+  container.innerHTML = '';
+  cfg.install.forEach(function(opt) {
+    var row = document.createElement('div');
+    row.className = 'tun-install-row';
+    row.innerHTML = '<span class="tun-install-lbl">' + escH(opt.label) + '</span>' +
+      '<code class="tun-install-cmd" title="' + escH(opt.cmd) + '">' + escH(opt.cmd) + '</code>' +
+      '<button class="kbtn" style="font-size:10px;padding:1px 7px;flex-shrink:0" data-cmd="' + escH(opt.cmd) + '" onclick="tunCopyInstall(this)">&#8856; COPY</button>';
+    container.appendChild(row);
+  });
+  block.style.display = '';
+  var dot = document.getElementById('tun-dot');
+  if (dot) dot.className = 'lab-srv-dot err';
+  _tunSetStatus(cfg.bin + ' no encontrado — instálalo para continuar');
+  document.getElementById('tun-stop-btn').disabled = true;
+}
+
+function _tunShowAuth(type) {
+  var block = document.getElementById('tun-dep-block');
+  document.getElementById('tun-dep-notfound').style.display = 'none';
+  document.getElementById('tun-auth-ngrok').style.display = '';
+  var saved = localStorage.getItem((_TUN_DEPS[type] || {}).authKey || '') || '';
+  var inp = document.getElementById('tun-ngrok-token-input');
+  if (inp) inp.value = saved;
+  var note = document.getElementById('tun-token-note');
+  if (note) { note.textContent = ''; note.style.color = 'var(--mut)'; }
+  block.style.display = '';
+  var dot = document.getElementById('tun-dot');
+  if (dot) dot.className = 'lab-srv-dot checking';
+  _tunSetStatus('ngrok requiere Authtoken para operar');
+}
+
+function tunApplyNgrokToken() {
+  var inp = document.getElementById('tun-ngrok-token-input');
+  var token = inp ? inp.value.trim() : '';
+  var note = document.getElementById('tun-token-note');
+  if (!token) { if (note) { note.textContent = 'Escribe tu token primero'; note.style.color = 'var(--red)'; } return; }
+  localStorage.setItem('tun_ngrok_token', token);
+  if (note) { note.textContent = 'Aplicando...'; note.style.color = 'var(--mut)'; }
+  fetch(API + '/run', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({cmd:'ngrok config add-authtoken ' + token, id:'tunauth_' + Date.now()})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (note) {
+      if (d.error) { note.textContent = 'Error: ' + d.error; note.style.color = 'var(--red)'; }
+      else { note.textContent = '✓ Token aplicado. Pulsa INICIAR TUNNEL.'; note.style.color = 'var(--g2)'; }
+    }
+  })
+  .catch(function(e){ if (note) { note.textContent = 'Error: ' + e; note.style.color = 'var(--red)'; } });
+}
+
+function tunStartWithToken() {
+  var inp = document.getElementById('tun-ngrok-token-input');
+  var token = inp ? inp.value.trim() : '';
+  var note = document.getElementById('tun-token-note');
+  if (!token) { if (note) { note.textContent = 'Escribe tu token primero'; note.style.color = 'var(--red)'; } return; }
+  localStorage.setItem('tun_ngrok_token', token);
+  document.getElementById('tun-dep-block').style.display = 'none';
+  _tunDoStart('ngrok');
+}
+
+function tunCopyInstall(btn) {
+  var cmd = btn.getAttribute('data-cmd');
+  if (cmd) navigator.clipboard.writeText(cmd).catch(function(){});
+  var o = btn.textContent; btn.textContent = '✓ COPIADO';
+  setTimeout(function(){ btn.textContent = o; }, 900);
+}
+
+function _tunDoStart(type) {
   var cmdFn = _TUN_CMDS[type];
   if (!cmdFn) return;
   var port = _tunPort();
+  document.getElementById('tun-dep-block').style.display = 'none';
   document.getElementById('tun-ssh-block').style.display = 'none';
   document.getElementById('tun-status-row').style.display = '';
   document.getElementById('tun-out-area').style.display = '';
@@ -10935,7 +11123,6 @@ function startTunnel(type) {
   var dot = document.getElementById('tun-dot');
   if (dot) dot.className = 'lab-srv-dot checking';
   _tunSetStatus('Iniciando ' + type + ' en puerto ' + port + '...');
-  _tunSetActive(type);
 
   var procId = 'tun_' + Date.now();
   _tunProcId = procId;
@@ -11006,6 +11193,7 @@ function stopTunnel() {
   _tunSetActive(null);
   var dot = document.getElementById('tun-dot'); if (dot) dot.className = 'lab-srv-dot';
   var btn = document.getElementById('tun-stop-btn'); if (btn) btn.disabled = true;
+  document.getElementById('tun-dep-block').style.display = 'none';
   document.getElementById('tun-status-row').style.display = 'none';
   document.getElementById('tun-out-area').style.display = 'none';
   document.getElementById('tun-ssh-block').style.display = 'none';
