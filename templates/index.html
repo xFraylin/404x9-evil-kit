@@ -537,13 +537,7 @@ textarea.fi{resize:vertical;min-height:48px}
 .lab-srv-info.ok{color:var(--g2)}
 /* Tunnel dep/auth inline block */
 #tun-dep-block{background:#070c07;border:1px solid #1a2a1a;border-radius:3px;padding:9px 11px;margin-bottom:6px}
-.tun-dep-title{font-size:12px;font-weight:700;margin-bottom:5px}
-.tun-dep-title.warn{color:var(--yellow)}
-.tun-dep-title.err{color:var(--red)}
 .tun-dep-title.key{color:#c8a0ff}
-.tun-install-row{display:flex;align-items:center;gap:6px;margin-top:4px}
-.tun-install-lbl{font-size:10px;color:var(--dim);min-width:72px;flex-shrink:0}
-.tun-install-cmd{flex:1;font-size:11px;color:var(--cyan);font-family:'JetBrains Mono',monospace;background:#010304;padding:3px 7px;border-radius:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
 .tun-auth-hint{font-size:11px;color:var(--dim);margin:4px 0 6px}
 .tun-token-note{font-size:11px;margin-top:4px;min-height:14px}
 </style>
@@ -3531,9 +3525,11 @@ textarea.fi{resize:vertical;min-height:48px}
     <div id="tun-dep-block" style="display:none">
       <!-- NOT INSTALLED -->
       <div id="tun-dep-notfound" style="display:none">
-        <div class="tun-dep-title err">&#9888; <span id="tun-dep-toolname"></span> no est&#225; instalado</div>
-        <div style="font-size:11px;color:var(--dim);margin-bottom:4px">Instala la herramienta y vuelve a intentarlo:</div>
-        <div id="tun-dep-installs"></div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;color:var(--yellow)">&#9888; <b id="tun-dep-toolname"></b> no instalado</span>
+          <button class="mob-tmpl-btn" id="tun-dep-install-btn" onclick="tunInstallTool()" style="font-size:10px;padding:3px 10px;border-color:var(--g);color:var(--g)">&#8595; INSTALAR AUTO</button>
+        </div>
+        <div id="tun-dep-out" style="display:none;background:#010202;border:1px solid #0a2010;border-radius:3px;max-height:100px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.5;padding:6px 9px;color:#60b080;white-space:pre-wrap;word-break:break-all;margin-top:6px"></div>
       </div>
       <!-- NGROK AUTH TOKEN -->
       <div id="tun-auth-ngrok" style="display:none">
@@ -10939,25 +10935,14 @@ var _TUN_CMDS = {
 };
 
 var _TUN_DEPS = {
-  ngrok:       { bin:'ngrok',       authKey:'tun_ngrok_token',
-    install:[
-      {label:'Snap',  cmd:'sudo snap install ngrok'},
-      {label:'APT',   cmd:'curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list >/dev/null && sudo apt update && sudo apt install ngrok -y'}
-    ]},
+  ngrok:       { bin:'ngrok', authKey:'tun_ngrok_token',
+    autoInstall:'curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list >/dev/null && sudo apt update && sudo apt install ngrok -y'},
   cloudflared: { bin:'cloudflared',
-    install:[
-      {label:'wget+dpkg', cmd:'wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && sudo dpkg -i cloudflared-linux-amd64.deb'}
-    ]},
+    autoInstall:'wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb && sudo dpkg -i cloudflared-linux-amd64.deb'},
   localtunnel: { bin:'npx',
-    install:[
-      {label:'Node.js/npm', cmd:'sudo apt install nodejs npm -y'},
-      {label:'npm global',  cmd:'npm install -g localtunnel'}
-    ]},
+    autoInstall:'sudo apt install nodejs npm -y && npm install -g localtunnel'},
   bore:        { bin:'bore',
-    install:[
-      {label:'cargo (Rust)', cmd:'cargo install bore-cli'},
-      {label:'Binary x64',   cmd:'curl -sL https://github.com/ekzhang/bore/releases/latest/download/bore-x86_64-unknown-linux-musl.tar.gz | tar xz && sudo mv bore /usr/local/bin/'}
-    ]}
+    autoInstall:'curl -sL https://github.com/ekzhang/bore/releases/latest/download/bore-x86_64-unknown-linux-musl.tar.gz | tar xz && sudo mv bore /usr/local/bin/'}
 };
 
 var _TUN_URL_RE = {
@@ -11036,25 +11021,77 @@ function _tunCheckDep(type, cb) {
 
 function _tunShowInstall(type) {
   var cfg = _TUN_DEPS[type];
-  var block = document.getElementById('tun-dep-block');
   document.getElementById('tun-dep-notfound').style.display = '';
+  document.getElementById('tun-dep-out').style.display = 'none';
   document.getElementById('tun-auth-ngrok').style.display = 'none';
   document.getElementById('tun-dep-toolname').textContent = cfg.bin;
-  var container = document.getElementById('tun-dep-installs');
-  container.innerHTML = '';
-  cfg.install.forEach(function(opt) {
-    var row = document.createElement('div');
-    row.className = 'tun-install-row';
-    row.innerHTML = '<span class="tun-install-lbl">' + escH(opt.label) + '</span>' +
-      '<code class="tun-install-cmd" title="' + escH(opt.cmd) + '">' + escH(opt.cmd) + '</code>' +
-      '<button class="kbtn" style="font-size:10px;padding:1px 7px;flex-shrink:0" data-cmd="' + escH(opt.cmd) + '" onclick="tunCopyInstall(this)">&#8856; COPY</button>';
-    container.appendChild(row);
-  });
-  block.style.display = '';
+  var btn = document.getElementById('tun-dep-install-btn');
+  if (btn) { btn.disabled = false; btn.textContent = '↓ INSTALAR AUTO'; }
+  document.getElementById('tun-dep-block').style.display = '';
   var dot = document.getElementById('tun-dot');
   if (dot) dot.className = 'lab-srv-dot err';
-  _tunSetStatus(cfg.bin + ' no encontrado — instálalo para continuar');
+  _tunSetStatus(cfg.bin + ' no encontrado');
   document.getElementById('tun-stop-btn').disabled = true;
+}
+
+function tunInstallTool() {
+  var type = _tunType;
+  var cfg = _TUN_DEPS[type];
+  if (!cfg || !cfg.autoInstall) return;
+  var outEl = document.getElementById('tun-dep-out');
+  var btn   = document.getElementById('tun-dep-install-btn');
+  outEl.style.display = '';
+  outEl.textContent   = '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Instalando...'; }
+  _tunSetStatus('Instalando ' + cfg.bin + '...');
+  var dot = document.getElementById('tun-dot');
+  if (dot) dot.className = 'lab-srv-dot checking';
+  var installId = 'tuninstall_' + Date.now();
+  fetch(API + '/run', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({cmd: cfg.autoInstall, id: installId})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.error) {
+      if (outEl) outEl.textContent = 'Error: ' + d.error;
+      if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
+      return;
+    }
+    var attempts = 0;
+    var tmr = setInterval(function() {
+      attempts++;
+      fetch(API + '/output/' + installId)
+        .then(function(r){ return r.json(); })
+        .then(function(out) {
+          var text = Array.isArray(out.output) ? out.output.join('\n') : (out.output || '');
+          if (outEl) { outEl.textContent = text; outEl.scrollTop = outEl.scrollHeight; }
+          if (out.done || attempts > 150) {
+            clearInterval(tmr);
+            _tunCheckDep(type, function(installed) {
+              if (installed) {
+                if (outEl) outEl.textContent += '\n✓ Instalado. Iniciando tunnel...';
+                document.getElementById('tun-dep-block').style.display = 'none';
+                var authKey = cfg.authKey;
+                if (authKey && !localStorage.getItem(authKey)) { _tunShowAuth(type); return; }
+                _tunDoStart(type);
+              } else {
+                if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
+                if (outEl) outEl.textContent += '\n✗ Instalación fallida — revisa la salida.';
+                var dotEl = document.getElementById('tun-dot');
+                if (dotEl) dotEl.className = 'lab-srv-dot err';
+                _tunSetStatus('Instalación fallida');
+              }
+            });
+          }
+        })
+        .catch(function(){ clearInterval(tmr); });
+    }, 800);
+  })
+  .catch(function(e){
+    if (outEl) outEl.textContent = 'Error: ' + e;
+    if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
+  });
 }
 
 function _tunShowAuth(type) {
@@ -11103,12 +11140,6 @@ function tunStartWithToken() {
   _tunDoStart('ngrok');
 }
 
-function tunCopyInstall(btn) {
-  var cmd = btn.getAttribute('data-cmd');
-  if (cmd) navigator.clipboard.writeText(cmd).catch(function(){});
-  var o = btn.textContent; btn.textContent = '✓ COPIADO';
-  setTimeout(function(){ btn.textContent = o; }, 900);
-}
 
 function _tunDoStart(type) {
   var cmdFn = _TUN_CMDS[type];
