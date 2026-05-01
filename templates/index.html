@@ -32,6 +32,8 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 #srv-status{color:#ff5050;border-color:#3a1010;background:#100404}
 #srv-status.ok{color:var(--g);border-color:#1a3a20;background:#030804;box-shadow:var(--glow)}
 #clock-pill{color:var(--mut);font-size:12px;letter-spacing:1px}
+#dorks-link{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--cyan);border:1px solid #1a3a4a;background:#010406;padding:2px 9px;border-radius:2px;letter-spacing:1px;text-decoration:none;cursor:pointer;transition:all .18s;white-space:nowrap;user-select:none}
+#dorks-link:hover{color:#7ff0ff;border-color:#2a6a8a;background:#020810;box-shadow:0 0 8px rgba(0,216,255,.18),inset 0 0 10px rgba(0,216,255,.04);text-shadow:0 0 8px rgba(0,216,255,.5)}
 
 /* ─── LAYOUT ─────────────────────────────────────────── */
 /* min-height:0 en toda la cadena flex es clave: sin él, flex items no
@@ -540,6 +542,7 @@ textarea.fi{resize:vertical;min-height:48px}
 <div id="topbar">
   <div class="dots"><div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div></div>
   <div id="app-title">404x9-evil-kit <span>by @xfraylin</span></div>
+  <a id="dorks-link" href="https://xfraylin.github.io/hacking-dorks/" target="_blank" rel="noopener" title="Open Google Dorks Explorer">&#x26A1; DORKS</a>
   <div class="tpill" id="srv-status">● OFFLINE</div>
   <div id="clock-pill" class="tpill"></div>
 </div>
