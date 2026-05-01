@@ -496,6 +496,43 @@ textarea.fi{resize:vertical;min-height:48px}
 .trk-status-sent{color:var(--cyan)}
 .trk-status-opened{color:var(--yellow)}
 .trk-status-captured{color:var(--red);font-weight:700}
+
+/* ─── LAB MODE ──────────────────────────────────────────── */
+.lab-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:4px;border:1px solid #1a3a1a;background:#020804;margin-bottom:8px;transition:all .2s}
+.lab-banner.active{border-color:var(--g);background:#030d06;box-shadow:0 0 12px rgba(0,255,136,.08)}
+.lab-banner.blocked{border-color:var(--red);background:#080202}
+.lab-icon{font-size:18px;flex-shrink:0}
+.lab-info{flex:1;min-width:0}
+.lab-title{font-size:13px;font-weight:700;letter-spacing:1.5px;color:var(--mut)}
+.lab-banner.active .lab-title{color:var(--g)}
+.lab-title-badge{font-size:10px;padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:middle;border:1px solid;letter-spacing:1px;font-weight:400}
+.lab-badge-on{border-color:var(--g);color:var(--g);background:#030d06}
+.lab-badge-off{border-color:#3a1a1a;color:#884040;background:#080202}
+.lab-badge-blocked{border-color:var(--red);color:var(--red);background:#080202}
+.lab-desc{font-size:11px;color:var(--dim);margin-top:2px}
+.lab-toggle{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.lab-toggle input{opacity:0;width:0;height:0}
+.lab-track{position:absolute;cursor:pointer;inset:0;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:22px;transition:.2s}
+.lab-track:before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:#444;border-radius:50%;transition:.2s}
+.lab-toggle input:checked + .lab-track{background:#0d2010;border-color:var(--g)}
+.lab-toggle input:checked + .lab-track:before{transform:translateX(18px);background:var(--g);box-shadow:0 0 6px rgba(0,255,136,.6)}
+.lab-public-warn{background:#100202;border:1px solid #5a1010;border-left:3px solid var(--red);border-radius:3px;padding:8px 12px;font-size:12px;color:#ff9090;margin-bottom:8px;display:none}
+.lab-public-warn.show{display:block}
+.lab-url-box{display:flex;align-items:center;gap:8px;background:#010403;border:1px solid var(--brd);border-radius:3px;padding:7px 10px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);margin-bottom:4px;flex-wrap:wrap}
+.lab-url-text{flex:1;word-break:break-all;min-width:0}
+.lab-range{display:flex;align-items:center;gap:7px;padding:4px 9px;border:1px solid #1a3a1a;border-radius:2px;background:#020604;font-size:11px;color:#4a9060;margin-bottom:3px}
+.lab-range-dot{width:6px;height:6px;border-radius:50%;background:var(--g);box-shadow:0 0 4px rgba(0,255,136,.5);flex-shrink:0}
+.lab-range-name{margin-left:auto;color:var(--dim)}
+.lab-tunnel-block{background:#020403;border:1px solid var(--brd);border-radius:3px;padding:7px 10px;margin-bottom:4px}
+.lab-tunnel-label{font-size:10px;font-weight:700;letter-spacing:1.5px;margin-bottom:3px}
+.lab-tunnel-code{font-size:12px;color:var(--cyan);font-family:'JetBrains Mono',monospace;word-break:break-all}
+.lab-srv-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--brd);border-radius:3px;background:var(--input-bg);margin-bottom:8px;flex-wrap:wrap}
+.lab-srv-dot{width:8px;height:8px;border-radius:50%;background:#3a1010;flex-shrink:0;transition:all .3s}
+.lab-srv-dot.ok{background:var(--g);box-shadow:0 0 6px rgba(0,255,136,.5)}
+.lab-srv-dot.checking{background:var(--yellow);animation:labBlink .8s ease-in-out infinite}
+@keyframes labBlink{0%,100%{opacity:1}50%{opacity:.3}}
+.lab-srv-info{flex:1;font-size:12px;color:var(--mut)}
+.lab-srv-info.ok{color:var(--g2)}
 </style>
 </head>
 <body>
@@ -3364,6 +3401,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="tab" onclick="stab('spy-mob','tracker',this);loadTracker()">TRACKER</div>
     <div class="tab" onclick="stab('spy-mob','logs',this);loadPhishLogs()">LOGS</div>
     <div class="tab" onclick="stab('spy-mob','guide',this)" style="color:var(--cyan)">GUIDE</div>
+    <div class="tab" onclick="stab('spy-mob','lab',this);initLabTab()" style="color:#4dc8b0">&#x1F9EA; LAB</div>
   </div>
 
   <!-- ── TEMPLATES ── -->
@@ -3807,6 +3845,113 @@ https://xxxx.ngrok.io/api/phish/land/TRACK_ID</pre>
         - Combina Anti-Detect + Obfuscated para maxima evasion
       </div>
     </details>
+  </div>
+
+  <!-- ── LAB MODE ── -->
+  <div id="spy-mob-lab" class="tab-content">
+
+    <!-- Banner / toggle -->
+    <div class="lab-banner" id="lab-banner">
+      <span class="lab-icon">&#x1F9EA;</span>
+      <div class="lab-info">
+        <div class="lab-title">LAB MODE <span class="lab-title-badge lab-badge-off" id="lab-badge">DISABLED</span></div>
+        <div class="lab-desc" id="lab-desc">Deployment permitido en cualquier red. Activa para restringir a redes privadas/lab.</div>
+      </div>
+      <label class="lab-toggle" title="Activar/desactivar Lab Mode">
+        <input type="checkbox" id="lab-mode-chk" onchange="toggleLabMode()">
+        <span class="lab-track"></span>
+      </label>
+    </div>
+
+    <!-- Aviso de host público cuando lab mode activo -->
+    <div class="lab-public-warn" id="lab-public-warn">
+      &#9888;&nbsp; Host p&#250;blico detectado: <b id="lab-warn-host"></b><br>
+      Lab Mode activo &mdash; deployment bloqueado. Cambia a localhost, IP LAN o VPN en la secci&#243;n de red.
+    </div>
+
+    <!-- Network Config -->
+    <div class="sdiv" style="color:#4dc8b0">CONFIGURACI&#211;N DE RED &mdash; LAB</div>
+    <div class="row">
+      <div class="ig w3">
+        <div class="lbl">HOST / IP LOCAL</div>
+        <input class="fi" id="lab-host" placeholder="localhost · 192.168.x.x · 10.x.x.x" oninput="updateLabUrl()">
+      </div>
+      <div class="ig" style="max-width:76px">
+        <div class="lbl">PUERTO</div>
+        <input class="fi" id="lab-port" value="5000" oninput="updateLabUrl()">
+      </div>
+      <div class="ig" style="max-width:76px">
+        <div class="lbl">PROTO</div>
+        <select class="fi" id="lab-proto" onchange="updateLabUrl()">
+          <option value="http">http</option>
+          <option value="https">https</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap">
+      <button class="kbtn" onclick="labFill('127.0.0.1')">localhost</button>
+      <button class="kbtn" onclick="labAutoDetect()">&#x2315; AUTO-DETECT LAN IP</button>
+      <button class="kbtn" style="border-color:#4dc8b0;color:#4dc8b0" onclick="labApplyToServer()">&#8656; USAR COMO SERVIDOR C2</button>
+    </div>
+
+    <!-- URL Display -->
+    <div class="sdiv" style="color:#4dc8b0">URL LOCAL ACTIVA</div>
+    <div class="lab-url-box">
+      <span>&#128279;</span>
+      <span class="lab-url-text" id="lab-url-display">http://localhost:5000</span>
+      <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="labCopyUrl()">&#8856; COPY</button>
+      <button class="kbtn" style="font-size:10px;padding:1px 7px" onclick="labOpenUrl()">&#10548; ABRIR</button>
+    </div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:10px">Accesible desde dispositivos en la misma red WiFi/LAN.</div>
+
+    <!-- Server Status -->
+    <div class="sdiv" style="color:#4dc8b0">ESTADO DEL SERVIDOR C2</div>
+    <div class="lab-srv-row">
+      <div class="lab-srv-dot checking" id="lab-srv-dot"></div>
+      <span class="lab-srv-info" id="lab-srv-info">Verificando...</span>
+      <button class="kbtn" style="font-size:10px;padding:2px 7px" onclick="labCheckServer()">&#x21BB;</button>
+    </div>
+
+    <!-- Tunneling -->
+    <div class="sdiv" style="color:#4dc8b0">TUNNELING &mdash; ACCESO EXTERNO CONTROLADO</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:6px">Para acceder desde VPN o red externa manteniendo el entorno lab bajo control.</div>
+
+    <div class="lab-tunnel-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span class="lab-tunnel-label" style="color:var(--g2)">NGROK</span>
+        <button class="kbtn" style="font-size:10px;padding:1px 6px" onclick="copyEl('lab-ngrok-cmd')">COPY</button>
+      </div>
+      <div class="lab-tunnel-code" id="lab-ngrok-cmd">ngrok http 5000</div>
+    </div>
+    <div class="lab-tunnel-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span class="lab-tunnel-label" style="color:#4090c0">LOCALTUNNEL</span>
+        <button class="kbtn" style="font-size:10px;padding:1px 6px" onclick="copyEl('lab-lt-cmd')">COPY</button>
+      </div>
+      <div class="lab-tunnel-code" id="lab-lt-cmd">npx localtunnel --port 5000</div>
+    </div>
+    <div class="lab-tunnel-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span class="lab-tunnel-label" style="color:#ff8030">CLOUDFLARED</span>
+        <button class="kbtn" style="font-size:10px;padding:1px 6px" onclick="copyEl('lab-cf-cmd')">COPY</button>
+      </div>
+      <div class="lab-tunnel-code" id="lab-cf-cmd">cloudflared tunnel --url http://localhost:5000</div>
+    </div>
+    <div class="lab-tunnel-block">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px">
+        <span class="lab-tunnel-label" style="color:#c080ff">SSH TUNNEL (VPS)</span>
+        <button class="kbtn" style="font-size:10px;padding:1px 6px" onclick="copyEl('lab-ssh-cmd')">COPY</button>
+      </div>
+      <div class="lab-tunnel-code" id="lab-ssh-cmd">ssh -R 80:localhost:5000 user@vps-ip</div>
+    </div>
+
+    <!-- Allowed Ranges -->
+    <div class="sdiv" style="margin-top:10px;color:#4dc8b0">REDES PERMITIDAS (lab mode)</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:5px">Deployment bloqueado para cualquier host fuera de estos rangos cuando Lab Mode est&#225; activo.</div>
+    <div class="lab-range"><span class="lab-range-dot"></span><code style="font-family:'JetBrains Mono',monospace">127.0.0.0/8</code><span class="lab-range-name">localhost</span></div>
+    <div class="lab-range"><span class="lab-range-dot"></span><code style="font-family:'JetBrains Mono',monospace">192.168.0.0/16</code><span class="lab-range-name">LAN privada</span></div>
+    <div class="lab-range"><span class="lab-range-dot"></span><code style="font-family:'JetBrains Mono',monospace">10.0.0.0/8</code><span class="lab-range-name">red privada · VPN</span></div>
+    <div class="lab-range"><span class="lab-range-dot"></span><code style="font-family:'JetBrains Mono',monospace">172.16.0.0/12</code><span class="lab-range-name">red privada B</span></div>
   </div>
 
   <!-- ── LOGS ── -->
@@ -10495,6 +10640,7 @@ function mobTmplLoad(name, btn) {
 }
 
 function mobDeployTemplate() {
+  if (!_labModeCheck()) return;
   var ed = document.getElementById('phish-tmpl-editor');
   var html = ed ? ed.value : '';
   if (!html.trim()) { showTmplStatus('Sin template — selecciona uno primero.', 'err'); return; }
@@ -10543,6 +10689,156 @@ function mobDeployTemplate() {
     showTmplStatus('Desplegado: ' + nameGuess + (autoInject && autoInject.checked ? '  [payload activo]' : ''), 'ok', landUrl);
   })
   .catch(function(e){ showTmplStatus('Error de red: ' + e, 'err'); });
+}
+
+/* ─── LAB MODE ──────────────────────────────────────────────── */
+var _labModeOn = false;
+
+function _isPrivateHost(host) {
+  if (!host || host === 'localhost') return true;
+  if (/^127\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^10\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
+  return false;
+}
+
+function initLabTab() {
+  _labModeOn = localStorage.getItem('labMode') === '1';
+  var chk = document.getElementById('lab-mode-chk');
+  if (chk) chk.checked = _labModeOn;
+  var savedHost  = localStorage.getItem('labHost')  || '';
+  var savedPort  = localStorage.getItem('labPort')  || '5000';
+  var savedProto = localStorage.getItem('labProto') || 'http';
+  var hEl  = document.getElementById('lab-host');
+  var pEl  = document.getElementById('lab-port');
+  var prEl = document.getElementById('lab-proto');
+  if (hEl  && !hEl.value)  hEl.value  = savedHost;
+  if (pEl  && !pEl.value)  pEl.value  = savedPort;
+  if (prEl) prEl.value = savedProto;
+  updateLabUrl();
+  labCheckServer();
+}
+
+function toggleLabMode() {
+  _labModeOn = !!(document.getElementById('lab-mode-chk') || {checked:false}).checked;
+  localStorage.setItem('labMode', _labModeOn ? '1' : '0');
+  _updateLabBanner();
+}
+
+function _updateLabBanner() {
+  var banner = document.getElementById('lab-banner');
+  var badge  = document.getElementById('lab-badge');
+  var desc   = document.getElementById('lab-desc');
+  var warn   = document.getElementById('lab-public-warn');
+  var wHost  = document.getElementById('lab-warn-host');
+  if (!banner) return;
+  var host = (document.getElementById('lab-host') || {}).value || 'localhost';
+  var priv = _isPrivateHost(host);
+  banner.classList.remove('active', 'blocked');
+  if (_labModeOn && !priv) {
+    banner.classList.add('blocked');
+    if (badge) { badge.className = 'lab-title-badge lab-badge-blocked'; badge.textContent = 'BLOQUEADO'; }
+    if (desc)  desc.textContent = 'Host público detectado — deployment bloqueado. Cambia a IP privada o localhost.';
+    if (warn)  { warn.classList.add('show'); if (wHost) wHost.textContent = host; }
+  } else if (_labModeOn) {
+    banner.classList.add('active');
+    if (badge) { badge.className = 'lab-title-badge lab-badge-on'; badge.textContent = 'ACTIVO'; }
+    if (desc)  desc.textContent = 'Deployment restringido a redes privadas. Deployment público bloqueado.';
+    if (warn)  warn.classList.remove('show');
+  } else {
+    if (badge) { badge.className = 'lab-title-badge lab-badge-off'; badge.textContent = 'DISABLED'; }
+    if (desc)  desc.textContent = 'Deployment permitido en cualquier red. Activa para restringir a lab privado.';
+    if (warn)  warn.classList.remove('show');
+  }
+}
+
+function updateLabUrl() {
+  var host  = (document.getElementById('lab-host')  || {}).value || 'localhost';
+  var port  = (document.getElementById('lab-port')  || {}).value || '5000';
+  var proto = (document.getElementById('lab-proto') || {}).value || 'http';
+  localStorage.setItem('labHost',  host);
+  localStorage.setItem('labPort',  port);
+  localStorage.setItem('labProto', proto);
+  var url = proto + '://' + (host || 'localhost') + (port && port !== '80' && port !== '443' ? ':' + port : '');
+  var disp = document.getElementById('lab-url-display');
+  if (disp) disp.textContent = url;
+  var ngEl = document.getElementById('lab-ngrok-cmd'); if (ngEl) ngEl.textContent = 'ngrok http ' + port;
+  var ltEl = document.getElementById('lab-lt-cmd');    if (ltEl) ltEl.textContent = 'npx localtunnel --port ' + port;
+  var cfEl = document.getElementById('lab-cf-cmd');    if (cfEl) cfEl.textContent = 'cloudflared tunnel --url http://localhost:' + port;
+  var shEl = document.getElementById('lab-ssh-cmd');   if (shEl) shEl.textContent = 'ssh -R 80:localhost:' + port + ' user@vps-ip';
+  _updateLabBanner();
+}
+
+function labFill(host) {
+  var el = document.getElementById('lab-host');
+  if (el) { el.value = host; updateLabUrl(); }
+}
+
+async function labAutoDetect() {
+  var el = document.getElementById('lab-host');
+  try {
+    var r = await fetch(API + '/status');
+    var d = await r.json();
+    if (d.local_ip && el) { el.value = d.local_ip; updateLabUrl(); return; }
+  } catch(e) {}
+  var h = window.location.hostname;
+  if (el) { el.value = (h && h !== '' ? h : '127.0.0.1'); updateLabUrl(); }
+}
+
+function labApplyToServer() {
+  var host  = (document.getElementById('lab-host')  || {}).value || '';
+  var port  = (document.getElementById('lab-port')  || {}).value || '5000';
+  var proto = (document.getElementById('lab-proto') || {}).value || 'http';
+  var hEl  = document.getElementById('phish-server-host');
+  var pEl  = document.getElementById('phish-server-port');
+  var prEl = document.getElementById('phish-server-proto');
+  if (hEl)  hEl.value  = host;
+  if (pEl)  pEl.value  = port;
+  if (prEl) prEl.value = proto;
+  _savePhishHost();
+  var btn = (typeof event !== 'undefined' && event && event.target) ? event.target : null;
+  if (btn) { var orig = btn.textContent; btn.textContent = '✓ APLICADO'; setTimeout(function(){ btn.textContent = orig; }, 1500); }
+}
+
+function labCopyUrl() {
+  var disp = document.getElementById('lab-url-display');
+  if (disp) navigator.clipboard.writeText(disp.textContent).catch(function(){});
+  var btn = (typeof event !== 'undefined' && event && event.target) ? event.target : null;
+  if (btn) { var orig = btn.textContent; btn.textContent = '✓'; setTimeout(function(){ btn.textContent = orig; }, 900); }
+}
+
+function labOpenUrl() {
+  var disp = document.getElementById('lab-url-display');
+  if (disp) window.open(disp.textContent, '_blank');
+}
+
+async function labCheckServer() {
+  var dot   = document.getElementById('lab-srv-dot');
+  var info  = document.getElementById('lab-srv-info');
+  if (!dot || !info) return;
+  dot.className = 'lab-srv-dot checking';
+  info.className = 'lab-srv-info';
+  info.textContent = 'Verificando...';
+  try {
+    var ctrl = typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(3000) : undefined;
+    var r = await fetch(API + '/status', ctrl ? {signal: ctrl} : {});
+    var d = await r.json();
+    dot.className = 'lab-srv-dot ok';
+    info.className = 'lab-srv-info ok';
+    info.textContent = 'RUNNING' + (d.local_ip ? ' — ' + d.local_ip : '') + ' · Puerto ' + (window.location.port || '5000');
+  } catch(e) {
+    dot.className = 'lab-srv-dot';
+    info.textContent = 'No responde — verifica que server.py esté corriendo';
+  }
+}
+
+function _labModeCheck() {
+  if (!_labModeOn) return true;
+  var host = (document.getElementById('phish-server-host') || {}).value || window.location.hostname || 'localhost';
+  if (_isPrivateHost(host)) return true;
+  showTmplStatus('LAB MODE ACTIVO — Deployment bloqueado para host público: "' + host + '". Ve a la pestaña LAB y cambia a IP privada o desactiva Lab Mode.', 'err');
+  return false;
 }
 
 function mobCloneSite() {
