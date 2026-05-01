@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{zoom:1}
+html{zoom:1.2}
 :root{
   --g:#00ff88;--g2:#7fffc0;--bg:#030604;--bg2:#060c08;--bg3:#09110a;
   --brd:#163019;--txt:#c8ffdc;--mut:#3d8a56;--dim:#163320;
@@ -16,7 +16,7 @@ html{zoom:1}
   --glow:0 0 8px rgba(0,255,136,.18);--glow-md:0 0 14px rgba(0,255,136,.22);
   --panel-bg:#050a06;--input-bg:#030604;
 }
-body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:#1e4a2a;border-radius:4px}
@@ -35,36 +35,43 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 #clock-pill{color:var(--mut);font-size:12px;letter-spacing:1px}
 
 /* ─── LAYOUT ─────────────────────────────────────────── */
-#layout{display:flex;flex:1;overflow:hidden}
+/* min-height:0 en toda la cadena flex es clave: sin él, flex items no
+   limitan su altura y overflow-y:auto nunca activa el scroll */
+#layout{display:flex;flex:1;overflow:hidden;min-height:0}
 
 /* ─── SIDEBAR ────────────────────────────────────────── */
-#sidebar{width:190px;background:var(--bg2);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0;padding-bottom:16px;display:flex;flex-direction:column}
-.sb-brand{padding:9px 12px 8px;border-bottom:1px solid var(--brd);display:flex;flex-direction:column;gap:2px;background:linear-gradient(180deg,#070f08 0%,var(--bg2) 100%)}
+/* Sin display:flex;flex-direction:column el sidebar es un bloque normal;
+   height:100% lo ancla al padre flex y overflow-y:auto funciona correctamente */
+#sidebar{width:210px;background:var(--bg2);border-right:1px solid var(--brd);overflow-y:auto;flex-shrink:0;padding-bottom:20px;height:100%;min-height:0}
+#sidebar::-webkit-scrollbar{width:5px}
+#sidebar::-webkit-scrollbar-thumb{background:#253d2c;border-radius:4px}
+#sidebar::-webkit-scrollbar-thumb:hover{background:#2f5438}
+.sb-brand{padding:10px 12px 9px;border-bottom:1px solid var(--brd);display:flex;flex-direction:column;gap:2px;background:linear-gradient(180deg,#070f08 0%,var(--bg2) 100%)}
 .sb-brand-name{font-size:14px;color:var(--g);font-weight:700;letter-spacing:3px;text-shadow:0 0 10px rgba(0,255,136,.25)}
 .sb-brand-by{font-size:12px;color:var(--mut);letter-spacing:2px}
 
 /* accordion */
-.acc-cat{cursor:pointer;padding:6px 10px;font-size:11px;color:var(--mut);letter-spacing:3px;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:all .15s;border-bottom:1px solid #0a1209;margin-top:1px}
+.acc-cat{cursor:pointer;padding:7px 10px;font-size:11px;color:var(--mut);letter-spacing:3px;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:all .15s;border-bottom:1px solid #0a1209;margin-top:1px}
 .acc-cat:hover{color:var(--g2);background:#080f09}
 .acc-cat.open{color:var(--g);background:#060d07}
 .acc-arrow{font-size:12px;transition:transform .2s;opacity:.4}
 .acc-cat.open .acc-arrow{transform:rotate(90deg);opacity:.9}
-.acc-items{overflow:hidden;max-height:0;transition:max-height .25s ease}
-.acc-items.open{max-height:900px}
-.s-item{padding:4px 8px 4px 13px;font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;white-space:nowrap;transition:all .12s;position:relative;letter-spacing:.5px}
+.acc-items{overflow:hidden;max-height:0;transition:max-height .3s ease}
+.acc-items.open{max-height:2000px}
+.s-item{padding:5px 8px 5px 14px;font-size:12px;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:6px;border-left:2px solid transparent;white-space:nowrap;transition:all .12s;position:relative;letter-spacing:.5px}
 .s-item:hover{color:var(--g2);background:#0a160b;border-left-color:#1a3a20}
 .s-item.active{color:var(--g);background:linear-gradient(90deg,#0d1e0f 0%,#080e09 100%);border-left-color:var(--g);box-shadow:inset 0 0 12px rgba(0,255,136,.04)}
 .s-dot{width:4px;height:4px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all .15s}
 .s-item:hover .s-dot{background:#2d6040}
 .s-item.active .s-dot{background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.6)}
-.s-icon{font-size:13px;color:var(--dim);width:12px;text-align:center;flex-shrink:0;transition:color .12s}
+.s-icon{font-size:13px;color:var(--dim);width:14px;text-align:center;flex-shrink:0;transition:color .12s}
 .s-item:hover .s-icon{color:#3a6a4a}
 .s-item.active .s-icon{color:var(--g);text-shadow:0 0 6px rgba(0,255,136,.5)}
 .s-badge{margin-left:auto;font-size:11px;background:#0a1a0c;color:var(--g);border:1px solid var(--brd);border-radius:2px;padding:1px 4px;letter-spacing:1px}
 
 /* ─── MAIN BODY ──────────────────────────────────────── */
-#body{display:flex;flex:1;overflow:hidden}
-#content{flex:1;overflow-y:auto;padding:12px 14px;min-width:0;background:var(--panel-bg);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.008) 2px,rgba(0,255,136,.008) 4px)}
+#body{display:flex;flex:1;overflow:hidden;min-height:0}
+#content{flex:1;overflow-y:auto;padding:12px 14px;min-width:0;min-height:0;background:var(--panel-bg);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.008) 2px,rgba(0,255,136,.008) 4px)}
 
 /* ─── TWO-COLUMN PANEL LAYOUT ────────────────────────── */
 .panel.active{display:grid;grid-template-columns:1fr 370px;column-gap:14px;align-items:start}
@@ -90,7 +97,7 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 .panel.active .enc-chain-label{grid-column:1}
 
 /* ─── TERMINAL PANEL ─────────────────────────────────── */
-#term-panel{width:310px;background:#020302;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;transition:width .2s ease}
+#term-panel{width:310px;background:#020302;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;min-height:0;transition:width .2s ease}
 #term-panel.collapsed{width:26px}
 #term-topbar{background:#040805;border-bottom:1px solid var(--brd);padding:6px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0}
 #term-title{font-size:13px;color:var(--mut);flex:1;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
@@ -123,7 +130,7 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 #term-run-btn:hover{background:#0a1a0c;border-color:#254530}
 
 /* ─── ENCODER AUX PANEL (right, replaces terminal) ────── */
-#enc-aux-panel{width:420px;background:#020403;border-left:1px solid var(--brd);display:none;flex-direction:column;flex-shrink:0}
+#enc-aux-panel{width:420px;background:#020403;border-left:1px solid var(--brd);display:none;flex-direction:column;flex-shrink:0;min-height:0}
 #enc-aux-panel.active{display:flex}
 #enc-aux-topbar{background:var(--bg3);border-bottom:1px solid var(--brd);padding:5px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0}
 #enc-aux-title{font-size:13px;color:var(--cyan);flex:1;letter-spacing:1px;font-weight:700}
@@ -411,10 +418,10 @@ textarea.fi{resize:vertical;min-height:48px}
 }
 
 /* ── 1400–1799px (standard 1080p): default sizes apply ── */
-/* sidebar:215px / terminal:365px / grid:1fr 415px */
 
 /* ── 1200–1399px: compress right panels slightly ──────── */
 @media(max-width:1399px){
+  #sidebar{width:200px}
   #term-panel:not(.collapsed){width:320px}
   #enc-aux-panel.active{width:420px}
   .panel.active{grid-template-columns:1fr 370px}
@@ -422,7 +429,7 @@ textarea.fi{resize:vertical;min-height:48px}
 
 /* ── 1024–1199px: small laptop ────────────────────────── */
 @media(max-width:1199px){
-  #sidebar{width:192px}
+  #sidebar{width:185px}
   #term-panel:not(.collapsed){width:280px}
   #enc-aux-panel.active{width:340px}
   .panel.active{grid-template-columns:1fr 320px}
@@ -430,6 +437,7 @@ textarea.fi{resize:vertical;min-height:48px}
 
 /* ── <1024px: hide terminal, go wider ─────────────────── */
 @media(max-width:1023px){
+  #sidebar{width:175px}
   #term-panel{display:none}
   #enc-aux-panel.active{width:clamp(260px,40vw,380px)}
   .panel.active{grid-template-columns:1fr 330px}
@@ -437,7 +445,7 @@ textarea.fi{resize:vertical;min-height:48px}
 
 /* ── <820px: single-column panel ──────────────────────── */
 @media(max-width:819px){
-  #sidebar{width:172px}
+  #sidebar{width:160px}
   .panel.active{grid-template-columns:1fr}
   .panel.active .cmd-preview,
   .panel.active .run-row,
@@ -4181,13 +4189,14 @@ ping(); setInterval(ping, 5000);
 
 /* ─── ACCORDION SIDEBAR ───────────────────────────────── */
 function toggleAcc(el) {
-  const isOpen = el.classList.contains('open');
-  // close all
-  document.querySelectorAll('.acc-cat').forEach(c => { c.classList.remove('open'); });
-  document.querySelectorAll('.acc-items').forEach(i => { i.classList.remove('open'); });
-  if (!isOpen) {
-    el.classList.add('open');
-    el.nextElementSibling.classList.add('open');
+  const items = el.nextElementSibling;
+  const opening = !el.classList.contains('open');
+  el.classList.toggle('open');
+  items.classList.toggle('open');
+  if (opening) {
+    setTimeout(() => {
+      el.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }, 310);
   }
 }
 // auto-open on load (first cat already has open class in HTML)
@@ -4206,6 +4215,7 @@ function sw(id, el) {
       const cat = items.previousElementSibling;
       if (cat && !cat.classList.contains('open')) toggleAcc(cat);
     }
+    setTimeout(() => el.scrollIntoView({behavior:'smooth', block:'nearest'}), 320);
   }
   updateRightPanel(id);
   try { localStorage.setItem('x9panel', id); } catch(_) {}
