@@ -21,8 +21,12 @@ Built by [@xFraylin](https://github.com/xFraylin)
 - Browser-based GUI — no extra GUI frameworks needed
 - Live streaming output via Server-Sent Events (SSE)
 - Smart parsed output for every tool (clean tables, no ANSI clutter)
+- **Interactive ADCS parsed view** — certipy results as clickable pills that expand/collapse per section, with live JSON enrichment
+- **AD Enumeration action picker** — choose tool + action, get a syntactically correct command with dependency hints
+- **COERCION dynamic path resolution** — locates `coercer`, `PetitPotam.py`, `dfscoerce.py` at runtime after install, no hardcoded paths
+- **Tickets inline help** — contextual docs inside getTGT / getST / ticketer tabs: inputs, expected output, common errors
 - Scalable wordlist picker — file browser modal + custom path input
-- Isolated Python venv — zero system Python pollution
+- Isolated Python venv — zero system Python pollution; venv is injected into PATH for all subprocesses automatically
 - Kill switch for any running process (including sudo'd tools)
 - **State persistence** — all sessions, campaigns, credentials and config survive server restarts (`data/state.json`)
 
@@ -84,11 +88,15 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Active Directory
 | Panel | Tools inside | Description |
 |---|---|---|
-| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch | Full domain enumeration — users, groups, shares, GPOs, password policies. |
+| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch, ldeep, adidnsdump, windapsearch | Full domain enumeration — users, groups, shares, GPOs, password policies, AD-integrated DNS. Action-based UX: pick a tool and an action, get a ready-to-run command. |
 | **SMB Access** | smbmap, crackmapexec, netexec, nxc | Share enumeration, permission mapping, credential spraying. |
 | **Kerberos** | kerbrute, GetUserSPNs.py, GetNPUsers.py | Username enumeration, Kerberoasting and AS-REP Roasting. |
-| **Execution** | psexec.py, wmiexec.py, smbexec.py, atexec.py | Remote command execution via Impacket. |
+| **Tickets** | getTGT.py, getST.py, ticketer.py | Kerberos ticket operations — request TGTs, obtain impersonation service tickets (S4U2Self/S4U2Proxy), and forge Silver/Golden tickets. Inline contextual help per tab. |
+| **Execution** | psexec.py, wmiexec.py, smbexec.py, atexec.py, dcomexec.py | Remote command execution via Impacket. |
 | **Credentials** | secretsdump.py | Dumps SAM hashes, NTDS domain hashes and LSA plaintext credentials. |
+| **ADCS** | certipy-ad | AD Certificate Services attacks (ESC1–ESC9). Interactive parsed output: counters are clickable pills that expand/collapse detailed sections; JSON enrichment pulls live data from certipy's output file. |
+| **ACL / Attacks** | bloodyad, dacledit.py, owneredit.py | ACL-based privilege escalation — GenericAll, RBCD, shadow credentials, ownership changes. |
+| **Coercion** | coercer, PetitPotam.py, dfscoerce.py | Authentication coercion attacks (PrinterBug, PetitPotam, DFSCoerce). Dynamic path resolution: locates binaries at runtime via `/api/tools/find-script` after install. |
 | **BloodHound** | bloodhound-python, rusthound | AD data collection for attack path analysis. Built-in Neo4j and BloodHound launchers. |
 | **MITM** | responder, mitm6, ntlmrelayx.py | LLMNR/NBT-NS/DHCPv6 poisoning and NTLM relay attacks. |
 
@@ -280,6 +288,10 @@ El script clona el repo, instala las herramientas necesarias, crea el venv e ins
 - Sistema Debian/Ubuntu (ver tabla arriba)
 - Python 3.10+
 - Root access para la instalación
+
+### Python dependencies (auto-installed in venv)
+
+`flask`, `flask-cors`, `sqlmap`, `impacket`, `dnsrecon`, `holehe`, `theharvester`, `sherlock-project`, `bloodhound`, `ldapdomaindump`, `mitm6`, `certipy-ad`, `bloodyad`, `coercer`, `adidnsdump`, `ldeep`, `ldap3`, `gssapi`
 
 ---
 

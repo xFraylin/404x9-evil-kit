@@ -19,3 +19,5 @@ bloodyad                # AD attribute modification (GenericAll, RBCD, shadow cr
 coercer                 # Authentication coercion (PrinterBug, DFSCoerce, etc.)
 adidnsdump              # AD-integrated DNS enumeration via LDAP
 ldeep                   # LDAP enumeration for AD
+ldap3                   # windapsearch dependency (pure-Python LDAP3 client)
+gssapi                  # windapsearch dependency (Kerberos GSSAPI)

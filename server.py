@@ -92,6 +92,11 @@ def run_command(job_id, cmd, cwd=None, env_extra=None):
         env = os.environ.copy()
         env['TERM'] = 'xterm-256color'
         env['FORCE_COLOR'] = '1'
+        # Always prepend the venv bin so pip-installed tools (ldeep, adidnsdump,
+        # coercer, certipy, etc.) are found even if the server was started
+        # without the venv activated.
+        _venv_bin = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'venv', 'bin')
+        env['PATH'] = _venv_bin + ':' + env.get('PATH', '/usr/local/bin:/usr/bin:/bin')
         if env_extra:
             env.update(env_extra)
         try:

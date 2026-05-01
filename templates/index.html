@@ -1563,22 +1563,28 @@ textarea.fi{resize:vertical;min-height:48px}
 
 <!-- ══ AD ENUM ══ -->
 <div id="p-ad-enum" class="panel">
-  <div class="pt">AD ENUMERATION <span class="ptd">— ldapdomaindump, enum4linux-ng, rpcclient, smbclient</span></div>
+  <div class="pt">AD ENUMERATION <span class="ptd">— ldapdomaindump, windapsearch, ldeep, adidnsdump, enum4linux-ng…</span></div>
   <div id="ae-val" class="val-msg"></div>
   <div class="row">
     <div class="ig w2"><div class="lbl">DC / IP</div><input class="fi" id="ae-dc" placeholder="192.168.1.10" oninput="bAdEnum()"></div>
     <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="ae-dom" placeholder="domain.local" oninput="bAdEnum()"></div>
     <div class="ig"><div class="lbl">HERRAMIENTA</div>
-      <select class="fi" id="ae-t" onchange="bAdEnum()">
-        <option>ldapdomaindump</option><option>enum4linux-ng</option>
+      <select class="fi" id="ae-t" onchange="aeToolChange()">
+        <option>ldapdomaindump</option><option>windapsearch</option><option>ldeep</option>
+        <option>adidnsdump</option><option>enum4linux-ng</option>
         <option>rpcclient</option><option>smbclient</option><option>ldapsearch</option>
-        <option>windapsearch</option><option>ldeep</option><option>adidnsdump</option>
-      </select></div>
+      </select>
+    </div>
   </div>
   <div class="row">
     <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="ae-u" placeholder="user" oninput="bAdEnum()"></div>
     <div class="ig"><div class="lbl">PASSWORD</div><input class="fi" id="ae-p" placeholder="Password1!" oninput="bAdEnum()"></div>
+    <div id="ae-action-grp" class="ig w2" style="display:none">
+      <div class="lbl">ACCIÓN</div>
+      <select class="fi" id="ae-action" onchange="bAdEnum()"></select>
+    </div>
   </div>
+  <div id="ae-hint" style="display:none;margin-bottom:6px;padding:6px 10px;border-radius:3px;font-size:12px;line-height:1.7"></div>
   <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="ae-cmd"></div></div>
   <div class="run-row">
     <button class="rbtn" id="ae-run" onclick="runTool('ae')">▶ EJECUTAR</button>
@@ -7461,19 +7467,157 @@ function bSs() {
   c+=` <span class="v">${q}</span>`;
   setH('ss-cmd', c);
 }
-// AD builders
+// ── AD ENUMERATION ────────────────────────────────────────
+
+const _AE_ACTIONS = {
+  windapsearch: [
+    { v:'full',        l:'Full enumeration — usuarios + grupos + equipos' },
+    { v:'users',       l:'Usuarios del dominio' },
+    { v:'groups',      l:'Grupos del dominio' },
+    { v:'computers',   l:'Equipos del dominio' },
+    { v:'da',          l:'Domain Admins' },
+    { v:'privileged',  l:'Usuarios privilegiados' },
+    { v:'gpos',        l:'Group Policy Objects (GPOs)' },
+    { v:'spns',        l:'SPNs — Kerberoastable accounts' },
+  ],
+  ldeep: [
+    { v:'all',         l:'Dump completo (todos los objetos)' },
+    { v:'users',       l:'Usuarios' },
+    { v:'groups',      l:'Grupos y miembros' },
+    { v:'computers',   l:'Computadoras' },
+    { v:'gpos',        l:'Group Policy Objects' },
+    { v:'trusts',      l:'Domain Trusts' },
+    { v:'delegations', l:'Delegaciones Kerberos' },
+    { v:'memberships', l:'Memberships de grupos' },
+  ],
+  rpcclient: [
+    { v:'enumdomusers',  l:'Enumerar usuarios del dominio' },
+    { v:'enumdomgroups', l:'Enumerar grupos' },
+    { v:'querydominfo',  l:'Información del dominio' },
+    { v:'enumprivs',     l:'Privilegios disponibles' },
+    { v:'srvinfo',       l:'Información del servidor' },
+    { v:'getdompwinfo',  l:'Política de contraseñas' },
+  ],
+};
+
+const _AE_HINTS = {
+  ldapdomaindump: {
+    style: 'border:1px solid #0d2010;background:#020704;color:var(--mut)',
+    html:  'Output en <code style="color:var(--cyan)">/tmp/ldapdump/</code> — archivos .json .html .grep generados automáticamente',
+  },
+  ldeep: {
+    style: 'border:1px solid #0d2010;background:#020704;color:var(--mut)',
+    html:  'Output en <code style="color:var(--cyan)">/tmp/ldeep/</code> — un archivo JSON por categoría',
+  },
+  adidnsdump: {
+    style: 'border:1px solid #0d2010;background:#020704;color:var(--mut)',
+    html:  'Output: <code style="color:var(--cyan)">/tmp/adidns/records.csv</code> y <code style="color:var(--cyan)">records.json</code>',
+  },
+  windapsearch: {
+    style: 'border:1px solid #2a1a00;background:#060300;color:var(--yellow)',
+    html:  '⚠ Requiere <b>ldap3</b> en el venv — si aparece <i>No module named \'ldap\'</i>: ' +
+           '<button class="kbtn" style="padding:2px 8px;font-size:11px;margin-left:6px" ' +
+           'onclick="execDirect(\'/opt/x9-evilkit/venv/bin/pip install ldap3 gssapi\')">⬇ pip install ldap3</button>',
+  },
+};
+
+function aeToolChange() {
+  const t = gv('ae-t');
+  const grp = document.getElementById('ae-action-grp');
+  const sel = document.getElementById('ae-action');
+  const actions = _AE_ACTIONS[t];
+  if (actions && grp && sel) {
+    sel.innerHTML = actions.map(a => `<option value="${a.v}">${a.l}</option>`).join('');
+    grp.style.display = '';
+  } else if (grp) {
+    grp.style.display = 'none';
+  }
+  bAdEnum();
+}
+
 function bAdEnum() {
-  const dc=gv('ae-dc')||'192.168.1.10', dom=gv('ae-dom')||'domain.local';
-  const u=gv('ae-u')||'user', p=gv('ae-p')||'Password1!', t=gv('ae-t');
-  let c='';
-  if(t==='enum4linux-ng') c=`<span class="b">enum4linux-ng</span> <span class="f">-A -R -C</span> <span class="v">${dc}</span> <span class="f">-u ${u} -p '${p}'</span>`;
-  else if(t==='rpcclient') c=`<span class="b">rpcclient</span> <span class="f">-U "${dom}\\${u}%${p}"</span> <span class="v">${dc}</span> <span class="f">-c "enumdomusers"</span>`;
-  else if(t==='smbclient') c=`<span class="b">smbclient</span> <span class="f">-L //</span><span class="v">${dc}</span> <span class="f">-U '${dom}\\${u}%${p}'</span>`;
-  else if(t==='ldapsearch') c=`<span class="b">ldapsearch</span> <span class="f">-x -H ldap://${dc} -D "${u}@${dom}" -w '${p}' -b "DC=${dom.replace(/\./g,',DC=')}"</span>`;
-  else if(t==='windapsearch') c=`<span class="b">windapsearch</span> <span class="f">--dc</span> <span class="v">${dc}</span> <span class="f">-d</span> <span class="v">${dom}</span> <span class="f">-u</span> <span class="v">${u}@${dom}</span> <span class="f">-p '${p}'</span> <span class="f">--computers --users --groups --full</span>`;
-  else if(t==='ldeep') c=`<span class="b">ldeep</span> <span class="f">ldap</span> <span class="f">-u</span> <span class="v">${u}</span> <span class="f">-p '${p}' -d</span> <span class="v">${dom}</span> <span class="f">-s ldap://${dc}</span> <span class="f">all</span>`;
-  else if(t==='adidnsdump') c=`<span class="b">adidnsdump</span> <span class="f">-u</span> <span class="v">'${dom}\\${u}'</span> <span class="f">-p '${p}'</span> <span class="v">${dc}</span>`;
-  else c=`<span class="b">ldapdomaindump</span> <span class="f">-u '${dom}\\${u}' -p '${p}'</span> <span class="v">${dc}</span>`;
+  const dc  = gv('ae-dc')  || '192.168.1.10';
+  const dom = gv('ae-dom') || 'domain.local';
+  const u   = gv('ae-u')   || 'user';
+  const p   = gv('ae-p')   || 'Password1!';
+  const t   = gv('ae-t');
+  const act = gv('ae-action') || '';
+  const base = dom.split('.').map(s => `DC=${s}`).join(',');
+
+  // Per-tool hint
+  const hintEl = document.getElementById('ae-hint');
+  const hint = _AE_HINTS[t];
+  if (hintEl) {
+    if (hint) {
+      hintEl.setAttribute('style', `display:block;margin-bottom:6px;padding:6px 10px;border-radius:3px;font-size:12px;line-height:1.7;${hint.style}`);
+      hintEl.innerHTML = hint.html;
+    } else {
+      hintEl.style.display = 'none';
+    }
+  }
+
+  let c = '';
+
+  if (t === 'windapsearch') {
+    const flags = {
+      full:       '--computers --users --groups --full',
+      users:      '--users',
+      groups:     '--groups',
+      computers:  '--computers',
+      da:         '--da',
+      privileged: '--privileged-users',
+      gpos:       '--gpos',
+      spns:       '--spns',
+    }[act] || '--computers --users --groups --full';
+    c = `<span class="b">python3 /opt/windapsearch/windapsearch.py</span>`+
+        ` <span class="f">--dc</span> <span class="v">${dc}</span>`+
+        ` <span class="f">-d</span> <span class="v">${dom}</span>`+
+        ` <span class="f">-u</span> <span class="v">${u}@${dom}</span>`+
+        ` <span class="f">-p '${p}'</span>`+
+        ` <span class="f">${flags}</span>`;
+
+  } else if (t === 'ldeep') {
+    // Sintaxis: ldeep ldap [auth+ldap flags] ACCION [output_dir]
+    // El output va DESPUÉS de la acción, no antes.
+    const lact = act || 'all';
+    c = `<span class="b">mkdir -p /tmp/ldeep &amp;&amp; ldeep</span>`+
+        ` <span class="f">ldap -u</span> <span class="v">${u}</span>`+
+        ` <span class="f">-p '${p}' -d</span> <span class="v">${dom}</span>`+
+        ` <span class="f">-s ldap://${dc}</span>`+
+        ` <span class="f">${lact}</span>`+
+        ` <span class="v">/tmp/ldeep</span>`;
+
+  } else if (t === 'adidnsdump') {
+    // Sintaxis: adidnsdump -u 'DOM\user' -p 'pass' --outfile FILE HOST
+    // No usa -o, usa --outfile. El host va al final.
+    c = `<span class="b">mkdir -p /tmp/adidns &amp;&amp; adidnsdump</span>`+
+        ` <span class="f">-u</span> <span class="v">'${dom}\\${u}'</span>`+
+        ` <span class="f">-p '${p}' --outfile /tmp/adidns/records.csv</span>`+
+        ` <span class="v">${dc}</span>`;
+
+  } else if (t === 'enum4linux-ng') {
+    c = `<span class="b">enum4linux-ng</span> <span class="f">-A -R -C</span>`+
+        ` <span class="v">${dc}</span> <span class="f">-u ${u} -p '${p}'</span>`;
+
+  } else if (t === 'rpcclient') {
+    const cmd = act || 'enumdomusers';
+    c = `<span class="b">rpcclient</span> <span class="f">-U "${dom}\\${u}%${p}"</span>`+
+        ` <span class="v">${dc}</span> <span class="f">-c "${cmd}"</span>`;
+
+  } else if (t === 'smbclient') {
+    c = `<span class="b">smbclient</span> <span class="f">-L //</span><span class="v">${dc}</span>`+
+        ` <span class="f">-U '${dom}\\${u}%${p}'</span>`;
+
+  } else if (t === 'ldapsearch') {
+    c = `<span class="b">ldapsearch</span>`+
+        ` <span class="f">-x -H ldap://${dc} -D "${u}@${dom}" -w '${p}' -b "${base}"</span>`;
+
+  } else { // ldapdomaindump
+    c = `<span class="b">mkdir -p /tmp/ldapdump &amp;&amp; ldapdomaindump</span>`+
+        ` <span class="f">-u '${dom}\\${u}' -p '${p}' -o /tmp/ldapdump</span>`+
+        ` <span class="v">${dc}</span>`;
+  }
+
   setH('ae-cmd', c);
 }
 function smbIsHash(val) {
