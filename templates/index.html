@@ -540,6 +540,12 @@ textarea.fi{resize:vertical;min-height:48px}
 .tun-dep-title.key{color:#c8a0ff}
 .tun-auth-hint{font-size:11px;color:var(--dim);margin:4px 0 6px}
 .tun-token-note{font-size:11px;margin-top:4px;min-height:14px}
+/* Deploy–tunnel linkage */
+.dep-tun-badge{display:inline-flex;align-items:center;gap:4px;background:#010d09;border:1px solid #1a3a2a;border-radius:2px;padding:2px 7px;font-size:10px;font-weight:700;color:#4dc8b0;flex-shrink:0}
+.dep-tun-badge .tdot{width:6px;height:6px;border-radius:50%;background:#4dc8b0;box-shadow:0 0 5px rgba(77,200,176,.7)}
+.dep-card-sel{border-color:#1a4a30 !important;box-shadow:0 0 8px rgba(0,200,100,.07)}
+#tun-target-row{display:none;align-items:center;gap:8px;padding:6px 10px;background:#040e08;border:1px solid #1a3020;border-radius:3px;margin-bottom:7px;flex-wrap:wrap}
+</style>
 </style>
 </head>
 <body>
@@ -3507,7 +3513,14 @@ textarea.fi{resize:vertical;min-height:48px}
 
     <!-- ─── TUNNEL EXPOSURE ──────────────────────────────────── -->
     <div class="sdiv" style="margin-top:10px;color:#4dc8b0">EXPONER EN RED &mdash; TUNNELING</div>
-    <div style="font-size:11px;color:var(--dim);margin-bottom:6px">
+    <!-- Deploy linkage row -->
+    <div id="tun-target-row" style="display:none">
+      <span style="font-size:10px;color:var(--dim);white-space:nowrap;flex-shrink:0">Vinculando a:</span>
+      <span id="tun-target-name" style="font-size:11px;color:var(--txt);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"></span>
+      <span id="tun-target-local" style="font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;flex-shrink:0"></span>
+    </div>
+    <div id="tun-no-deploy" style="font-size:11px;color:var(--yellow);margin-bottom:6px;display:none">&#9888; Sin deploy activo &mdash; despliega un template para vincular el t&#250;nel.</div>
+    <div style="font-size:11px;color:var(--dim);margin-bottom:6px" id="tun-hint">
       Con el sitio ya desplegado en local, elige un m&#233;todo para obtener una URL p&#250;blica y compartirla en la misma sesi&#243;n.
     </div>
 
@@ -10763,10 +10776,12 @@ function mobDeployTemplate() {
     var landUrl = _phishBaseUrl() + d.url;
     var now2 = new Date();
     var ts   = (now2.getMonth()+1) + '/' + now2.getDate() + ' ' + now2.getHours() + ':' + String(now2.getMinutes()).padStart(2,'0');
-    var entry = { name: nameGuess, html: html, active: true, ts: ts, url: landUrl, pageId: d.id };
+    var entry = { name: nameGuess, html: html, active: true, ts: ts, url: landUrl, pageId: d.id, tunnel: null };
     _deployedSites.push(entry);
+    _activeDeplIdx = _deployedSites.length - 1;
     _saveDeplSites();
     renderDeployedSites();
+    _renderTunTarget();
     showTmplStatus('Desplegado: ' + nameGuess + (autoInject && autoInject.checked ? '  [payload activo]' : ''), 'ok', landUrl);
   })
   .catch(function(e){ showTmplStatus('Error de red: ' + e, 'err'); });
@@ -10923,9 +10938,11 @@ function _labModeCheck() {
 }
 
 /* ─── TUNNEL EXPOSURE (TEMPLATES tab) ─────────────────────── */
-var _tunProcId = null;
-var _tunEs     = null;
-var _tunType   = null;
+var _tunProcId   = null;
+var _tunEs       = null;
+var _tunType     = null;
+var _activeDeplIdx = -1;  // deploy selected for next tunnel
+var _tunDeplIdx    = -1;  // deploy the running tunnel is linked to
 
 var _TUN_CMDS = {
   ngrok:       function(p){ return 'ngrok http ' + p; },
@@ -11152,6 +11169,7 @@ function _tunDoStart(type) {
   var cmdFn = _TUN_CMDS[type];
   if (!cmdFn) return;
   var port = _tunPort();
+  _tunDeplIdx = _activeDeplIdx;
   document.getElementById('tun-dep-block').style.display = 'none';
   document.getElementById('tun-ssh-block').style.display = 'none';
   document.getElementById('tun-status-row').style.display = '';
@@ -11222,11 +11240,24 @@ function _tunShowUrl(url) {
   var urlEl = document.getElementById('tun-public-url');
   if (box) box.style.display = '';
   if (urlEl) urlEl.textContent = url;
+  // Link URL to the deploy entry
+  if (_tunDeplIdx >= 0 && _deployedSites[_tunDeplIdx]) {
+    _deployedSites[_tunDeplIdx].tunnel = { type: _tunType, publicUrl: url };
+    _saveDeplSites();
+    renderDeployedSites();
+  }
 }
 
 function stopTunnel() {
   if (_tunEs) { _tunEs.close(); _tunEs = null; }
   if (_tunProcId) { fetch(API + '/kill/' + _tunProcId, {method:'POST'}).catch(function(){}); _tunProcId = null; }
+  // Detach tunnel from its deploy entry
+  if (_tunDeplIdx >= 0 && _deployedSites[_tunDeplIdx] && _deployedSites[_tunDeplIdx].tunnel) {
+    _deployedSites[_tunDeplIdx].tunnel = null;
+    _saveDeplSites();
+    renderDeployedSites();
+  }
+  _tunDeplIdx = -1;
   _tunType = null;
   _tunSetActive(null);
   var dot = document.getElementById('tun-dot'); if (dot) dot.className = 'lab-srv-dot';
@@ -11342,37 +11373,80 @@ function _saveDeplSites() {
 function renderDeployedSites() {
   var list = document.getElementById('deployed-sites-list');
   var cnt  = document.getElementById('dep-count');
-  var emp  = document.getElementById('dep-empty');
   if (!list) return;
   var active = _deployedSites.filter(function(s){ return s.active; }).length;
   if (cnt) cnt.textContent = active + ' active';
   if (!_deployedSites.length) {
-    list.innerHTML = '<div class="p-empty" id="dep-empty">No sites deployed yet.</div>';
+    list.innerHTML = '<div class="p-empty">No sites deployed yet.</div>';
     return;
   }
   list.innerHTML = _deployedSites.slice().reverse().map(function(s, ri) {
     var i = _deployedSites.length - 1 - ri;
-    var dot   = s.active ? '#4a9060' : '#8a3040';
+    var isSel = (i === _activeDeplIdx);
     var badge = s.active
-      ? '<span style="background:#0a2a10;color:#4a9060;border:1px solid #1a4020;border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">&#9679; ACTIVE</span>'
-      : '<span style="background:#1a0808;color:#8a3040;border:1px solid #3a1020;border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700">&#9679; STOPPED</span>';
+      ? '<span style="background:#0a2a10;color:#4a9060;border:1px solid #1a4020;border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700;flex-shrink:0">&#9679; ACTIVE</span>'
+      : '<span style="background:#1a0808;color:#8a3040;border:1px solid #3a1020;border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700;flex-shrink:0">&#9679; STOPPED</span>';
     var stopBtn = s.active
       ? '<button class="kbtn" style="border-color:#4a1020;color:#cc4060;padding:2px 8px;font-size:10px" onclick="stopDeployedSite(' + i + ')">&#9632; STOP</button>'
       : '<button class="kbtn" style="border-color:#1a4020;color:#4a9060;padding:2px 8px;font-size:10px" onclick="startDeployedSite(' + i + ')">&#9654; RESTART</button>';
-    return '<div style="background:#060108;border:1px solid #2a1040;border-radius:4px;padding:8px 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+    var selBtn = s.active
+      ? '<button class="kbtn" style="padding:2px 8px;font-size:10px;border-color:' + (isSel ? 'var(--g)' : '#2a3a2a') + ';color:' + (isSel ? 'var(--g)' : 'var(--dim)') + '" onclick="selectDeplForTunnel(' + i + ')" title="Vincular túnel a este deploy">' + (isSel ? '&#9901; TUNEL' : '&#9900; TUNEL') + '</button>'
+      : '';
+    var tunInfo = s.tunnel
+      ? '<div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap">'
+          + '<span class="dep-tun-badge"><span class="tdot"></span>' + escH(s.tunnel.type.toUpperCase()) + '</span>'
+          + '<span style="font-size:10px;color:var(--cyan);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;flex:1">' + escH(s.tunnel.publicUrl) + '</span>'
+          + '<button class="kbtn" style="padding:1px 6px;font-size:9px;border-color:var(--cyan);color:var(--cyan);flex-shrink:0" onclick="navigator.clipboard.writeText(\'' + escH(s.tunnel.publicUrl) + '\').catch(function(){})" title="Copiar URL pública">&#8856; PUB</button>'
+        + '</div>'
+      : (s.active && isSel ? '<div style="font-size:10px;color:var(--dim);margin-top:2px">&#8627; Seleccionado para t&#250;nel &mdash; inicia uno abajo</div>' : '');
+    return '<div class="' + (isSel ? 'dep-card-sel' : '') + '" style="background:#060108;border:1px solid ' + (isSel ? '#1a4a30' : '#2a1040') + ';border-radius:4px;padding:8px 12px">'
+      + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
       + badge
       + '<div style="flex:1;min-width:0;overflow:hidden">'
-      + '<div style="font-size:12px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + s.name + '">' + s.name + '</div>'
-      + (s.url ? '<div style="font-size:10px;color:var(--cyan);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + s.url + '">' + s.url + '</div>' : '')
+      + '<div style="font-size:12px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escH(s.name) + '">' + escH(s.name) + '</div>'
+      + (s.url ? '<div style="font-size:10px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + escH(s.url) + '">' + escH(s.url) + '</div>' : '')
       + '</div>'
       + '<span style="font-size:10px;color:var(--mut);flex-shrink:0">' + (s.ts || '') + '</span>'
-      + '<div style="display:flex;gap:4px">'
+      + '<div style="display:flex;gap:4px;flex-shrink:0">'
       + stopBtn
-      + (s.url ? '<button class="kbtn" style="padding:2px 8px;font-size:10px;border-color:var(--cyan);color:var(--cyan)" onclick="navigator.clipboard.writeText(\'' + s.url + '\').catch(function(){})">&#8856;</button>' : '')
-      + '<button class="kbtn" style="padding:2px 8px;font-size:10px" onclick="reloadDeployedSite(' + i + ')">&#128065; LOAD</button>'
+      + selBtn
+      + (s.url ? '<button class="kbtn" style="padding:2px 8px;font-size:10px;border-color:var(--dim);color:var(--dim)" onclick="navigator.clipboard.writeText(\'' + escH(s.url) + '\').catch(function(){})" title="Copiar URL local">&#8856;</button>' : '')
+      + '<button class="kbtn" style="padding:2px 8px;font-size:10px" onclick="reloadDeployedSite(' + i + ')">&#128065;</button>'
       + '<button class="kbtn" style="border-color:#3a1010;color:#cc4040;padding:2px 8px;font-size:10px" onclick="removeDeployedSite(' + i + ')">&#10005;</button>'
-      + '</div></div>';
+      + '</div></div>'
+      + tunInfo
+      + '</div>';
   }).join('');
+}
+
+function _renderTunTarget() {
+  var row   = document.getElementById('tun-target-row');
+  var warn  = document.getElementById('tun-no-deploy');
+  var hint  = document.getElementById('tun-hint');
+  var nameEl = document.getElementById('tun-target-name');
+  var localEl = document.getElementById('tun-target-local');
+  if (!row) return;
+  var s = (_activeDeplIdx >= 0) ? _deployedSites[_activeDeplIdx] : null;
+  if (s) {
+    row.style.display = 'flex';
+    if (warn) warn.style.display = 'none';
+    if (hint) hint.style.display = 'none';
+    if (nameEl) nameEl.textContent = s.name;
+    if (localEl) localEl.textContent = s.url || '';
+  } else {
+    row.style.display = 'none';
+    var hasAny = _deployedSites.length > 0;
+    if (warn) warn.style.display = hasAny ? 'none' : '';
+    if (hint) hint.style.display = hasAny ? '' : 'none';
+  }
+}
+
+function selectDeplForTunnel(i) {
+  _activeDeplIdx = i;
+  renderDeployedSites();
+  _renderTunTarget();
+  var tunSection = document.getElementById('tun-target-row');
+  if (tunSection) tunSection.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 function _syncDeployState(i, active) {
@@ -11392,7 +11466,14 @@ function _syncDeployState(i, active) {
 function stopDeployedSite(i)  { _syncDeployState(i, false); }
 function startDeployedSite(i) { _syncDeployState(i, true);  }
 function removeDeployedSite(i) {
-  _deployedSites.splice(i, 1); _saveDeplSites(); renderDeployedSites();
+  if (_activeDeplIdx === i) _activeDeplIdx = -1;
+  else if (_activeDeplIdx > i) _activeDeplIdx--;
+  if (_tunDeplIdx === i) _tunDeplIdx = -1;
+  else if (_tunDeplIdx > i) _tunDeplIdx--;
+  _deployedSites.splice(i, 1);
+  _saveDeplSites();
+  renderDeployedSites();
+  _renderTunTarget();
 }
 function reloadDeployedSite(i) {
   var s = _deployedSites[i];
@@ -12486,7 +12567,11 @@ bc('gd-op', bGd);
 // ── restore last active panel across reloads ────────────
 (function restoreNav() {
   let saved;
+  // restore last active deploy for tunnel linkage
+  var lastActive = _deployedSites.reduce(function(found, s, i) { return s.active ? i : found; }, -1);
+  if (lastActive >= 0) { _activeDeplIdx = lastActive; }
   renderDeployedSites();
+  _renderTunTarget();
   _loadTgStatus();
   listsLoad();
   _loadPhishHost();
