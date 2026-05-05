@@ -10996,8 +10996,9 @@ function _tunPort() {
 
 /* ─── Public proxy (isolates /p/* from admin panel) ─── */
 var _pubProxyRunning = false;
+var _pubProxyPageId  = null;
 
-function _tunUpdateProxyUI(running, port) {
+function _tunUpdateProxyUI(running, port, pageId) {
   var row  = document.getElementById('pub-proxy-row');
   var dot  = document.getElementById('pub-proxy-dot');
   var info = document.getElementById('pub-proxy-info');
@@ -11009,9 +11010,13 @@ function _tunUpdateProxyUI(running, port) {
   }
   if (dot) dot.className = 'lab-srv-dot' + (running ? ' ok' : '');
   if (info) {
-    info.textContent = running
-      ? 'Proxy activo en :' + port + ' — admin panel bloqueado'
-      : 'Proxy público detenido';
+    if (running) {
+      info.textContent = 'Proxy activo en :' + port
+        + (pageId ? ' — solo /p/' + pageId : '')
+        + ' · Admin bloqueado';
+    } else {
+      info.textContent = 'Proxy público detenido';
+    }
     info.style.color = running ? 'var(--g2)' : 'var(--mut)';
   }
   if (sBtn) sBtn.style.display = running ? 'none' : '';
@@ -11019,21 +11024,28 @@ function _tunUpdateProxyUI(running, port) {
 }
 
 function tunManualStartProxy() {
-  var port = (document.getElementById('tun-proxy-port') || {value:'8080'}).value || '8080';
+  var port   = (document.getElementById('tun-proxy-port') || {value:'8080'}).value || '8080';
+  var deploy = (_activeDeplIdx >= 0) ? _deployedSites[_activeDeplIdx] : null;
+  var pageId = deploy ? deploy.pageId : '';
+  var info   = document.getElementById('pub-proxy-info');
+  if (!pageId) {
+    if (info) { info.textContent = 'Sin deploy activo — despliega un template primero'; info.style.color = 'var(--yellow)'; }
+    return;
+  }
   var sBtn = document.getElementById('pub-proxy-start-btn');
   if (sBtn) { sBtn.disabled = true; sBtn.textContent = 'Iniciando...'; }
   fetch(API + '/public/start', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({port: parseInt(port)})
+    body: JSON.stringify({port: parseInt(port), page_id: pageId})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
     if (sBtn) { sBtn.disabled = false; sBtn.textContent = '► PROXY'; }
     if (d.error) {
-      var info = document.getElementById('pub-proxy-info');
       if (info) { info.textContent = 'Error: ' + d.error; info.style.color = 'var(--red)'; }
     } else {
-      _tunUpdateProxyUI(true, d.port);
+      _pubProxyPageId = d.page_id;
+      _tunUpdateProxyUI(true, d.port, d.page_id);
     }
   })
   .catch(function(e){
@@ -11042,20 +11054,27 @@ function tunManualStartProxy() {
 }
 
 function tunStopProxy() {
-  fetch(API + '/public/stop', {method:'POST'}).catch(function(){});
+  var port = (document.getElementById('tun-proxy-port') || {value:'8080'}).value || '8080';
+  fetch(API + '/public/stop', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({port: parseInt(port)})
+  }).catch(function(){});
   _tunUpdateProxyUI(false, null);
 }
 
-function _tunEnsureProxy(port, cb) {
-  if (_pubProxyRunning) { cb(true); return; }
+function _tunEnsureProxy(port, pageId, cb) {
+  // Already running for this exact port+page? Skip restart.
+  if (_pubProxyRunning && _pubProxyPageId === pageId) { cb(true); return; }
+  if (!pageId) { cb(false, 'Sin deploy seleccionado — haz deploy de un template primero'); return; }
   fetch(API + '/public/start', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({port: parseInt(port)})
+    body: JSON.stringify({port: parseInt(port), page_id: pageId})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
     if (d.error) { cb(false, d.error); return; }
-    _tunUpdateProxyUI(true, d.port);
+    _pubProxyPageId = pageId;
+    _tunUpdateProxyUI(true, d.port, d.page_id);
     cb(true);
   })
   .catch(function(e){ cb(false, String(e)); });
@@ -11095,9 +11114,11 @@ function startTunnel(type) {
       var token = localStorage.getItem(cfg.authKey) || '';
       if (!token) { _tunShowAuth(type); return; }
     }
-    var proxyPort = (document.getElementById('tun-proxy-port') || {value:'8080'}).value || '8080';
-    _tunSetStatus('Iniciando proxy público en :' + proxyPort + '...');
-    _tunEnsureProxy(proxyPort, function(ok, err) {
+    var proxyPort  = (document.getElementById('tun-proxy-port') || {value:'8080'}).value || '8080';
+    var deplDeploy = (_activeDeplIdx >= 0) ? _deployedSites[_activeDeplIdx] : null;
+    var deplPageId = deplDeploy ? (deplDeploy.pageId || '') : '';
+    _tunSetStatus('Iniciando proxy en :' + proxyPort + (deplPageId ? ' para /p/' + deplPageId : '') + '...');
+    _tunEnsureProxy(proxyPort, deplPageId, function(ok, err) {
       if (!ok) {
         _tunSetStatus('Error al iniciar proxy: ' + (err || 'puerto ocupado?'));
         var dot = document.getElementById('tun-dot');
@@ -12689,7 +12710,13 @@ bc('gd-op', bGd);
   _renderTunTarget();
   // Sync proxy status (server may have been restarted while proxy was running)
   fetch(API + '/public/status').then(function(r){ return r.json(); }).then(function(d){
-    _tunUpdateProxyUI(d.running, d.port);
+    if (d.running && d.services && d.services.length) {
+      var svc = d.services[0];
+      _pubProxyPageId = svc.page_id;
+      _tunUpdateProxyUI(true, svc.port, svc.page_id);
+    } else {
+      _tunUpdateProxyUI(false, null, null);
+    }
   }).catch(function(){});
   _loadTgStatus();
   listsLoad();
