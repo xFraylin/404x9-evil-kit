@@ -10923,9 +10923,9 @@ function _labModeCheck() {
 }
 
 /* ─── TUNNEL EXPOSURE (TEMPLATES tab) ─────────────────────── */
-var _tunProcId   = null;
-var _tunPollTmr  = null;
-var _tunType     = null;
+var _tunProcId = null;
+var _tunEs     = null;
+var _tunType   = null;
 
 var _TUN_CMDS = {
   ngrok:       function(p){ return 'ngrok http ' + p; },
@@ -10992,29 +10992,29 @@ function startTunnel(type) {
 function _tunCheckDep(type, cb) {
   var cfg = _TUN_DEPS[type];
   if (!cfg) { cb(true); return; }
-  var checkId = 'tundep_' + Date.now();
   fetch(API + '/run', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({cmd:'which ' + cfg.bin, id: checkId})
+    body: JSON.stringify({cmd:'which ' + cfg.bin})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
     if (d.error) { cb(false); return; }
-    var attempts = 0;
-    var tmr = setInterval(function() {
-      attempts++;
-      fetch(API + '/output/' + checkId)
-        .then(function(r){ return r.json(); })
-        .then(function(out){
-          if (out.done || attempts > 8) {
-            clearInterval(tmr);
-            fetch(API + '/kill/' + checkId).catch(function(){});
-            var text = Array.isArray(out.output) ? out.output.join('\n') : (out.output || '');
-            cb(text.trim().length > 0 && !/not found|command not found/i.test(text));
-          }
-        })
-        .catch(function(){ clearInterval(tmr); cb(false); });
-    }, 400);
+    var jobId = d.job_id;
+    var output = '';
+    var es = new EventSource(API + '/stream/' + jobId);
+    var timer = setTimeout(function(){ es.close(); cb(output.trim().length > 0); }, 4000);
+    es.onmessage = function(e) {
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.type === 'output') output += msg.data;
+        if (msg.type === 'done') {
+          clearTimeout(timer); es.close();
+          fetch(API + '/kill/' + jobId, {method:'POST'}).catch(function(){});
+          cb(output.trim().length > 0 && !/not found|command not found/i.test(output));
+        }
+      } catch(ex){}
+    };
+    es.onerror = function(){ clearTimeout(timer); es.close(); cb(false); };
   })
   .catch(function(){ cb(false); });
 }
@@ -11036,7 +11036,7 @@ function _tunShowInstall(type) {
 
 function tunInstallTool() {
   var type = _tunType;
-  var cfg = _TUN_DEPS[type];
+  var cfg  = _TUN_DEPS[type];
   if (!cfg || !cfg.autoInstall) return;
   var outEl = document.getElementById('tun-dep-out');
   var btn   = document.getElementById('tun-dep-install-btn');
@@ -11046,50 +11046,57 @@ function tunInstallTool() {
   _tunSetStatus('Instalando ' + cfg.bin + '...');
   var dot = document.getElementById('tun-dot');
   if (dot) dot.className = 'lab-srv-dot checking';
-  var installId = 'tuninstall_' + Date.now();
+
   fetch(API + '/run', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({cmd: cfg.autoInstall, id: installId})
+    body: JSON.stringify({cmd: cfg.autoInstall})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
     if (d.error) {
-      if (outEl) outEl.textContent = 'Error: ' + d.error;
+      outEl.textContent = 'Error: ' + d.error;
       if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
       return;
     }
-    var attempts = 0;
-    var tmr = setInterval(function() {
-      attempts++;
-      fetch(API + '/output/' + installId)
-        .then(function(r){ return r.json(); })
-        .then(function(out) {
-          var text = Array.isArray(out.output) ? out.output.join('\n') : (out.output || '');
-          if (outEl) { outEl.textContent = text; outEl.scrollTop = outEl.scrollHeight; }
-          if (out.done || attempts > 150) {
-            clearInterval(tmr);
-            _tunCheckDep(type, function(installed) {
-              if (installed) {
-                if (outEl) outEl.textContent += '\n✓ Instalado. Iniciando tunnel...';
-                document.getElementById('tun-dep-block').style.display = 'none';
-                var authKey = cfg.authKey;
-                if (authKey && !localStorage.getItem(authKey)) { _tunShowAuth(type); return; }
-                _tunDoStart(type);
-              } else {
-                if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
-                if (outEl) outEl.textContent += '\n✗ Instalación fallida — revisa la salida.';
-                var dotEl = document.getElementById('tun-dot');
-                if (dotEl) dotEl.className = 'lab-srv-dot err';
-                _tunSetStatus('Instalación fallida');
-              }
-            });
+    var es = new EventSource(API + '/stream/' + d.job_id);
+    es.onmessage = function(e) {
+      try {
+        var msg = JSON.parse(e.data);
+        if (msg.type === 'output') {
+          outEl.textContent += msg.data;
+          outEl.scrollTop = outEl.scrollHeight;
+        }
+        if (msg.type === 'done' || msg.type === 'error') {
+          es.close();
+          if (msg.type === 'error') {
+            outEl.textContent += '\nError: ' + (msg.data || '');
+            if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
+            return;
           }
-        })
-        .catch(function(){ clearInterval(tmr); });
-    }, 800);
+          _tunCheckDep(type, function(installed) {
+            if (installed) {
+              outEl.textContent += '\n✓ Instalado correctamente.';
+              document.getElementById('tun-dep-block').style.display = 'none';
+              if (cfg.authKey && !localStorage.getItem(cfg.authKey)) { _tunShowAuth(type); return; }
+              _tunDoStart(type);
+            } else {
+              if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
+              outEl.textContent += '\n✗ Instalación fallida — revisa la salida.';
+              var dotEl = document.getElementById('tun-dot');
+              if (dotEl) dotEl.className = 'lab-srv-dot err';
+              _tunSetStatus('Instalación fallida');
+            }
+          });
+        }
+      } catch(ex){}
+    };
+    es.onerror = function() {
+      es.close();
+      if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
+    };
   })
   .catch(function(e){
-    if (outEl) outEl.textContent = 'Error: ' + e;
+    outEl.textContent = 'Error: ' + e;
     if (btn) { btn.disabled = false; btn.textContent = '↺ REINTENTAR'; }
   });
 }
@@ -11118,7 +11125,7 @@ function tunApplyNgrokToken() {
   if (note) { note.textContent = 'Aplicando...'; note.style.color = 'var(--mut)'; }
   fetch(API + '/run', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({cmd:'ngrok config add-authtoken ' + token, id:'tunauth_' + Date.now()})
+    body: JSON.stringify({cmd:'ngrok config add-authtoken ' + token})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
@@ -11155,51 +11162,51 @@ function _tunDoStart(type) {
   if (dot) dot.className = 'lab-srv-dot checking';
   _tunSetStatus('Iniciando ' + type + ' en puerto ' + port + '...');
 
-  var procId = 'tun_' + Date.now();
-  _tunProcId = procId;
   fetch(API + '/run', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({cmd: cmdFn(port), id: procId})
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({cmd: cmdFn(port)})
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
     if (d.error) { _tunSetStatus('Error al iniciar: ' + d.error); return; }
+    _tunProcId = d.job_id;
     _tunSetStatus('Proceso iniciado — esperando URL pública...');
-    _tunPoll(procId, type);
+    _tunStream(d.job_id, type);
   })
   .catch(function(e){ _tunSetStatus('Error: ' + e); });
 }
 
-function _tunPoll(procId, type) {
-  if (_tunPollTmr) clearInterval(_tunPollTmr);
+function _tunStream(jobId, type) {
+  if (_tunEs) { _tunEs.close(); _tunEs = null; }
   var re = _TUN_URL_RE[type];
-  var attempts = 0;
-  _tunPollTmr = setInterval(function() {
-    attempts++;
-    fetch(API + '/output/' + procId)
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        var out = Array.isArray(d.output) ? d.output.join('\n') : (d.output || '');
+  var accumulated = '';
+  var es = new EventSource(API + '/stream/' + jobId);
+  _tunEs = es;
+  es.onmessage = function(e) {
+    try {
+      var msg = JSON.parse(e.data);
+      if (msg.type === 'output') {
+        accumulated += msg.data;
         var el = document.getElementById('tun-out-area');
-        if (el) { el.textContent = out; el.scrollTop = el.scrollHeight; }
-        var m = re && out.match(re);
+        if (el) { el.textContent = accumulated; el.scrollTop = el.scrollHeight; }
+        var m = re && accumulated.match(re);
         if (m) {
-          var url = (type === 'bore') ? 'http://' + m[0] : m[0];
-          _tunShowUrl(url);
-          clearInterval(_tunPollTmr); _tunPollTmr = null;
-        } else if (d.done) {
-          _tunSetStatus('Proceso finalizado — no se detectó URL pública en la salida');
-          var dot = document.getElementById('tun-dot'); if (dot) dot.className = 'lab-srv-dot';
-          document.getElementById('tun-stop-btn').disabled = true;
-          clearInterval(_tunPollTmr); _tunPollTmr = null;
-        } else if (attempts > 120) {
-          _tunSetStatus('Timeout — revisa la salida. Si ya tienes la URL, pégala manualmente como C2.');
-          clearInterval(_tunPollTmr); _tunPollTmr = null;
+          _tunShowUrl((type === 'bore') ? 'http://' + m[0] : m[0]);
+          es.close(); _tunEs = null;
         }
-      })
-      .catch(function(){ clearInterval(_tunPollTmr); _tunPollTmr = null; });
-  }, 1500);
+      }
+      if (msg.type === 'done') {
+        es.close(); _tunEs = null;
+        if (!(_TUN_URL_RE[type] && accumulated.match(_TUN_URL_RE[type]))) {
+          _tunSetStatus('Proceso finalizado — no se detectó URL pública en la salida');
+          var dotEl = document.getElementById('tun-dot');
+          if (dotEl) dotEl.className = 'lab-srv-dot';
+          document.getElementById('tun-stop-btn').disabled = true;
+        }
+      }
+    } catch(ex){}
+  };
+  es.onerror = function(){ es.close(); _tunEs = null; };
 }
 
 function _tunSetStatus(msg, ok) {
@@ -11218,8 +11225,8 @@ function _tunShowUrl(url) {
 }
 
 function stopTunnel() {
-  if (_tunPollTmr) { clearInterval(_tunPollTmr); _tunPollTmr = null; }
-  if (_tunProcId) { fetch(API + '/kill/' + _tunProcId).catch(function(){}); _tunProcId = null; }
+  if (_tunEs) { _tunEs.close(); _tunEs = null; }
+  if (_tunProcId) { fetch(API + '/kill/' + _tunProcId, {method:'POST'}).catch(function(){}); _tunProcId = null; }
   _tunType = null;
   _tunSetActive(null);
   var dot = document.getElementById('tun-dot'); if (dot) dot.className = 'lab-srv-dot';
