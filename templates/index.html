@@ -249,6 +249,37 @@ textarea.fi{resize:vertical;min-height:48px}
 .tab-content.on{display:block}
 .tab-content.on.plist{display:flex;flex-direction:column;gap:3px}
 
+/* ─── NETEXEC WORKSTATION ─────────────────────────────── */
+.nxc-shell{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:10px;align-items:start}
+.nxc-main{min-width:0}
+.nxc-side{border:1px solid var(--brd);background:#020403;border-radius:4px;padding:8px;position:sticky;top:8px}
+.nxc-status{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+.nxc-badge{font-size:11px;border:1px solid var(--brd);border-radius:2px;padding:3px 8px;color:var(--mut);background:#020603;letter-spacing:1px;text-transform:uppercase}
+.nxc-badge.ok{border-color:#1d4a26;color:var(--g);box-shadow:var(--glow)}
+.nxc-badge.warn{border-color:#4a3a12;color:var(--yellow)}
+.nxc-badge.crit{border-color:#4a1818;color:var(--red)}
+.nxc-protos{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:9px;border-bottom:1px solid var(--brd);padding-bottom:7px}
+.nxc-proto{font-size:12px;letter-spacing:1.5px;border:1px solid var(--brd);color:var(--mut);background:#020403;border-radius:3px;padding:5px 12px;cursor:pointer;transition:all .15s}
+.nxc-proto:hover{color:var(--g2);border-color:#2d6040;background:#071009;transform:translateY(-1px)}
+.nxc-proto.on{color:#001b0b;background:var(--g);border-color:var(--g);box-shadow:0 0 14px rgba(0,255,136,.22);font-weight:700}
+.nxc-section{border:1px solid #0d1a0f;background:#020403;border-radius:4px;padding:8px;margin-bottom:8px}
+.nxc-section-title{font-size:11px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.nxc-section-title::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--g);box-shadow:0 0 6px rgba(0,255,136,.6)}
+.nxc-mini{font-size:12px;color:var(--dim);line-height:1.6}
+.nxc-mini code{color:var(--cyan)}
+.nxc-mod-list{display:grid;grid-template-columns:1fr;gap:4px;max-height:160px;overflow-y:auto;margin-top:6px}
+.nxc-mod-row{display:flex;gap:6px;align-items:center;border:1px solid #0d1a0f;background:#010302;border-radius:3px;padding:4px 6px;cursor:pointer}
+.nxc-mod-row:hover{border-color:#254530}
+.nxc-mod-row.on{border-color:var(--g);background:#051007}
+.nxc-mod-name{color:var(--g2);font-size:12px;min-width:86px}
+.nxc-mod-desc{color:var(--dim);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nxc-run-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.nxc-actions-dense .ck{font-size:11px;padding:3px 7px}
+.nxc-helper-cmd{background:#010302;border:1px solid #163019;border-radius:3px;padding:7px 9px;color:var(--cyan);font-size:12px;word-break:break-all;line-height:1.6;margin-top:5px}
+.nxc-output-hidden .out-content,.nxc-output-hidden .out-parsed{display:none!important}
+
+@media(max-width:1199px){.nxc-shell{grid-template-columns:1fr}.nxc-side{position:static}}
+
 /* ─── PAYLOAD LIST ───────────────────────────────────── */
 .plist{display:flex;flex-direction:column;gap:3px}
 .pitem{display:flex;align-items:center;background:#020403;border:1px solid var(--brd);border-radius:3px;padding:5px 9px;gap:7px;transition:border .1s}
@@ -546,6 +577,76 @@ textarea.fi{resize:vertical;min-height:48px}
 .dep-card-sel{border-color:#1a4a30 !important;box-shadow:0 0 8px rgba(0,200,100,.07)}
 #tun-target-row{display:none;align-items:center;gap:8px;padding:6px 10px;background:#040e08;border:1px solid #1a3020;border-radius:3px;margin-bottom:7px;flex-wrap:wrap}
 #pub-proxy-row.active{border-color:#1a4a2a !important;background:#040e08 !important}
+
+/* ─── REPORTS SYSTEM ─────────────────────────────────────── */
+/* Inline header button group — injected into .out-hdr after execution */
+.rpt-hdr-grp{display:contents}
+.sm-rpt-btn:disabled{opacity:.3;cursor:not-allowed}
+.sm-rpt-btn:not(:disabled):hover{filter:brightness(1.3)}
+.rpt-hbtn{font-size:10px;padding:2px 7px;border-radius:2px;cursor:pointer;letter-spacing:.7px;transition:all .12s;white-space:nowrap;font-family:inherit;flex-shrink:0;border:1px solid transparent;line-height:1.4}
+.rpt-hbtn-g{background:#050e06;color:var(--g);border-color:#1a3a20;font-weight:700}.rpt-hbtn-g:hover{background:#091408;border-color:#2a5a30;box-shadow:0 0 6px rgba(0,255,136,.15)}
+.rpt-hbtn-c{background:#010608;color:var(--cyan);border-color:#0a2030}.rpt-hbtn-c:hover{background:#020c12;border-color:#103a50}
+.rpt-hbtn-b{background:#020510;color:var(--blue);border-color:#102040}.rpt-hbtn-b:hover{background:#030820;border-color:#1a3a60}
+.rpt-hbtn-d{background:transparent;color:var(--mut);border-color:#163019}.rpt-hbtn-d:hover{color:var(--txt);border-color:#253a25}
+.rpt-hbtn-y{background:#060500;color:var(--yellow);border-color:#302010}.rpt-hbtn-y:hover{background:#0a0800;border-color:#4a3018}
+/* Modal / list shared buttons */
+.rpt-btn{font-size:11px;padding:4px 9px;border-radius:2px;cursor:pointer;letter-spacing:.8px;transition:all .13s;white-space:nowrap;font-family:inherit;flex-shrink:0;border:1px solid transparent}
+.rpt-btn-g{background:#050e06;color:var(--g);border-color:#163a20}.rpt-btn-g:hover{background:#091408;border-color:#2a5a30;box-shadow:0 0 8px rgba(0,255,136,.12)}
+.rpt-btn-b{background:#020510;color:var(--blue);border-color:#102040}.rpt-btn-b:hover{background:#030820;border-color:#1a3a60}
+.rpt-btn-c{background:#010608;color:var(--cyan);border-color:#0a2030}.rpt-btn-c:hover{background:#020c12;border-color:#103a50}
+.rpt-btn-y{background:#060500;color:var(--yellow);border-color:#302010}.rpt-btn-y:hover{background:#0a0800;border-color:#4a3018}
+.rpt-btn-d{background:transparent;color:var(--mut);border-color:#163019}.rpt-btn-d:hover{color:var(--txt);border-color:#253a25}
+
+#rpt-modal{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:4000;display:none;overflow-y:auto;padding:12px}
+#rpt-modal.open{display:block;animation:rptFade .17s ease}
+@keyframes rptFade{from{opacity:0}to{opacity:1}}
+#rpt-modal-box{max-width:1060px;margin:0 auto;background:#040a05;border:1px solid #1a3a1a;border-radius:4px;box-shadow:0 0 50px rgba(0,0,0,.85)}
+#rpt-modal-head{background:linear-gradient(90deg,#030a05,#060f07);border-bottom:1px solid #1a3a1a;padding:11px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+#rpt-modal-title{font-size:14px;color:var(--g);font-weight:700;letter-spacing:2px;flex:1;min-width:180px}
+#rpt-modal-meta{font-size:11px;color:var(--mut);letter-spacing:1px}
+#rpt-modal-close{font-size:18px;color:var(--mut);cursor:pointer;padding:0 4px;line-height:1;transition:color .1s}
+#rpt-modal-close:hover{color:var(--red)}
+.rpt-modal-btns{display:flex;gap:5px;flex-wrap:wrap}
+#rpt-modal-body{padding:14px 16px}
+.rpt-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-bottom:14px}
+.rpt-card{background:#020603;border:1px solid #0f1e10;border-radius:3px;padding:9px 12px}
+.rpt-card-lbl{font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px}
+.rpt-card-val{font-size:13px;color:var(--txt);font-weight:500;word-break:break-all}
+.rpt-card-val.cg{color:var(--g)}.rpt-card-val.cc{color:var(--cyan)}.rpt-card-val.cr{color:var(--red)}.rpt-card-val.cy{color:var(--yellow)}
+.rpt-sum-box{background:#010401;border-left:3px solid var(--g);padding:10px 14px;margin-bottom:12px;border-radius:0 3px 3px 0;font-size:13px;color:var(--txt);line-height:1.7}
+.rpt-sec{margin-bottom:10px;border:1px solid #0f1e10;border-radius:3px;overflow:hidden}
+.rpt-sec-hdr{background:#030803;padding:7px 12px;font-size:11px;color:var(--mut);letter-spacing:2px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:all .12s;text-transform:uppercase}
+.rpt-sec-hdr:hover{color:var(--g2);background:#040a04}
+.rpt-sec-hdr.open{color:var(--g2)}
+.rpt-sec-arrow{transition:transform .2s;opacity:.5}
+.rpt-sec-hdr.open .rpt-sec-arrow{transform:rotate(90deg);opacity:.9}
+.rpt-sec-body{display:none;background:#020502;padding:8px 12px}
+.rpt-sec-body.open{display:block}
+.rpt-ul{list-style:none;padding:0;margin:0}
+.rpt-ul li{padding:3px 0;font-size:12px;border-bottom:1px solid #0a1209;color:var(--txt);white-space:pre-wrap;word-break:break-all;line-height:1.6}
+.rpt-ul li:last-child{border:none}
+.rpt-ul li.lf{color:var(--g);padding-left:8px;border-left:2px solid var(--g)}
+.rpt-ul li.li{color:var(--cyan);padding-left:8px;border-left:2px solid var(--cyan)}
+.rpt-ul li.le{color:var(--red);padding-left:8px;border-left:2px solid var(--red)}
+.rpt-ul li.lv{color:var(--yellow);padding-left:8px;border-left:2px solid var(--yellow)}
+.rpt-pre{white-space:pre-wrap;word-break:break-all;font-size:11px;color:#7aaa80;line-height:1.6;max-height:500px;overflow-y:auto;background:#010301;padding:8px;border-radius:2px}
+.rpt-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.rpt-tbl th{text-align:left;padding:5px 8px;font-size:10px;color:var(--mut);letter-spacing:1px;border-bottom:1px solid #0f1e10;text-transform:uppercase}
+.rpt-tbl td{padding:5px 8px;border-bottom:1px solid #080e09;color:var(--txt);vertical-align:top;word-break:break-word}
+.rpt-tbl tr:hover td{background:#030803}
+.rpt-badge{display:inline-block;font-size:10px;padding:1px 5px;border-radius:2px;letter-spacing:.8px;font-weight:700;margin-left:5px}
+.rpt-badge.bf{background:#0a1a0a;color:var(--g);border:1px solid #1a3a1a}
+.rpt-badge.bi{background:#01090e;color:var(--cyan);border:1px solid #0a1e2e}
+.rpt-badge.be{background:#0e0a0a;color:var(--red);border:1px solid #280e0e}
+.rpt-badge.bv{background:#0e0d00;color:var(--yellow);border:1px solid #281e00}
+
+#p-reports .rpt-list-tbl{width:100%;border-collapse:collapse}
+#p-reports .rpt-list-tbl th{font-size:10px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;text-align:left;padding:5px 8px;border-bottom:1px solid #0f1e10;white-space:nowrap}
+#p-reports .rpt-list-tbl td{padding:6px 8px;border-bottom:1px solid #080e09;font-size:12px;color:var(--txt);vertical-align:middle}
+#p-reports .rpt-list-tbl tr:hover td{background:#030803}
+.rpt-tool-pill{font-size:10px;background:#0a1a0c;color:var(--g);border:1px solid #1a3a1a;padding:1px 6px;border-radius:2px;letter-spacing:1px;white-space:nowrap}
+.rpt-sbox{background:#020403;border:1px solid #163019;color:var(--txt);font-family:inherit;font-size:12px;padding:4px 8px;border-radius:2px;outline:none;width:220px}
+.rpt-sbox:focus{border-color:#254530;box-shadow:0 0 6px rgba(0,255,136,.08)}
 </style>
 </style>
 </head>
@@ -634,7 +735,7 @@ textarea.fi{resize:vertical;min-height:48px}
   <div class="acc-cat" onclick="toggleAcc(this)">ACTIVE DIRECTORY <span class="acc-arrow">▶</span></div>
   <div class="acc-items">
     <div class="s-item" onclick="sw('ad-enum',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>ENUMERATION</div>
-    <div class="s-item" onclick="sw('ad-smb',this)"><div class="s-dot"></div><span class="s-icon">◈</span>SMB ACCESS</div>
+    <div class="s-item" onclick="sw('ad-smb',this);nxcLoadModules()"><div class="s-dot"></div><span class="s-icon">◈</span>NETEXEC <span class="s-badge">NXC</span></div>
     <div class="s-item" onclick="sw('ad-kerb',this)"><div class="s-dot"></div><span class="s-icon">⚿</span>KERBEROS</div>
     <div class="s-item" onclick="sw('ad-exec',this)"><div class="s-dot"></div><span class="s-icon">▶</span>EXECUTION</div>
     <div class="s-item" onclick="sw('ad-creds',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>CREDENTIALS</div>
@@ -694,6 +795,12 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="s-item" onclick="sw('tools',this)"><div class="s-dot"></div><span class="s-icon">◈</span>HERRAMIENTAS</div>
     <div class="s-item" onclick="sw('files',this)"><div class="s-dot"></div><span class="s-icon">≡</span>ARCHIVOS</div>
     <div class="s-item" onclick="sw('history',this)"><div class="s-dot"></div><span class="s-icon">◉</span>HISTORIAL</div>
+  </div>
+
+  <!-- REPORTS -->
+  <div class="acc-cat open" onclick="toggleAcc(this)">REPORTS <span class="acc-arrow">▶</span></div>
+  <div class="acc-items open">
+    <div class="s-item" onclick="sw('reports',this);rptLoadList()"><div class="s-dot" style="background:var(--cyan)"></div><span class="s-icon" style="color:var(--cyan)">◉</span>EVIDENCIA <span class="s-badge" id="rpt-count-badge" style="color:var(--cyan);border-color:#0a2030">0</span></div>
   </div>
 </div>
 
@@ -1631,47 +1738,243 @@ textarea.fi{resize:vertical;min-height:48px}
   <div class="out-area" id="ae-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('ae-out')">CLEAR</button></div><div class="out-content" id="ae-out-c"></div></div>
 </div>
 
-<!-- ══ AD SMB ══ -->
-<div id="p-ad-smb" class="panel">
-  <div class="pt">SMB ACCESS <span class="ptd">— smbmap, crackmapexec / netexec</span></div>
-  <div class="row">
-    <div class="ig w2"><div class="lbl">TARGET / RANGO</div><input class="fi" id="sm-h" placeholder="192.168.1.10 o 192.168.1.0/24" oninput="bSmb()"></div>
-    <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="sm-d" placeholder="domain.local" oninput="bSmb()"></div>
-    <div class="ig"><div class="lbl">TOOL</div>
-      <select class="fi" id="sm-t" onchange="bSmb()">
-        <option value="crackmapexec">crackmapexec</option>
-        <option value="netexec">netexec</option>
-        <option value="nxc">nxc</option>
-        <option value="smbmap">smbmap</option>
-      </select>
-    </div>
+<!-- ══ NETEXEC / NXC ══ -->
+<div id="p-ad-smb" class="panel" data-nxc-proto="smb">
+  <div class="pt">NETEXEC WORKSTATION <span class="ptd">— SMB · WINRM · LDAP · MSSQL · WMI · RDP usando nxc</span></div>
+
+  <div class="nxc-status">
+    <span class="nxc-badge" id="sm-nxc-status">NXC CHECK</span>
+    <span class="nxc-badge ok" id="sm-proto-badge">SMB</span>
+    <span class="nxc-badge" id="sm-cred-badge">PASSWORD</span>
+    <span class="nxc-badge" id="sm-module-badge">MODULES: --</span>
   </div>
-  <div class="row">
-    <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="sm-u" placeholder="user" oninput="bSmb()"></div>
-    <div class="ig">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-        <span class="lbl" style="margin:0">PASSWORD / HASH</span>
-        <span id="sm-cred-badge" style="font-size:10px;padding:2px 7px;border-radius:2px;letter-spacing:1px;border:1px solid var(--brd);color:var(--mut)">PASSWORD</span>
+
+  <div class="nxc-protos">
+    <button class="nxc-proto on" data-proto="smb" onclick="nxcSetProtocol('smb',this)">SMB</button>
+    <button class="nxc-proto" data-proto="winrm" onclick="nxcSetProtocol('winrm',this)">WINRM</button>
+    <button class="nxc-proto" data-proto="ldap" onclick="nxcSetProtocol('ldap',this)">LDAP</button>
+    <button class="nxc-proto" data-proto="mssql" onclick="nxcSetProtocol('mssql',this)">MSSQL</button>
+    <button class="nxc-proto" data-proto="wmi" onclick="nxcSetProtocol('wmi',this)">WMI</button>
+    <button class="nxc-proto" data-proto="rdp" onclick="nxcSetProtocol('rdp',this)">RDP</button>
+  </div>
+
+  <div class="nxc-shell">
+    <div class="nxc-main">
+      <div class="nxc-section">
+        <div class="nxc-section-title">TARGET / AUTH</div>
+        <div class="row">
+          <div class="ig w3"><div class="lbl">TARGET / RANGO / FILE</div><input class="fi" id="sm-h" placeholder="192.168.1.10 o 192.168.1.0/24 o targets.txt" oninput="bSmb()"></div>
+          <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="sm-d" placeholder="domain.local" oninput="bSmb()"></div>
+          <div class="ig"><div class="lbl">AUTH MODE</div>
+            <select class="fi" id="sm-auth" onchange="nxcAuthModeChanged();bSmb()">
+              <option value="password">password</option>
+              <option value="hash">NTLM hash</option>
+              <option value="kerberos">kerberos</option>
+              <option value="kcache">use kcache</option>
+              <option value="null">null auth</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="sm-u" placeholder="user o users.txt" oninput="bSmb()"></div>
+          <div class="ig"><div class="lbl">PASSWORD</div><input class="fi" id="sm-p" placeholder="Password1! o passwords.txt" oninput="bSmb()"></div>
+          <div class="ig"><div class="lbl">NTLM HASH</div><input class="fi" id="sm-hash" placeholder="NTLM o LM:NTLM" oninput="bSmb()"></div>
+        </div>
+        <div class="checks nxc-actions-dense" id="sm-auth-fl">
+          <div class="ck" data-v="local_auth">--local-auth</div>
+          <div class="ck" data-v="kerberos">--kerberos</div>
+          <div class="ck" data-v="use_kcache">--use-kcache</div>
+          <div class="ck on" data-v="no_progress">--no-progress</div>
+        </div>
       </div>
-      <input class="fi" id="sm-p" placeholder="Password1!  ó  NTLMHASH(32hex)  ó  LM:NTLM" oninput="bSmb()">
+
+      <div id="nxc-smb" class="nxc-pane">
+        <div class="nxc-section">
+          <div class="nxc-section-title">SMB ENUM / DUMP</div>
+          <div class="checks nxc-actions-dense" id="sm-smb-actions">
+            <div class="ck on" data-v="shares">--shares</div><div class="ck" data-v="users">--users</div>
+            <div class="ck" data-v="groups">--groups</div><div class="ck" data-v="local-groups">--local-groups</div>
+            <div class="ck" data-v="loggedon-users">--loggedon-users</div><div class="ck" data-v="rid-brute">--rid-brute</div>
+            <div class="ck" data-v="pass-pol">--pass-pol</div><div class="ck" data-v="sam">--sam</div>
+            <div class="ck" data-v="lsa">--lsa</div><div class="ck" data-v="ntds">--ntds</div>
+            <div class="ck" data-v="disks">--disks</div><div class="ck" data-v="interfaces">--interfaces</div>
+            <div class="ck" data-v="sessions">--sessions</div><div class="ck" data-v="gen-relay-list">--gen-relay-list</div>
+          </div>
+          <div class="row">
+            <div class="ig"><div class="lbl">RID MAX</div><input class="fi" id="sm-rid-max" placeholder="4000" oninput="bSmb()"></div>
+            <div class="ig w2"><div class="lbl">RELAY LIST OUT</div><input class="fi" id="sm-relay-out" value="/tmp/nxc_relayable.txt" oninput="bSmb()"></div>
+          </div>
+        </div>
+        <div class="nxc-section">
+          <div class="nxc-section-title">REMOTE EXECUTION</div>
+          <div class="row">
+            <div class="ig"><div class="lbl">EXEC METHOD</div>
+              <select class="fi" id="sm-exec-method" onchange="bSmb()">
+                <option value="">auto</option><option value="wmiexec">wmiexec</option><option value="smbexec">smbexec</option>
+                <option value="atexec">atexec</option><option value="mmcexec">mmcexec</option>
+              </select></div>
+            <div class="ig"><div class="lbl">TYPE</div><select class="fi" id="sm-exec-type" onchange="bSmb()"><option value="">none</option><option value="cmd">CMD -x</option><option value="powershell">PowerShell -X</option></select></div>
+            <div class="ig w3"><div class="lbl">COMMAND</div><input class="fi" id="sm-exec-command" placeholder="whoami / Get-ComputerInfo" oninput="bSmb()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="nxc-winrm" class="nxc-pane" style="display:none">
+        <div class="nxc-section">
+          <div class="nxc-section-title">WINRM AUTH / EXEC</div>
+          <div class="checks nxc-actions-dense" id="sm-winrm-actions">
+            <div class="ck on" data-v="check-http">check HTTP</div><div class="ck" data-v="check-https">check HTTPS</div>
+            <div class="ck" data-v="sam">--sam</div><div class="ck" data-v="lsa">--lsa</div><div class="ck" data-v="dpapi">--dpapi</div>
+          </div>
+          <div class="row">
+            <div class="ig"><div class="lbl">TYPE</div><select class="fi" id="sm-winrm-exec-type" onchange="bSmb()"><option value="">auth test</option><option value="cmd">CMD -x</option><option value="powershell">PowerShell -X</option></select></div>
+            <div class="ig w3"><div class="lbl">COMMAND</div><input class="fi" id="sm-winrm-exec-command" placeholder="whoami / Get-Process" oninput="bSmb()"></div>
+          </div>
+          <div class="nxc-mini">Upload/download directo no aparece en <code>nxc winrm --help</code> de esta instalación. El launcher Evil-WinRM queda como helper de operador.</div>
+          <div class="nxc-helper-cmd" id="sm-evil-cmd"></div>
+          <button class="kbtn" style="margin-top:5px" onclick="copyText((document.getElementById('sm-evil-cmd')||{}).textContent||'')">COPY EVIL-WINRM</button>
+        </div>
+      </div>
+
+      <div id="nxc-ldap" class="nxc-pane" style="display:none">
+        <div class="nxc-section">
+          <div class="nxc-section-title">LDAP ENUM / ROAST / BLOODHOUND</div>
+          <div class="checks nxc-actions-dense" id="sm-ldap-actions">
+            <div class="ck on" data-v="users">--users</div><div class="ck" data-v="groups">--groups</div>
+            <div class="ck" data-v="asreproast">ASREPRoast</div><div class="ck" data-v="kerberoast">Kerberoast</div>
+            <div class="ck" data-v="laps">LAPS</div><div class="ck" data-v="maq">MAQ</div><div class="ck" data-v="gmsa">GMSA</div>
+            <div class="ck" data-v="delegation">delegation</div><div class="ck" data-v="bloodhound">bloodhound</div>
+            <div class="ck" data-v="pass-pol">pass-pol</div><div class="ck" data-v="dc-list">dc-list</div><div class="ck" data-v="get-sid">get-sid</div>
+          </div>
+          <div class="row">
+            <div class="ig"><div class="lbl">ASREP OUT</div><input class="fi" id="sm-asrep-out" value="/tmp/nxc_asrep_hashes.txt" oninput="bSmb()"></div>
+            <div class="ig"><div class="lbl">TGS OUT</div><input class="fi" id="sm-tgs-out" value="/tmp/nxc_tgs_hashes.txt" oninput="bSmb()"></div>
+            <div class="ig"><div class="lbl">BLOODHOUND COLLECTION</div><input class="fi" id="sm-bh-collection" value="All" oninput="bSmb()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="nxc-mssql" class="nxc-pane" style="display:none">
+        <div class="nxc-section">
+          <div class="nxc-section-title">MSSQL AUTH / QUERY / XP_CMDSHELL</div>
+          <div class="checks nxc-actions-dense" id="sm-mssql-actions">
+            <div class="ck" data-v="database">--database</div><div class="ck" data-v="linked-servers">linked servers</div>
+            <div class="ck" data-v="rid-brute">rid-brute</div><div class="ck" data-v="sam">--sam</div><div class="ck" data-v="lsa">--lsa</div>
+          </div>
+          <div class="row">
+            <div class="ig"><div class="lbl">DATABASE</div><input class="fi" id="sm-database" placeholder="master" oninput="bSmb()"></div>
+            <div class="ig w3"><div class="lbl">QUERY (-q)</div><input class="fi" id="sm-query" placeholder="SELECT @@version" oninput="bSmb()"></div>
+          </div>
+          <div class="row">
+            <div class="ig"><div class="lbl">TYPE</div><select class="fi" id="sm-mssql-exec-type" onchange="bSmb()"><option value="">none</option><option value="cmd">xp_cmdshell CMD</option><option value="powershell">PowerShell</option></select></div>
+            <div class="ig w3"><div class="lbl">COMMAND</div><input class="fi" id="sm-mssql-exec-command" placeholder="whoami" oninput="bSmb()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="nxc-wmi" class="nxc-pane" style="display:none">
+        <div class="nxc-section">
+          <div class="nxc-section-title">WMI QUERY / EXEC</div>
+          <div class="checks nxc-actions-dense" id="sm-wmi-actions">
+            <div class="ck" data-v="list-snapshots">list snapshots</div>
+          </div>
+          <div class="row">
+            <div class="ig w3"><div class="lbl">WMI QUERY</div><input class="fi" id="sm-wmi-query" placeholder="select Caption,Version from Win32_OperatingSystem" oninput="bSmb()"></div>
+            <div class="ig"><div class="lbl">NAMESPACE</div><input class="fi" id="sm-wmi-namespace" placeholder="root\\cimv2" oninput="bSmb()"></div>
+          </div>
+          <div class="row">
+            <div class="ig"><div class="lbl">EXEC METHOD</div><select class="fi" id="sm-wmi-exec-method" onchange="bSmb()"><option value="">auto</option><option value="wmiexec">wmiexec</option><option value="wmiexec-event">wmiexec-event</option></select></div>
+            <div class="ig"><div class="lbl">TYPE</div><select class="fi" id="sm-wmi-exec-type" onchange="bSmb()"><option value="">none</option><option value="cmd">CMD -x</option><option value="powershell">PowerShell -X</option></select></div>
+            <div class="ig w3"><div class="lbl">COMMAND</div><input class="fi" id="sm-wmi-exec-command" placeholder="whoami" oninput="bSmb()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="nxc-rdp" class="nxc-pane" style="display:none">
+        <div class="nxc-section">
+          <div class="nxc-section-title">RDP LOGIN / SCREENSHOT / NLA</div>
+          <div class="checks nxc-actions-dense" id="sm-rdp-actions">
+            <div class="ck on" data-v="check-nla">check NLA</div><div class="ck" data-v="screenshot">screenshot</div>
+            <div class="ck" data-v="nla-screenshot">NLA screenshot</div><div class="ck" data-v="clipboard">clipboard support</div>
+          </div>
+          <div class="row">
+            <div class="ig"><div class="lbl">SCREEN TIME</div><input class="fi" id="sm-screentime" placeholder="10" oninput="bSmb()"></div>
+            <div class="ig"><div class="lbl">RES</div><input class="fi" id="sm-res" placeholder="1024x768" oninput="bSmb()"></div>
+            <div class="ig"><div class="lbl">CLIPBOARD DELAY</div><input class="fi" id="sm-clipboard-delay" placeholder="30" oninput="bSmb()"></div>
+          </div>
+          <div class="row">
+            <div class="ig"><div class="lbl">TYPE</div><select class="fi" id="sm-rdp-exec-type" onchange="bSmb()"><option value="">none</option><option value="cmd">CMD -x</option><option value="powershell">PowerShell -X</option></select></div>
+            <div class="ig w3"><div class="lbl">COMMAND</div><input class="fi" id="sm-rdp-exec-command" placeholder="whoami" oninput="bSmb()"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cmd-preview"><div class="cmd-lbl">NXC COMMAND PREVIEW</div><div class="cmd-text" id="sm-cmd"></div></div>
+      <div class="run-row">
+        <button class="rbtn" id="sm-run" onclick="runTool('sm')">▶ EJECUTAR NXC</button>
+        <button class="sbtn" id="sm-stop" onclick="stopTool('sm')" disabled>■ STOP</button>
+        <button class="kbtn" onclick="cpCmd('sm-cmd')">COPY COMMAND</button>
+        <button class="kbtn" onclick="nxcSaveLog()">SAVE LOGS</button>
+        <button class="kbtn" onclick="nxcParseNow()">PARSE NOW</button>
+        <button class="kbtn" onclick="nxcToggleOutput()">COLLAPSE OUTPUT</button>
+      </div>
+
+      <div class="out-area" id="sm-out">
+        <div class="out-hdr">
+          <span class="out-title">LIVE OUTPUT — NETEXEC</span>
+          <button class="kbtn sm-rpt-btn" id="sm-rpt-view" disabled onclick="rptView(_smRptId)" style="color:var(--g);border-color:#1e4428">REPORT</button>
+          <button class="kbtn sm-rpt-btn" id="sm-rpt-pdf"  disabled onclick="rptExportPDF(_smRptId)" style="color:var(--cyan);border-color:#0a2535">PDF</button>
+          <button class="kbtn sm-rpt-btn" id="sm-rpt-word" disabled onclick="rptExportDocx(_smRptId)" style="color:var(--blue);border-color:#102040">WORD</button>
+          <button class="kbtn sm-rpt-btn" id="sm-rpt-json" disabled onclick="rptDownloadParsed(_smRptId)">JSON</button>
+          <button class="kbtn" onclick="clrOut('sm-out')">CLEAR</button>
+        </div>
+        <div class="out-content" id="sm-out-c"></div>
+      </div>
+    </div>
+
+    <div class="nxc-side">
+      <div class="nxc-section-title">MODULES</div>
+      <select class="fi" id="sm-module" onchange="nxcSelectModule(this.value);bSmb()">
+        <option value="">-- no module --</option>
+        <option value="lsassy">lsassy</option><option value="bloodhound">bloodhound</option><option value="spider_plus">spider_plus</option>
+        <option value="webdav">webdav</option><option value="spooler">spooler</option><option value="printnightmare">printnightmare</option>
+        <option value="nopac">nopac</option><option value="zerologon">zerologon</option><option value="dfscoerce">dfscoerce</option>
+        <option value="petitpotam">petitpotam</option><option value="shadowcoerce">shadowcoerce</option><option value="coercer">coercer</option>
+        <option value="wdigest">wdigest</option><option value="laps">laps</option><option value="maq">maq</option>
+        <option value="enum_avproducts">enum_avproducts</option><option value="gpp_password">gpp_password</option>
+      </select>
+      <textarea class="fi" id="sm-module-options" placeholder="KEY=VALUE por linea&#10;SHARE=C$&#10;USERSFILE=users.txt" style="margin-top:6px;min-height:72px" oninput="bSmb()"></textarea>
+      <button class="kbtn" style="margin-top:6px;width:100%" onclick="nxcLoadModules(true)">REFRESH nxc smb -L</button>
+      <div class="nxc-mod-list" id="sm-module-list"></div>
+
+      <div class="sdiv">FILE OPS</div>
+      <div class="row" style="display:block;margin:0">
+        <select class="fi" id="sm-transfer-mode" onchange="bSmb()">
+          <option value="none">none</option><option value="upload">upload --put-file</option><option value="download">download --get-file</option>
+        </select>
+        <input class="fi" id="sm-transfer-src" placeholder="local/src o remote/src" style="margin-top:5px" oninput="bSmb()">
+        <input class="fi" id="sm-transfer-dst" placeholder="remote/dst o local/dst" style="margin-top:5px" oninput="bSmb()">
+      </div>
+
+      <div class="sdiv">ADVANCED</div>
+      <div class="nxc-run-grid">
+        <input class="fi" id="sm-threads" placeholder="-t 64" oninput="bSmb()">
+        <input class="fi" id="sm-timeout" placeholder="timeout" oninput="bSmb()">
+        <input class="fi" id="sm-port" placeholder="port" oninput="bSmb()">
+        <input class="fi" id="sm-jitter" placeholder="jitter" oninput="bSmb()">
+      </div>
+      <input class="fi" id="sm-dns-server" placeholder="--dns-server" style="margin-top:5px" oninput="bSmb()">
+      <input class="fi" id="sm-kdc-host" placeholder="--kdcHost dc.domain.local" style="margin-top:5px" oninput="bSmb()">
+      <input class="fi" id="sm-aes-key" placeholder="--aesKey" style="margin-top:5px" oninput="bSmb()">
+      <input class="fi" id="sm-log" placeholder="--log /tmp/nxc.log" style="margin-top:5px" oninput="bSmb()">
+      <div class="checks nxc-actions-dense" id="sm-common-fl" style="margin-top:6px">
+        <div class="ck" data-v="verbose">--verbose</div><div class="ck" data-v="debug">--debug</div>
+      </div>
+
+      <div class="sdiv">RUNNING JOBS</div>
+      <div id="sm-job-panel" class="nxc-mini">0 jobs activos</div>
     </div>
   </div>
-  <div id="sm-hash-warn" style="display:none;font-size:12px;color:var(--yellow);padding:3px 0 6px;letter-spacing:.3px">
-    ⚠ Hash detectado — smbmap no soporta Pass-the-Hash de forma nativa. Usa crackmapexec / netexec para PTH confiable.
-  </div>
-  <div class="checks" id="sm-mod">
-    <div class="ck" data-v="--shares">--shares</div><div class="ck" data-v="--users">--users</div>
-    <div class="ck" data-v="--groups">--groups</div><div class="ck" data-v="--loggedon-users">--loggedon</div>
-    <div class="ck" data-v="--pass-pol">--pass-pol</div><div class="ck" data-v="--rid-brute">--rid-brute</div>
-    <div class="ck" data-v="-M lsassy">-M lsassy</div><div class="ck" data-v="-M bloodhound">-M bloodhound</div>
-  </div>
-  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="sm-cmd"></div></div>
-  <div class="run-row">
-    <button class="rbtn" id="sm-run" onclick="runTool('sm')">▶ EJECUTAR</button>
-    <button class="sbtn" id="sm-stop" onclick="stopTool('sm')" disabled>■ STOP</button>
-    <button class="kbtn" onclick="cpCmd('sm-cmd')">COPY</button>
-  </div>
-  <div class="out-area" id="sm-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('sm-out')">CLEAR</button></div><div class="out-content" id="sm-out-c"></div></div>
 </div>
 
 <!-- ══ AD KERBEROS ══ -->
@@ -4154,6 +4457,20 @@ https://xxxx.ngrok.io/api/phish/land/TRACK_ID</pre>
 
 </div>
 
+<!-- ══ REPORTS ══ -->
+<div id="p-reports" class="panel">
+  <div class="pt">EVIDENCIA &amp; REPORTES <span class="ptd">— Historial de ejecuciones · Exportar PDF · Word · RAW</span></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+    <input class="rpt-sbox" id="rpt-search" placeholder="Filtrar por herramienta, target, resumen..." oninput="rptFilter()">
+    <button class="rbtn" onclick="rptLoadList()">↺ ACTUALIZAR</button>
+    <button class="kbtn" style="border-color:var(--red);color:var(--red)" onclick="rptClearAll()">LIMPIAR TODO</button>
+    <span id="rpt-list-count" style="font-size:11px;color:var(--mut);margin-left:auto;letter-spacing:1px"></span>
+  </div>
+  <div id="rpt-list-container">
+    <div style="color:var(--dim);font-size:13px;padding:28px 0;text-align:center;letter-spacing:1px">— Sin reportes. Ejecuta cualquier herramienta para generar uno automáticamente. —</div>
+  </div>
+</div>
+
 </div><!-- end content -->
 
 <!-- ═══════════════ TERMINAL ═══════════════ -->
@@ -4391,7 +4708,7 @@ https://xxxx.ngrok.io/api/phish/land/TRACK_ID</pre>
    404x9-evil-kit — Frontend JS
    @xfraylin
    ══════════════════════════════════════════════════════ */
-const API = 'http://localhost:5000/api';
+const API = window.location.origin + '/api';
 let serverOk = false;
 let IS_ROOT = false;
 const activeJobs = {};   // prefix → {job_id, es}
@@ -4460,6 +4777,7 @@ function sw(id, el) {
   if (typeof PANEL_TOOL_MAP !== 'undefined' && PANEL_TOOL_MAP[id]) checkPanelTools(id);
   if (id === 'tools' && typeof renderAdInstallGrid !== 'undefined') { checkTools(); setTimeout(renderAdInstallGrid, 300); }
   if (id === 'ad-postex') setTimeout(bPostex, 50);
+  if (id === 'ad-smb' && typeof nxcLoadModules !== 'undefined') setTimeout(() => nxcLoadModules(false), 50);
 }
 function updateRightPanel(id) {
   const term = document.getElementById('term-panel');
@@ -4631,6 +4949,13 @@ function updJobs() {
   const n = Object.keys(activeJobs).length;
   document.getElementById('sb-jobs').textContent = n + ' jobs';
   document.getElementById('term-jobs').textContent = n > 0 ? n + ' running' : '';
+  const nxcJobs = document.getElementById('sm-job-panel');
+  if (nxcJobs) {
+    const keys = Object.keys(activeJobs);
+    nxcJobs.innerHTML = keys.length
+      ? keys.map(k => `<div><span style="color:var(--g)">${escH(k)}</span> <span style="color:var(--dim)">${escH(activeJobs[k].job_id || '')}</span></div>`).join('')
+      : '0 jobs activos';
+  }
 }
 
 /* ─── OUTPUT HELPERS ──────────────────────────────────── */
@@ -4673,18 +4998,18 @@ function appendOut(elId, text, cls) {
 }
 function clrOut(areaId) {
   const prefix = areaId.replace(/-out$/, '');
-  // Clear raw content
   const c = document.getElementById(areaId + '-c');
   if (c) c.innerHTML = '';
-  // Remove parsed tabs row
   const tabs = document.getElementById(prefix + '-otabs');
   if (tabs) tabs.remove();
-  // Remove parsed div
   const pd = document.getElementById(areaId + '-p');
   if (pd) pd.remove();
-  // Clear rawBuffer
   if (rawBuffers[prefix]) rawBuffers[prefix] = [];
-  // Keep the area visible — do NOT hide it
+  // Remove injected report button group (non-NXC tools)
+  const area = document.getElementById(areaId);
+  if (area) { const rg = area.querySelector('.rpt-hdr-grp'); if (rg) rg.remove(); }
+  // Reset NXC static report buttons
+  if (areaId === 'sm-out' && typeof _smRptEnable === 'function') _smRptEnable(null);
 }
 function openOut(areaId) {
   const el = document.getElementById(areaId);
@@ -7174,6 +7499,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
         if (prefix) delete activeJobs[prefix];
         updJobs();
         es.close();
+        if (prefix && !isLive) setTimeout(() => _rptAutoSave(prefix, cmd, msg.code), 1500);
         if (prefix && onDoneHooks[prefix]) onDoneHooks[prefix](msg.code);
         else if (prefix && parsers[prefix] && !isLive) {
           // Defer parser off the hot path so the UI can update (exit status, buttons)
@@ -7212,10 +7538,12 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
 }
 
 function runTool(prefix) {
+  if (prefix === 'sm' && typeof runNetExec === 'function') { runNetExec(); return; }
   let cmdId = prefix + '-cmd';
   // special case: ms uses ms-cmd, bh uses bh-cmd, etc.
   const cmd = getCmdText(cmdId);
   if (!cmd) { termWrite('t0', '[!] No hay comando generado', 'warn'); return; }
+  if (prefix === 'sm' && /^#/.test(cmd)) { termWrite('t0', '[nxc] comando no ejecutable: ' + cmd, 'warn'); return; }
   execCmd(cmd, prefix + '-out-c', prefix + '-out', prefix);
 }
 
@@ -7868,47 +8196,459 @@ function bAdEnum() {
   setH('ae-cmd', c);
 }
 function smbIsHash(val) {
-  // LM:NTLM (32:32 hex) o solo NTLM (32 hex)
-  return /^[a-fA-F0-9]{32}:[a-fA-F0-9]{32}$/.test(val) || /^[a-fA-F0-9]{32}$/.test(val);
+  return /^[a-fA-F0-9]{32}:[a-fA-F0-9]{32}$/.test(val || '') || /^[a-fA-F0-9]{32}$/.test(val || '');
 }
-function smbNormalizeHash(val) {
-  // Si solo viene el NTLM (32 hex), añadir LM vacío estándar
-  return /^[a-fA-F0-9]{32}$/.test(val) ? `aad3b435b51404eeaad3b435b51404ee:${val}` : val;
+
+let _nxcBuildTimer = null;
+let _nxcBuildSeq = 0;
+let _nxcModulesLoaded = false;
+
+function nxcProto() {
+  const p = document.getElementById('p-ad-smb');
+  return (p && p.dataset.nxcProto) || 'smb';
 }
+
+function nxcChecks(id) {
+  return [...document.querySelectorAll('#' + id + ' .ck.on')].map(c => c.dataset.v).filter(Boolean);
+}
+
+function nxcHas(id, flag) {
+  return nxcChecks(id).includes(flag);
+}
+
+function nxcSetProtocol(proto, el) {
+  const panel = document.getElementById('p-ad-smb');
+  if (panel) panel.dataset.nxcProto = proto;
+  document.querySelectorAll('.nxc-proto').forEach(b => b.classList.remove('on'));
+  if (el) el.classList.add('on');
+  document.querySelectorAll('.nxc-pane').forEach(p => p.style.display = 'none');
+  const pane = document.getElementById('nxc-' + proto);
+  if (pane) pane.style.display = '';
+  const badge = document.getElementById('sm-proto-badge');
+  if (badge) badge.textContent = proto.toUpperCase();
+  nxcToggleTransferHint();
+  bSmb();
+}
+
+function nxcAuthModeChanged() {
+  const mode = gv('sm-auth');
+  const hash = document.getElementById('sm-hash');
+  const pass = document.getElementById('sm-p');
+  if (hash) hash.disabled = mode !== 'hash' && mode !== 'password';
+  if (pass) pass.disabled = mode === 'kcache' || mode === 'null';
+}
+
+function nxcModuleOptions() {
+  return (gv('sm-module-options') || '')
+    .split(/\s+/)
+    .map(s => s.trim())
+    .filter(s => s && s.includes('='));
+}
+
+function nxcActiveExec() {
+  const proto = nxcProto();
+  if (proto === 'winrm') return { type: gv('sm-winrm-exec-type'), command: gv('sm-winrm-exec-command'), method: '' };
+  if (proto === 'mssql') return { type: gv('sm-mssql-exec-type'), command: gv('sm-mssql-exec-command'), method: '' };
+  if (proto === 'wmi') return { type: gv('sm-wmi-exec-type'), command: gv('sm-wmi-exec-command'), method: gv('sm-wmi-exec-method') };
+  if (proto === 'rdp') return { type: gv('sm-rdp-exec-type'), command: gv('sm-rdp-exec-command'), method: '' };
+  return { type: gv('sm-exec-type'), command: gv('sm-exec-command'), method: gv('sm-exec-method') };
+}
+
+function nxcPayload() {
+  const proto = nxcProto();
+  const authFlags = nxcChecks('sm-auth-fl');
+  const commonFlags = nxcChecks('sm-common-fl');
+  const ex = nxcActiveExec();
+  const data = {
+    protocol: proto,
+    target: gv('sm-h'),
+    domain: gv('sm-d'),
+    username: gv('sm-u'),
+    password: gv('sm-p'),
+    hash: gv('sm-hash'),
+    auth_mode: gv('sm-auth') || 'password',
+    local_auth: authFlags.includes('local_auth'),
+    kerberos: authFlags.includes('kerberos'),
+    use_kcache: authFlags.includes('use_kcache'),
+    no_progress: authFlags.includes('no_progress'),
+    verbose: commonFlags.includes('verbose'),
+    debug: commonFlags.includes('debug'),
+    threads: gv('sm-threads'),
+    timeout: gv('sm-timeout'),
+    port: gv('sm-port'),
+    jitter: gv('sm-jitter'),
+    dns_server: gv('sm-dns-server'),
+    kdc_host: gv('sm-kdc-host'),
+    aes_key: gv('sm-aes-key'),
+    log: gv('sm-log'),
+    module: gv('sm-module'),
+    module_options: nxcModuleOptions(),
+    transfer_mode: gv('sm-transfer-mode'),
+    transfer_src: gv('sm-transfer-src'),
+    transfer_dst: gv('sm-transfer-dst'),
+    exec_type: ex.type,
+    exec_command: ex.command,
+    exec_method: ex.method,
+    actions: nxcChecks('sm-' + proto + '-actions'),
+    rid_max: gv('sm-rid-max'),
+    relay_output: gv('sm-relay-out'),
+    asrep_out: gv('sm-asrep-out'),
+    tgs_out: gv('sm-tgs-out'),
+    bloodhound_collection: gv('sm-bh-collection'),
+    database: gv('sm-database'),
+    query: gv('sm-query'),
+    wmi_query: gv('sm-wmi-query'),
+    wmi_namespace: gv('sm-wmi-namespace'),
+    screentime: gv('sm-screentime'),
+    res: gv('sm-res'),
+    clipboard_delay: gv('sm-clipboard-delay'),
+  };
+  if (data.auth_mode === 'hash' && !data.hash && smbIsHash(data.password)) data.hash = data.password;
+  return data;
+}
+
+function nxcSetCmdText(cmd) {
+  const el = document.getElementById('sm-cmd');
+  if (el) el.textContent = cmd || '';
+}
+
+function nxcLocalBadges() {
+  const auth = gv('sm-auth') || 'password';
+  const hash = gv('sm-hash') || gv('sm-p');
+  const b = document.getElementById('sm-cred-badge');
+  if (b) {
+    const isHash = auth === 'hash' || smbIsHash(hash);
+    b.textContent = auth === 'kcache' ? 'KCACHE' : auth === 'kerberos' ? 'KERBEROS' : auth === 'null' ? 'NULL AUTH' : isHash ? 'NTLM HASH' : 'PASSWORD';
+    b.className = 'nxc-badge ' + (auth === 'null' ? 'crit' : isHash || auth.includes('kerb') || auth === 'kcache' ? 'ok' : '');
+  }
+}
+
+function nxcToggleTransferHint() {
+  const proto = nxcProto();
+  const mode = document.getElementById('sm-transfer-mode');
+  if (mode && !['smb','mssql'].includes(proto) && mode.value !== 'none') mode.value = 'none';
+}
+
 function bSmb() {
-  const h   = gv('sm-h') || '192.168.1.10';
-  const d   = gv('sm-d') || 'domain.local';
-  const u   = gv('sm-u') || 'user';
-  const p   = gv('sm-p') || 'Password1!';
-  const t   = gv('sm-t') || 'crackmapexec';
-  const mod = chks('sm-mod');
-  const hash = smbIsHash(p);
-
-  // Badge visual
-  const badge = document.getElementById('sm-cred-badge');
-  const warn  = document.getElementById('sm-hash-warn');
-  if (badge) {
-    badge.textContent   = hash ? 'NTLM HASH' : 'PASSWORD';
-    badge.style.color   = hash ? 'var(--g)'  : 'var(--mut)';
-    badge.style.borderColor = hash ? 'var(--g)' : 'var(--brd)';
-  }
-
-  let c = '';
-  if (t === 'smbmap') {
-    // smbmap: no PTH nativo — avisar si detectamos hash
-    if (warn) warn.style.display = hash ? '' : 'none';
-    // Pasar credencial tal cual (puede funcionar en entornos donde impacket subyacente acepta NTLM)
-    const credArg = hash ? `-p '${smbNormalizeHash(p)}'` : `-p '${p}'`;
-    c = `<span class="b">smbmap</span> <span class="f">-H ${h} -u ${u} ${credArg} -d ${d}</span>`;
-  } else {
-    // crackmapexec / netexec / nxc — PTH correcto con -H
-    if (warn) warn.style.display = 'none';
-    const credFlag = hash ? `-H ${smbNormalizeHash(p)}` : `-p '${p}'`;
-    c = `<span class="b">${t}</span> <span class="f">smb</span> <span class="v">${h}</span> <span class="f">-u ${u} ${credFlag} -d ${d}</span>`;
-    if (mod.trim()) c += ` <span class="f">${mod.trim()}</span>`;
-  }
-  setH('sm-cmd', c);
+  nxcToggleTransferHint();
+  nxcLocalBadges();
+  clearTimeout(_nxcBuildTimer);
+  _nxcBuildTimer = setTimeout(nxcBuildCommand, 120);
 }
+
+async function nxcBuildCommand() {
+  const seq = ++_nxcBuildSeq;
+  const data = nxcPayload();
+  if (!serverOk) {
+    nxcSetCmdText(`nxc ${data.protocol} ${data.target || '192.168.1.10'}`);
+    return;
+  }
+  try {
+    const r = await fetch(API + '/netexec/build', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    const d = await r.json();
+    if (seq !== _nxcBuildSeq) return;
+    const st = document.getElementById('sm-nxc-status');
+    if (!d.ok) {
+      nxcSetCmdText('# build error: ' + (d.error || 'unknown'));
+      if (st) { st.textContent = 'BUILD ERROR'; st.className = 'nxc-badge crit'; }
+      return;
+    }
+    nxcSetCmdText(d.cmd);
+    if (st) { st.textContent = 'NXC READY'; st.className = 'nxc-badge ok'; }
+    const evil = document.getElementById('sm-evil-cmd');
+    if (evil) evil.textContent = d.evil_winrm || 'evil-winrm launcher disponible al seleccionar WINRM';
+  } catch(e) {
+    nxcSetCmdText('# backend offline: ' + e.message);
+  }
+}
+
+async function nxcLoadModules(refresh) {
+  if (!serverOk) return;
+  if (_nxcModulesLoaded && !refresh) return;
+  _nxcModulesLoaded = true;
+  const badge = document.getElementById('sm-module-badge');
+  if (badge) { badge.textContent = 'MODULES: loading'; badge.className = 'nxc-badge warn'; }
+  try {
+    const r = await fetch(API + '/netexec/modules' + (refresh ? '?refresh=1' : ''));
+    const d = await r.json();
+    const list = document.getElementById('sm-module-list');
+    const sel = document.getElementById('sm-module');
+    const mods = d.modules || [];
+    if (badge) {
+      badge.textContent = 'MODULES: ' + mods.filter(m => m.available).length;
+      badge.className = 'nxc-badge ' + (d.found ? 'ok' : 'crit');
+    }
+    if (sel && mods.length) {
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">-- no module --</option>' + mods.map(m => {
+        const tag = m.available ? '' : ' (missing)';
+        return `<option value="${escH(m.name)}">${escH(m.name + tag)}</option>`;
+      }).join('');
+      if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+    }
+    if (list) {
+      list.innerHTML = mods.slice(0,80).map(m =>
+        `<div class="nxc-mod-row ${m.name===gv('sm-module')?'on':''}" onclick="nxcSelectModule('${escH(m.name)}')">`+
+        `<span class="nxc-mod-name">${escH(m.name)}</span>`+
+        `<span class="nxc-mod-desc">${m.available ? '' : '[missing] '}${escH(m.description || m.category || '')}</span></div>`
+      ).join('') || '<div class="nxc-mini">Sin módulos detectados.</div>';
+    }
+  } catch(e) {
+    if (badge) { badge.textContent = 'MODULES: error'; badge.className = 'nxc-badge crit'; }
+  }
+}
+
+function nxcSelectModule(name) {
+  const sel = document.getElementById('sm-module');
+  if (sel) sel.value = name || '';
+  document.querySelectorAll('.nxc-mod-row').forEach(r => r.classList.toggle('on', r.querySelector('.nxc-mod-name')?.textContent === name));
+  bSmb();
+}
+
+function nxcRenderParsed(parsed) {
+  const p = parsed || {};
+  const s = p.summary || {};
+  let html = ph.sum([
+    ph.pill((s.hosts || 0) + ' hosts', 'info'),
+    ph.pill((s.credentials || 0) + ' auth OK', (s.credentials || 0) ? 'ok' : ''),
+    ph.pill((s.admin || 0) + ' admin', (s.admin || 0) ? 'crit' : 'ok'),
+    ph.pill((p.indicators || []).length + ' indicators', (p.indicators || []).length ? 'warn' : 'ok'),
+    ph.pill((s.shares || 0) + ' shares', (s.shares || 0) ? 'warn' : ''),
+    ph.pill((s.errors || 0) + ' errors', (s.errors || 0) ? 'warn' : 'ok'),
+  ]);
+  if ((p.indicators || []).length) {
+    html += ph.sec('Smart detections', p.indicators.map(i => ph.find(
+      `<span style="color:var(--g);font-weight:700">${ph.esc(i.label)}</span>`+
+      ` <span style="color:var(--mut);font-size:11px">${ph.esc(i.host || '')}</span>`+
+      `<br><span style="color:var(--dim);font-size:11px">${ph.esc(i.line || '')}</span>`,
+      i.severity || 'info'
+    )).join(''));
+  }
+  if ((p.credentials || []).length) {
+    html += ph.sec('Credentials', ph.tbl(['PROTO','HOST','IDENTITY','SECRET','ADMIN'], p.credentials.map(c => [
+      ph.esc(c.protocol || ''), ph.esc(c.host || ''), ph.esc(c.identity || ''),
+      `<code>${ph.esc(c.secret || '')}</code>`, c.admin ? ph.pill('Pwned','crit') : ph.pill('OK','ok')
+    ])));
+  }
+  if ((p.hosts || []).length) {
+    html += ph.sec('Hosts', ph.tbl(['PROTO','IP','HOST','DOMAIN','SIGNING','SMBv1'], p.hosts.map(h => [
+      ph.esc(h.protocol || ''), ph.esc(h.ip || ''), ph.esc(h.name || h.host || ''),
+      ph.esc(h.domain || ''), ph.esc(h.signing || ''), ph.esc(h.smbv1 || '')
+    ])));
+  }
+  if ((p.shares || []).length) {
+    html += ph.sec('Shares', ph.tbl(['HOST','SHARE','PERM','COMMENT'], p.shares.map(x => [
+      ph.esc(x.host || ''), ph.esc(x.share || ''), ph.pill(ph.esc(x.permission || ''), /WRITE/.test(x.permission || '') ? 'crit' : 'warn'), ph.esc(x.comment || '')
+    ])));
+  }
+  if ((p.users || []).length) {
+    html += ph.sec('Users', ph.tbl(['HOST','USER','DETAIL'], p.users.slice(0,200).map(x => [ph.esc(x.host || ''), ph.esc(x.user || ''), ph.esc(x.detail || '')])));
+  }
+  if ((p.groups || []).length) {
+    html += ph.sec('Groups', ph.tbl(['HOST','GROUP','DETAIL'], p.groups.slice(0,200).map(x => [ph.esc(x.host || ''), ph.esc(x.group || ''), ph.esc(x.detail || '')])));
+  }
+  if ((p.findings || []).length) {
+    html += ph.sec('Findings', p.findings.slice(0,80).map(f => ph.find(ph.esc(f.line || ''), 'info')).join(''));
+  }
+  if ((p.errors || []).length) {
+    html += ph.sec('Errors', p.errors.slice(0,40).map(e => ph.find(ph.esc(e.line || ''), 'warn')).join(''));
+  }
+  if (!(p.indicators || []).length && !(p.credentials || []).length && !(p.hosts || []).length && !(p.findings || []).length) {
+    html += ph.empty('Sin resultados NXC reconocibles. Revisa RAW, credenciales y conectividad.');
+  }
+  return html;
+}
+
+async function nxcParseNow() {
+  const raw = (rawBuffers.sm || []).join('\n') || ((document.getElementById('sm-out-c') || {}).innerText || '');
+  if (!raw.trim()) { injectParsedTabs('sm', ph.empty('No hay salida RAW para parsear.')); return; }
+  try {
+    const r = await fetch(API + '/netexec/parse', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({raw})
+    });
+    const d = await r.json();
+    injectParsedTabs('sm', d.ok ? nxcRenderParsed(d.parsed) : ph.empty('Parser error: ' + (d.error || 'unknown')));
+  } catch(e) {
+    injectParsedTabs('sm', ph.empty('Parser backend offline: ' + e.message));
+  }
+}
+
+async function nxcSaveLog() {
+  const raw = (rawBuffers.sm || []).join('\n') || ((document.getElementById('sm-out-c') || {}).innerText || '');
+  if (!raw.trim()) { termWrite('t0', '[nxc] no hay logs para guardar', 'warn'); return; }
+  try {
+    const r = await fetch(API + '/netexec/logs/save', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({raw})
+    });
+    const d = await r.json();
+    if (d.ok) termWrite('t0', '[nxc] log guardado: ' + d.path, 'ok');
+    else termWrite('t0', '[nxc] error guardando log: ' + (d.error || 'unknown'), 'err');
+  } catch(e) {
+    termWrite('t0', '[nxc] error guardando log: ' + e.message, 'err');
+  }
+}
+
+function nxcToggleOutput() {
+  const out = document.getElementById('sm-out');
+  if (out) out.classList.toggle('nxc-output-hidden');
+}
+
+let _smRptId  = null;
+let _smLastCmd = '';
+function _smRptEnable(id) {
+  _smRptId = id;
+  document.querySelectorAll('.sm-rpt-btn').forEach(b => { b.disabled = !id; });
+}
+
+async function runNetExec() {
+  if (!serverOk) { appendOut('sm-out-c', '[OFFLINE] Servidor no disponible', 'err'); openOut('sm-out'); return; }
+  const data = nxcPayload();
+  const outCId = 'sm-out-c', outAreaId = 'sm-out', prefix = 'sm';
+  const outArea = document.getElementById(outAreaId);
+  const outC = document.getElementById(outCId);
+  const runBtn = document.getElementById('sm-run');
+  const stopBtn = document.getElementById('sm-stop');
+  rawBuffers[prefix] = [];
+  if (outArea) outArea.style.display = 'block';
+  if (outC) {
+    const sep = document.createElement('div');
+    sep.className = 'tl sep';
+    sep.textContent = '--- ' + new Date().toLocaleTimeString() + ' --- netexec job';
+    outC.appendChild(sep);
+  }
+  if (runBtn) { runBtn.classList.add('running'); runBtn.textContent = 'RUNNING...'; }
+  if (stopBtn) stopBtn.disabled = false;
+  try {
+    const resp = await fetch(API + '/netexec/run', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(data)
+    });
+    const d = await resp.json();
+    if (d.error) throw new Error(d.error);
+    nxcSetCmdText(d.cmd);
+    _smLastCmd = d.cmd;
+    _smRptEnable(null);
+    addHist(d.cmd);
+    termWrite('t0', '$ ' + d.cmd, 'cmd');
+    nxcAttachLiveStream(d.job_id);
+  } catch(e) {
+    appendOut(outCId, '[nxc] ' + e.message, 'err');
+    if (runBtn) { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR NXC'; }
+    if (stopBtn) stopBtn.disabled = true;
+  }
+}
+
+function nxcAttachLiveStream(jobId) {
+  let mirrorCount = 0;
+  let finished = false;
+  let fallbackStarted = false;
+  const runBtn = document.getElementById('sm-run');
+  const stopBtn = document.getElementById('sm-stop');
+
+  function finishStream(code) {
+    if (finished) return;
+    finished = true;
+    appendOut('sm-out-c', '\n[exit: ' + code + ']', code === 0 ? 'ok' : 'err');
+    termWrite('t0', '[nxc exit: ' + code + ']', code === 0 ? 'ok' : 'err');
+    if (runBtn) { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR NXC'; }
+    if (stopBtn) stopBtn.disabled = true;
+    delete activeJobs.sm;
+    updJobs();
+    nxcParseNow().then(() => {
+      const parsedEl  = document.getElementById('sm-out-p');
+      const parsedHtml = parsedEl ? (parsedEl.innerHTML || '') : '';
+      const raw  = (rawBuffers.sm || []).join('\n');
+      const meta = _rptParseCmd(_smLastCmd);
+      const anl  = _rptAnalyze(raw);
+      fetch(API + '/reports/save', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          tool: 'netexec', command: meta.maskedCmd || _smLastCmd,
+          target: meta.target, credentials_used: meta.credentials,
+          raw_output: raw, parsed_html: parsedHtml,
+          summary: anl.summary, findings: anl.findings,
+          indicators: anl.indicators, errors: anl.errors, evidence: anl.evidence,
+        })
+      }).then(r => r.json()).then(d => {
+        if (d.ok) { _smRptEnable(d.id); _rptUpdateBadge(); }
+      }).catch(() => {});
+    });
+  }
+
+  function handle(msg, closer) {
+    if (msg.type === 'start') {
+      appendOut('sm-out-c', '[PID ' + msg.pid + '] running...', 'sys');
+      return;
+    }
+    if (msg.type === 'output') {
+      const line = stripAnsi(msg.data).trimEnd();
+      const isErr = /error|failed|refused|timeout|denied|unknown|traceback|exception/i.test(line);
+      appendOut('sm-out-c', line, isErr ? 'err' : '');
+      rawBuffers.sm.push(line);
+      if (rawBuffers.sm.length > 60000) rawBuffers.sm.splice(0, 5000);
+      if (mirrorCount < 400 && /error|found|open|success|\[\+\]|\[-\]|Pwn3d|vulnerable/i.test(line)) {
+        termWrite(activeTT, line);
+        mirrorCount++;
+      }
+      return;
+    }
+    if (msg.type === 'done') {
+      if (closer) closer();
+      finishStream(msg.code);
+      return;
+    }
+    if (msg.type === 'error') {
+      appendOut('sm-out-c', '[nxc] ' + msg.data, 'err');
+    }
+  }
+
+  function startSse() {
+    if (fallbackStarted || finished) return;
+    fallbackStarted = true;
+    const es = new EventSource(API + '/stream/' + jobId);
+    activeJobs.sm = { job_id: jobId, es };
+    updJobs();
+    appendOut('sm-out-c', '[stream] SSE fallback active', 'sys');
+    es.onmessage = e => handle(JSON.parse(e.data), () => es.close());
+    es.onerror = () => {
+      es.close();
+      if (!finished) finishStream(-1);
+    };
+  }
+
+  if (!window.WebSocket) { startSse(); return; }
+  const wsUrl = API.replace(/^http/, 'ws') + '/netexec/ws/' + jobId;
+  let opened = false;
+  let ws = null;
+  try {
+    ws = new WebSocket(wsUrl);
+    activeJobs.sm = { job_id: jobId, es: ws };
+    updJobs();
+    ws.onopen = () => { opened = true; appendOut('sm-out-c', '[stream] WebSocket active', 'sys'); };
+    ws.onmessage = e => handle(JSON.parse(e.data), () => ws.close());
+    ws.onerror = () => { if (!opened) startSse(); else appendOut('sm-out-c', '[stream] WebSocket error', 'warn'); };
+    ws.onclose = () => { if (!opened && !fallbackStarted) startSse(); };
+    setTimeout(() => {
+      if (!opened && !fallbackStarted && !finished) {
+        try { ws.close(); } catch(_) {}
+        startSse();
+      }
+    }, 700);
+  } catch(_) {
+    startSse();
+  }
+}
+
+onDoneHooks.sm = function(){ nxcParseNow(); };
 async function bKerb() {
   const dc=gv('kb-dc')||'192.168.1.10', dom=gv('kb-dom')||'domain.local';
   const u=gv('kb-u')||'user', p=gv('kb-p')||'Password1!', wl=gv('kb-wl')||'users.txt', t=gv('kb-t');
@@ -9549,7 +10289,8 @@ bc('ww-op',bWw); bc('wp-fl',bWp); bc('wp-xfl',bWp);
 bc('ff-op',bFfuf); bc('gb-ex',bGob); bc('gb-op',bGob); bc('nk-op',bNikto);
 bc('wf-op',bWfuzz); bc('df-op',bDalfox);
 bc('sq-en',bSql); bc('sq-xo',bSql);
-bc('sm-mod',bSmb); bc('bh-cm',bBh);
+['sm-auth-fl','sm-common-fl','sm-smb-actions','sm-winrm-actions','sm-ldap-actions','sm-mssql-actions','sm-wmi-actions','sm-rdp-actions'].forEach(function(g){bc(g,bSmb);});
+bc('bh-cm',bBh);
 bc('td-op',bTcpdump); bc('md-op',bMedusa);
 bc('cu-op',bCurl); bc('wg-mode',bWget); bc('wg-net',bWget); bc('wg-ex',bWget);
 bc('hx-op',bHttpx); bc('ff-op',bFfuf);
@@ -12729,6 +13470,418 @@ bc('gd-op', bGd);
     sw(saved, sItem);
   }
 })();
+
+// ═══════════════════════════════════════════════════════════════════════
+// ── REPORTS SYSTEM ─────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+let _lastReportId  = null;
+let _rptModalId    = null;
+let _rptAllReports = [];
+
+/* ─ Inject report buttons into the output header ──────────── */
+function _rptInjectButtons(prefix, reportId) {
+  const area = document.getElementById(prefix + '-out');
+  if (!area) return;
+  const hdr = area.querySelector('.out-hdr');
+  if (!hdr) return;
+  // Remove old group on re-run
+  const old = hdr.querySelector('.rpt-hdr-grp');
+  if (old) old.remove();
+
+  const grp = document.createElement('div');
+  grp.className = 'rpt-hdr-grp';
+  grp.innerHTML =
+    `<button class="kbtn" style="color:var(--g);border-color:#1e4428" onclick="rptView('${reportId}')">REPORT</button>` +
+    `<button class="kbtn" style="color:var(--cyan);border-color:#0a2535" onclick="rptExportPDF('${reportId}')">PDF</button>` +
+    `<button class="kbtn" style="color:var(--blue);border-color:#102040" onclick="rptExportDocx('${reportId}')">WORD</button>` +
+    `<button class="kbtn" onclick="rptDownloadParsed('${reportId}')">JSON</button>`;
+
+  // Insert before ⎘ COPY (NXC) if present, otherwise before CLEAR
+  const copyBtn  = document.getElementById(prefix + '-out-copy');
+  const clearBtn = hdr.querySelector('.kbtn[onclick*="clrOut"]');
+  const anchor   = copyBtn || clearBtn;
+  if (anchor) hdr.insertBefore(grp, anchor);
+  else        hdr.appendChild(grp);
+}
+
+/* ── Command metadata extractor ──────────────────────────── */
+function _rptParseCmd(cmd) {
+  if (!cmd) return { tool: 'unknown', target: '', credentials: {}, maskedCmd: '' };
+  const parts = cmd.trim().split(/\s+/);
+  const tool  = (parts[0] || '').split('/').pop().replace(/\.py$/, '');
+
+  let target = '';
+  const nxcM = cmd.match(/^(?:netexec|nxc)\s+\w+\s+([^\s-]\S*)/);
+  if (nxcM) target = nxcM[1];
+  if (!target) {
+    const ipM = cmd.match(/\b(\d{1,3}(?:\.\d{1,3}){3}(?:\/\d+)?)\b/);
+    if (ipM) target = ipM[1];
+  }
+  if (!target) {
+    const domM = cmd.match(/(?:\s|^)([a-zA-Z][\w.-]+\.[a-zA-Z]{2,})(?:\s|$)/);
+    if (domM && !['nmap','nxc','netexec','hydra','sqlmap','certipy','impacket'].includes(domM[1]))
+      target = domM[1];
+  }
+
+  const credentials = {};
+  const uM = cmd.match(/(?:-u\s+|--username[= ])([^\s]+)/);
+  const dM = cmd.match(/(?:-d\s+|--domain[= ])([^\s]+)/);
+  if (uM) credentials.username = uM[1];
+  if (dM) credentials.domain   = dM[1];
+  if (/-p\s+[^\s]+/.test(cmd))  credentials.auth_type = 'password (oculta)';
+  if (/-H\s+[^\s]+/.test(cmd))  credentials.auth_type = 'hash NTLM (oculto)';
+  if (/-k\b/.test(cmd))         credentials.auth_type = 'Kerberos ticket';
+
+  const maskedCmd = cmd
+    .replace(/(-p\s+)([^\s]+)/g,           '$1[MASKED]')
+    .replace(/(--password[= ])([^\s]+)/gi, '$1[MASKED]')
+    .replace(/(-H\s+)([^\s]+)/g,           '$1[MASKED]')
+    .replace(/(--hash[= ])([^\s]+)/gi,     '$1[MASKED]');
+
+  return { tool, target, credentials, maskedCmd };
+}
+
+/* ── Output analyzer ─────────────────────────────────────── */
+function _rptAnalyze(raw) {
+  const lines   = raw.split('\n');
+  const finds   = [], inds = [], errs = [], evids = [];
+  const seen    = new Set();
+
+  for (const line of lines) {
+    const l = line.trim();
+    if (!l || seen.has(l)) continue;
+    seen.add(l);
+
+    if (/\[\+\]|\(Pwn3d!\)|ADMIN\b|VULNERABLE|SUCCESS|Owned|[+]\s/i.test(l))
+      finds.push(l);
+
+    if (/signing.*(?:false|disabled)|null.*auth|asrep|kerberoast|Guest.*login|Anonymous.*login|445.*open|3389.*open|22.*open|DC\s|Domain\s/i.test(l)
+        && !finds.includes(l))
+      inds.push(l);
+
+    if (/(?:\[\s*[-!x]\s*\]|error|failed|refused|denied|timeout|exception|traceback|STATUS_)/i.test(l)
+        && !/\[\+\]/.test(l) && !/\[\*\].*Success/i.test(l))
+      errs.push(l);
+
+    if (/[a-f0-9]{32}:[a-f0-9]{32}|aad3b435b51404ee|NTLM|:::/i.test(l))
+      evids.push(l);
+  }
+
+  const cap  = (arr, n) => arr.map(s => s.slice(0, 300)).slice(0, n);
+  const tl   = lines.filter(l => l.trim()).length;
+  let summary = `Ejecución completada · ${tl} líneas de output.`;
+  if (finds.length)  summary += ` ${finds.length} hallazgo(s).`;
+  if (inds.length)   summary += ` ${inds.length} indicador(es).`;
+  if (errs.length)   summary += ` ${errs.length} error(es).`;
+  if (evids.length)  summary += ` ${evids.length} elemento(s) de evidencia.`;
+
+  return {
+    summary,
+    findings:   cap(finds, 50),
+    indicators: cap(inds,  30),
+    errors:     cap(errs,  30),
+    evidence:   cap(evids, 20),
+  };
+}
+
+/* ── Auto-save report after every execution ──────────────── */
+async function _rptAutoSave(prefix, cmd, exitCode) {
+  const raw = (rawBuffers[prefix] || []).join('\n');
+  if (!raw && !cmd) return;
+
+  // Collect parsed HTML from the DOM — parsers may still be running, so we
+  // wait 1500ms from when the command finished (set at the call site).
+  const parsedEl  = document.getElementById(prefix + '-out-p');
+  const parsedHtml = parsedEl ? (parsedEl.innerHTML || '') : '';
+
+  const meta = _rptParseCmd(cmd);
+  const anl  = _rptAnalyze(raw);
+
+  const body = {
+    tool:             meta.tool,
+    command:          meta.maskedCmd || cmd,
+    target:           meta.target,
+    credentials_used: meta.credentials,
+    raw_output:       raw,
+    parsed_html:      parsedHtml,
+    summary:          anl.summary,
+    findings:         anl.findings,
+    indicators:       anl.indicators,
+    errors:           anl.errors,
+    evidence:         anl.evidence,
+  };
+  try {
+    const r = await fetch(API + '/reports/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.ok) {
+      _lastReportId = d.id;
+      _rptInjectButtons(prefix, d.id);
+      _rptUpdateBadge();
+    }
+  } catch(e) { console.error('[rpt] save failed', e); }
+}
+
+/* ── Report viewer modal ─────────────────────────────────── */
+async function rptView(id) {
+  id = id || _lastReportId;
+  if (!id) { alert('No hay reporte cargado. Ejecuta una herramienta primero.'); return; }
+  const modal = document.getElementById('rpt-modal');
+  const body  = document.getElementById('rpt-modal-body');
+  if (!modal || !body) return;
+  modal.classList.add('open');
+  body.innerHTML = '<div style="color:var(--mut);text-align:center;padding:40px;letter-spacing:1px">Cargando reporte...</div>';
+  try {
+    const r = await fetch(API + '/reports/' + id);
+    const d = await r.json();
+    if (!d.ok) { body.innerHTML = '<div style="color:var(--red);padding:20px">Error al cargar reporte.</div>'; return; }
+    const rep = d.report;
+    document.getElementById('rpt-modal-title').textContent = `REPORTE — ${rep.tool.toUpperCase()} — ${rep.id}`;
+    document.getElementById('rpt-modal-meta').textContent = new Date(rep.timestamp).toLocaleString();
+    body.innerHTML = _rptBuildHTML(rep);
+    body.querySelectorAll('.rpt-sec-hdr').forEach(hdr => {
+      hdr.addEventListener('click', () => {
+        const bd = hdr.nextElementSibling;
+        hdr.classList.toggle('open');
+        if (bd) bd.classList.toggle('open');
+      });
+    });
+    _rptModalId = id;
+  } catch(e) {
+    body.innerHTML = `<div style="color:var(--red);padding:20px">Error: ${escH(e.message)}</div>`;
+  }
+}
+
+function _rptMkList(items, cls) {
+  if (!items || !items.length) return '<div style="color:var(--dim);font-size:12px;padding:6px">— ninguno —</div>';
+  return '<ul class="rpt-ul">' + items.map(i => `<li class="${cls}">${escH(String(i))}</li>`).join('') + '</ul>';
+}
+
+function _rptBuildHTML(r) {
+  const ts    = new Date(r.timestamp).toLocaleString();
+  const creds = r.credentials_used || {};
+  const credRows = Object.keys(creds).length
+    ? Object.entries(creds).map(([k,v]) => `<tr><td style="color:var(--mut);width:120px;padding:4px 8px">${escH(k)}</td><td style="padding:4px 8px">${escH(String(v))}</td></tr>`).join('')
+    : `<tr><td colspan="2" style="color:var(--dim);padding:4px 8px">— no registradas —</td></tr>`;
+
+  // parsed_html: HTML produced by the framework's parsers (NXC, etc.)
+  const parsedHtml = r.parsed_html || '';
+  const parsedSec  = parsedHtml ? `
+    <div class="rpt-sec">
+      <div class="rpt-sec-hdr open"><span>OUTPUT PARSED <span class="rpt-badge bi">PARSED</span></span><span class="rpt-sec-arrow">▶</span></div>
+      <div class="rpt-sec-body open" style="overflow-x:auto">${parsedHtml}</div>
+    </div>` : '';
+
+  const rawLines = (r.raw_output || '').split('\n').length;
+
+  return `
+  <div class="rpt-cards">
+    <div class="rpt-card"><div class="rpt-card-lbl">Herramienta</div><div class="rpt-card-val cg">${escH(r.tool)}</div></div>
+    <div class="rpt-card"><div class="rpt-card-lbl">Target</div><div class="rpt-card-val">${escH(r.target || '—')}</div></div>
+    <div class="rpt-card"><div class="rpt-card-lbl">Timestamp</div><div class="rpt-card-val" style="font-size:11px">${escH(ts)}</div></div>
+    <div class="rpt-card"><div class="rpt-card-lbl">Hallazgos</div><div class="rpt-card-val cg">${(r.findings||[]).length}</div></div>
+    <div class="rpt-card"><div class="rpt-card-lbl">Indicadores</div><div class="rpt-card-val cc">${(r.indicators||[]).length}</div></div>
+    <div class="rpt-card"><div class="rpt-card-lbl">Errores</div><div class="rpt-card-val cr">${(r.errors||[]).length}</div></div>
+  </div>
+
+  <div class="rpt-sec">
+    <div class="rpt-sec-hdr open"><span>DETALLES DE EJECUCIÓN</span><span class="rpt-sec-arrow">▶</span></div>
+    <div class="rpt-sec-body open">
+      <table class="rpt-tbl">
+        <tr><td style="color:var(--mut);width:130px">Comando</td><td style="font-size:11px;color:var(--cyan);word-break:break-all">${escH(r.command)}</td></tr>
+        <tr><td style="color:var(--mut)">Credenciales</td><td><table style="border-collapse:collapse;width:100%">${credRows}</table></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="rpt-sum-box">${escH(r.summary)}</div>
+
+  <div class="rpt-sec">
+    <div class="rpt-sec-hdr open"><span>HALLAZGOS <span class="rpt-badge bf">${(r.findings||[]).length}</span></span><span class="rpt-sec-arrow">▶</span></div>
+    <div class="rpt-sec-body open">${_rptMkList(r.findings, 'lf')}</div>
+  </div>
+
+  <div class="rpt-sec">
+    <div class="rpt-sec-hdr open"><span>INDICADORES <span class="rpt-badge bi">${(r.indicators||[]).length}</span></span><span class="rpt-sec-arrow">▶</span></div>
+    <div class="rpt-sec-body open">${_rptMkList(r.indicators, 'li')}</div>
+  </div>
+
+  <div class="rpt-sec">
+    <div class="rpt-sec-hdr open"><span>ERRORES <span class="rpt-badge be">${(r.errors||[]).length}</span></span><span class="rpt-sec-arrow">▶</span></div>
+    <div class="rpt-sec-body open">${_rptMkList(r.errors, 'le')}</div>
+  </div>
+
+  <div class="rpt-sec">
+    <div class="rpt-sec-hdr open"><span>EVIDENCIA <span class="rpt-badge bv">${(r.evidence||[]).length}</span></span><span class="rpt-sec-arrow">▶</span></div>
+    <div class="rpt-sec-body open">${_rptMkList(r.evidence, 'lv')}</div>
+  </div>
+
+  ${parsedSec}
+
+  <div class="rpt-sec">
+    <div class="rpt-sec-hdr"><span>OUTPUT RAW COMPLETO <span class="rpt-badge" style="background:#060d07;color:var(--mut);border:1px solid var(--brd)">${rawLines} líneas</span></span><span class="rpt-sec-arrow">▶</span></div>
+    <div class="rpt-sec-body"><div class="rpt-pre">${escH(r.raw_output || '')}</div></div>
+  </div>`;
+}
+
+function rptClose() {
+  const modal = document.getElementById('rpt-modal');
+  if (modal) modal.classList.remove('open');
+  document.getElementById('rpt-modal-body').innerHTML = '';
+  _rptModalId = null;
+}
+
+/* ── Export / download helpers ───────────────────────────── */
+function rptExportPDF(id) {
+  id = id || _lastReportId;
+  if (!id) { alert('No hay reporte activo.'); return; }
+  const a = document.createElement('a');
+  a.href = API + '/reports/' + id + '/export/pdf';
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+function rptExportDocx(id) {
+  id = id || _lastReportId;
+  if (!id) { alert('No hay reporte activo.'); return; }
+  window.location.href = API + '/reports/' + id + '/export/docx';
+}
+
+function rptDownloadRaw(id) {
+  id = id || _lastReportId;
+  if (!id) { alert('No hay reporte activo.'); return; }
+  window.location.href = API + '/reports/' + id + '/raw';
+}
+
+function rptDownloadParsed(id) {
+  id = id || _lastReportId;
+  if (!id) { alert('No hay reporte activo.'); return; }
+  window.location.href = API + '/reports/' + id + '/parsed';
+}
+
+async function rptCopyText(id) {
+  id = id || _lastReportId;
+  if (!id) { alert('No hay reporte activo.'); return; }
+  try {
+    const r = await fetch(API + '/reports/' + id);
+    const d = await r.json();
+    if (!d.ok) return;
+    const rep = d.report;
+    const ts  = new Date(rep.timestamp).toLocaleString();
+    let txt = `=== PENTEST REPORT ===\nHerramienta: ${rep.tool}\nTarget: ${rep.target||'—'}\nTimestamp: ${ts}\nComando: ${rep.command}\n\n`;
+    txt += `RESUMEN:\n${rep.summary}\n\n`;
+    if (rep.findings?.length)  txt += `HALLAZGOS:\n${rep.findings.map(f=>`  [+] ${f}`).join('\n')}\n\n`;
+    if (rep.indicators?.length) txt += `INDICADORES:\n${rep.indicators.map(i=>`  [*] ${i}`).join('\n')}\n\n`;
+    if (rep.errors?.length)    txt += `ERRORES:\n${rep.errors.map(e=>`  [-] ${e}`).join('\n')}\n\n`;
+    if (rep.evidence?.length)  txt += `EVIDENCIA:\n${rep.evidence.map(e=>`  [!] ${e}`).join('\n')}\n`;
+    await navigator.clipboard.writeText(txt);
+    const btns = document.querySelectorAll('[onclick*="rptCopyText"]');
+    btns.forEach(btn => {
+      const orig = btn.textContent;
+      btn.textContent = '✓ COPIADO';
+      setTimeout(() => btn.textContent = orig, 1800);
+    });
+  } catch(e) { console.error('[rpt] copy error', e); }
+}
+
+/* ── Reports list panel ──────────────────────────────────── */
+async function rptLoadList() {
+  const cont  = document.getElementById('rpt-list-container');
+  const count = document.getElementById('rpt-list-count');
+  if (!cont) return;
+  cont.innerHTML = '<div style="color:var(--mut);font-size:12px;padding:14px 0;letter-spacing:1px">Cargando...</div>';
+  try {
+    const r = await fetch(API + '/reports');
+    const d = await r.json();
+    if (!d.ok) { cont.innerHTML = '<div style="color:var(--red)">Error al cargar reportes.</div>'; return; }
+    _rptAllReports = d.reports || [];
+    _rptRenderList(_rptAllReports);
+    if (count) count.textContent = `${_rptAllReports.length} reporte(s)`;
+    _rptUpdateBadge();
+  } catch(e) {
+    cont.innerHTML = `<div style="color:var(--red)">Error: ${escH(e.message)}</div>`;
+  }
+}
+
+function _rptRenderList(reports) {
+  const cont = document.getElementById('rpt-list-container');
+  if (!reports.length) {
+    cont.innerHTML = '<div style="color:var(--dim);font-size:13px;padding:28px 0;text-align:center;letter-spacing:1px">— Sin reportes. Ejecuta cualquier herramienta para generar uno automáticamente. —</div>';
+    return;
+  }
+  let html = `<table class="rpt-list-tbl"><thead><tr>
+    <th>TIMESTAMP</th><th>HERRAMIENTA</th><th>TARGET</th>
+    <th>RESUMEN</th><th style="text-align:center">HALLAZGOS</th><th>ACCIONES</th>
+  </tr></thead><tbody>`;
+  for (const rep of reports) {
+    const ts  = new Date(rep.timestamp).toLocaleString();
+    const sum = (rep.summary || '').slice(0, 90);
+    const rid = escH(rep.id);
+    html += `<tr>
+      <td style="white-space:nowrap;color:var(--mut);font-size:11px">${escH(ts)}</td>
+      <td><span class="rpt-tool-pill">${escH(rep.tool)}</span></td>
+      <td style="font-size:11px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(rep.target||'—')}</td>
+      <td style="font-size:11px;color:var(--mut);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(sum)}</td>
+      <td style="text-align:center;white-space:nowrap">
+        <span class="rpt-badge bf">${(rep.findings||[]).length}</span>
+        <span class="rpt-badge bi">${(rep.indicators||[]).length}</span>
+        <span class="rpt-badge be">${(rep.errors||[]).length}</span>
+      </td>
+      <td style="white-space:nowrap">
+        <button class="rpt-btn rpt-btn-g" onclick="rptView('${rid}')">VER</button>
+        <button class="rpt-btn rpt-btn-c" onclick="rptExportPDF('${rid}')">PDF</button>
+        <button class="rpt-btn rpt-btn-b" onclick="rptExportDocx('${rid}')">WORD</button>
+        <button class="rpt-btn rpt-btn-d" onclick="rptDownloadRaw('${rid}')">RAW</button>
+        <button class="rpt-btn rpt-btn-d" style="color:var(--red);border-color:#280e0e" onclick="rptDeleteOne('${rid}')">✕</button>
+      </td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  cont.innerHTML = html;
+}
+
+function rptFilter() {
+  const q = (document.getElementById('rpt-search')?.value || '').toLowerCase();
+  const filtered = q
+    ? _rptAllReports.filter(r =>
+        (r.tool||'').toLowerCase().includes(q) ||
+        (r.target||'').toLowerCase().includes(q) ||
+        (r.command||'').toLowerCase().includes(q) ||
+        (r.summary||'').toLowerCase().includes(q))
+    : _rptAllReports;
+  _rptRenderList(filtered);
+}
+
+async function rptDeleteOne(id) {
+  if (!confirm('¿Eliminar este reporte?')) return;
+  await fetch(API + '/reports/' + id, { method: 'DELETE' });
+  rptLoadList();
+}
+
+async function rptClearAll() {
+  if (!confirm('¿Eliminar TODOS los reportes? Esta acción no se puede deshacer.')) return;
+  await fetch(API + '/reports', { method: 'DELETE' });
+  rptLoadList();
+}
+
+function _rptUpdateBadge() {
+  const badge = document.getElementById('rpt-count-badge');
+  if (!badge) return;
+  fetch(API + '/reports').then(r => r.json()).then(d => {
+    if (d.ok) badge.textContent = d.reports.length;
+  }).catch(() => {});
+}
+
+// Keyboard + backdrop close
+document.addEventListener('keydown', e => { if (e.key === 'Escape') rptClose(); });
+document.addEventListener('click',   e => { if (e.target.id === 'rpt-modal') rptClose(); });
+// Badge on load
+setTimeout(_rptUpdateBadge, 1500);
 </script>
 
 <!-- ══ FILE BROWSER MODAL ══ -->
@@ -12743,5 +13896,27 @@ bc('gd-op', bGd);
     <input id="wl-modal-filter" placeholder="Filtrar archivos..." oninput="wlModalFilter(this.value)">
   </div>
 </div>
+
+<!-- ══ REPORT VIEWER MODAL ══ -->
+<div id="rpt-modal">
+  <div id="rpt-modal-box">
+    <div id="rpt-modal-head">
+      <div id="rpt-modal-title">REPORTE</div>
+      <div id="rpt-modal-meta"></div>
+      <div class="rpt-modal-btns">
+        <button class="rpt-btn rpt-btn-c" onclick="rptExportPDF(_rptModalId)">⬇ PDF</button>
+        <button class="rpt-btn rpt-btn-b" onclick="rptExportDocx(_rptModalId)">⬇ WORD</button>
+        <button class="rpt-btn rpt-btn-d" onclick="rptDownloadRaw(_rptModalId)">⬇ RAW</button>
+        <button class="rpt-btn rpt-btn-d" onclick="rptDownloadParsed(_rptModalId)">⬇ PARSED</button>
+        <button class="rpt-btn rpt-btn-y" onclick="rptCopyText(_rptModalId)">⧉ COPIAR</button>
+      </div>
+      <span id="rpt-modal-close" onclick="rptClose()">✕</span>
+    </div>
+    <div id="rpt-modal-body">
+      <div style="color:var(--mut);text-align:center;padding:40px;letter-spacing:1px">Cargando reporte...</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

@@ -239,6 +239,65 @@ Step-by-step usage guide for every attack technique — Clickjacking setup, Perm
 | **Herramientas** | Visual status grid of installed tools with one-click install shortcuts. |
 | **Archivos** | File browser for `/tmp` and `/root`. |
 | **Historial** | Session command history with clear option. |
+| **Evidencia** | Reports panel — full list of all past executions with search, export and delete. |
+
+---
+
+## Reports / Evidencia
+
+Every command execution auto-generates a structured report and injects action buttons directly into the tool's output toolbar.
+
+### Toolbar (after execution)
+
+```
+LIVE OUTPUT — NETEXEC    [RAW] [PARSED] [REPORT] [PDF] [WORD] [JSON] [⎘ COPY] [CLEAR]
+```
+
+- **REPORT** — opens a full-screen modal with the cyberpunk dark theme: metadata cards, findings, indicators, errors, evidence, parsed output, and raw output (collapsible sections).
+- **PDF** — downloads a real `.pdf` file (generated server-side with WeasyPrint). Parsed output is rendered as actual HTML (tables stay tables, lists stay lists). Uses a clean light theme for print.
+- **WORD** — downloads a `.docx` file (python-docx). HTML tables are converted to native Word tables; lists to `List Bullet` style paragraphs.
+- **JSON** — downloads the parsed output as `.json`.
+
+For **NetExec** specifically, the buttons are integrated statically into the `LIVE OUTPUT — NETEXEC` panel header and are disabled until a command completes. Once the job finishes and the output is parsed, they enable automatically with the correct `reportId`.
+
+### Report content
+
+| Field | Description |
+|---|---|
+| Tool | Tool name extracted from the command |
+| Target | IP / domain auto-extracted from arguments |
+| Command | Full command run, with passwords and hashes masked |
+| Credentials used | Auth type (password / NTLM hash / Kerberos) — values never stored |
+| Summary | Auto-generated one-line summary |
+| Findings | Lines matching `[+]`, `Pwn3d!`, `ADMIN`, `VULNERABLE`, etc. |
+| Indicators | SMB signing disabled, null auth, ASREP, open ports, DC/domain, etc. |
+| Errors | Timeout, refused, traceback, authentication failures |
+| Evidence | IPs, hashes, certificate thumbprints, SPN strings |
+| Parsed output | Full rendered HTML from the tool's parsed panel |
+| Raw output | Complete terminal output |
+
+### Persistence
+
+All reports are saved to `data/reports.json` and survive server restarts.
+
+### Backend routes
+
+| Route | Description |
+|---|---|
+| `GET /api/reports` | List all reports |
+| `POST /api/reports/save` | Save new report |
+| `GET /api/reports/<rid>` | Get report JSON |
+| `DELETE /api/reports/<rid>` | Delete one report |
+| `DELETE /api/reports` | Clear all reports |
+| `GET /api/reports/<rid>/view` | HTML report page (dark cyberpunk theme) |
+| `GET /api/reports/<rid>/export/pdf` | Download PDF (WeasyPrint) |
+| `GET /api/reports/<rid>/export/docx` | Download Word document |
+| `GET /api/reports/<rid>/raw` | Download raw output as `.txt` |
+| `GET /api/reports/<rid>/parsed` | Download parsed output as `.json` |
+
+### Python dependencies added
+
+`python-docx` (Word export), `weasyprint` (PDF generation)
 
 ---
 

@@ -20,6 +20,17 @@ import urllib.error
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from flask import Flask, render_template, request, jsonify, Response, stream_with_context
 from flask_cors import CORS
+from modules.netexec_panel import (
+    build_evil_winrm_launcher,
+    build_netexec_command,
+    discover_modules,
+    parse_netexec_output,
+)
+
+try:
+    from flask_sock import Sock
+except Exception:
+    Sock = None
 
 # ── Silence Flask/Werkzeug access logs, keep errors ──────────────────────────
 log = logging.getLogger('werkzeug')
@@ -27,6 +38,7 @@ log.setLevel(logging.ERROR)
 
 app = Flask(__name__)
 CORS(app)
+sock = Sock(app) if Sock else None
 
 active_procs = {}
 proc_lock    = threading.Lock()
@@ -199,6 +211,79 @@ def api_jobs():
     with proc_lock:
         return jsonify({'active': list(active_procs.keys())})
 
+# ── NetExec / NXC backend ────────────────────────────────────────────────────
+@app.route('/api/netexec/modules')
+def api_netexec_modules():
+    refresh = request.args.get('refresh') in ('1', 'true', 'yes')
+    return jsonify(discover_modules(refresh=refresh))
+
+@app.route('/api/netexec/build', methods=['POST'])
+def api_netexec_build():
+    data = request.json or {}
+    try:
+        cmd, argv = build_netexec_command(data)
+        evil = build_evil_winrm_launcher(data) if (data.get('protocol') == 'winrm') else ''
+        return jsonify({'ok': True, 'cmd': cmd, 'argv': argv, 'evil_winrm': evil})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+@app.route('/api/netexec/run', methods=['POST'])
+def api_netexec_run():
+    data = request.json or {}
+    try:
+        cmd, argv = build_netexec_command(data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+    ok, reason = sanitize_cmd(cmd)
+    if not ok:
+        return jsonify({'error': reason}), 403
+    job_id = f"nxc_{int(time.time()*1000)}_{os.getpid()}"
+    run_command(job_id, cmd, cwd=data.get('cwd', '/tmp'))
+    return jsonify({'job_id': job_id, 'cmd': cmd, 'argv': argv})
+
+@app.route('/api/netexec/parse', methods=['POST'])
+def api_netexec_parse():
+    raw = (request.json or {}).get('raw', '')
+    try:
+        return jsonify({'ok': True, 'parsed': parse_netexec_output(raw)})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+@app.route('/api/netexec/logs/save', methods=['POST'])
+def api_netexec_logs_save():
+    data = request.json or {}
+    raw  = data.get('raw', '')
+    path = data.get('path') or f"/tmp/nxc_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+    if not os.path.abspath(path).startswith('/tmp/'):
+        return jsonify({'error': 'NetExec logs are restricted to /tmp'}), 400
+    try:
+        with open(path, 'w', encoding='utf-8', errors='replace') as fh:
+            fh.write(raw)
+            if raw and not raw.endswith('\n'):
+                fh.write('\n')
+        return jsonify({'ok': True, 'path': path, 'size': os.path.getsize(path)})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if sock:
+    @sock.route('/api/netexec/ws/<job_id>')
+    def api_netexec_ws(ws, job_id):
+        q = job_queues.get(job_id)
+        if not q:
+            time.sleep(0.15)
+            q = job_queues.get(job_id)
+        if not q:
+            ws.send(json.dumps({'type': 'error', 'data': 'Job not found'}))
+            return
+        while True:
+            try:
+                msg = q.get(timeout=30)
+                ws.send(json.dumps(msg))
+                if msg.get('type') == 'done':
+                    break
+            except queue.Empty:
+                ws.send(json.dumps({'type': 'keepalive'}))
+
 # ── Public-service proxy ──────────────────────────────────────────────────────
 # Architecture: admin panel stays on :5000 (private).
 # Each deployed service gets an isolated proxy on a chosen port (default 8080)
@@ -323,6 +408,22 @@ def api_check():
         return jsonify({'tool': tool, 'found': found, 'path': r.stdout.strip() if found else ''})
     except Exception as e:
         return jsonify({'tool': tool, 'found': False, 'error': str(e)})
+
+@app.route('/api/adcs/check', methods=['GET'])
+def api_adcs_check():
+    """Check certipy-ad installation and return version."""
+    import re as _re
+    which_r = subprocess.run(['which', 'certipy'], capture_output=True, text=True, timeout=3)
+    found   = which_r.returncode == 0
+    version = None
+    if found:
+        pip_r = subprocess.run(['pip3', 'show', 'certipy-ad'],
+                               capture_output=True, text=True, timeout=5)
+        if pip_r.returncode == 0:
+            m = _re.search(r'Version:\s*(\S+)', pip_r.stdout)
+            version = m.group(1) if m else None
+    return jsonify({'found': found, 'version': version,
+                    'path': which_r.stdout.strip() if found else ''})
 
 @app.route('/api/resolve/impacket', methods=['POST'])
 def api_resolve_impacket():
@@ -1428,6 +1529,499 @@ def serve_deployed_page(page_id):
     _log_phish('[HIT] page=' + page_id + ' ip=' + ip + ' ua=' + ua[:80], 'info')
     return page['html'], 200, {'Content-Type': 'text/html; charset=utf-8'}
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# ── REPORTS SYSTEM ──────────────────────────────────────────────────────────
+# ═══════════════════════════════════════════════════════════════════════════════
+_REPORTS_FILE = os.path.join(_DATA_DIR, 'reports.json')
+_reports      = {}
+_rpt_lock     = threading.Lock()
+
+def _rpt_load():
+    if not os.path.isfile(_REPORTS_FILE):
+        return
+    try:
+        with open(_REPORTS_FILE, 'r', encoding='utf-8') as f:
+            _reports.update(json.load(f))
+        print(f'[reports] loaded {len(_reports)} report(s)')
+    except Exception as e:
+        print('[reports] load error:', e)
+
+def _rpt_save():
+    try:
+        tmp = _REPORTS_FILE + '.tmp'
+        with _rpt_lock:
+            data = dict(_reports)
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, default=str)
+        os.replace(tmp, _REPORTS_FILE)
+    except Exception as e:
+        print('[reports] save error:', e)
+
+@app.route('/api/reports', methods=['GET'])
+def api_reports_list():
+    with _rpt_lock:
+        items = sorted(_reports.values(), key=lambda r: r.get('timestamp', ''), reverse=True)
+    return jsonify({'ok': True, 'reports': items})
+
+@app.route('/api/reports/save', methods=['POST'])
+def api_reports_save():
+    data = request.json or {}
+    rid  = uuid.uuid4().hex[:8]
+    now  = datetime.datetime.now()
+    report = {
+        'id':               rid,
+        'timestamp':        now.isoformat(),
+        'tool':             str(data.get('tool', 'unknown'))[:80],
+        'command':          str(data.get('command', ''))[:2000],
+        'target':           str(data.get('target', ''))[:200],
+        'credentials_used': data.get('credentials_used') or {},
+        'raw_output':       str(data.get('raw_output', ''))[:200000],
+        'parsed_html':      str(data.get('parsed_html', ''))[:500000],
+        'summary':          str(data.get('summary', ''))[:1000],
+        'findings':         list(data.get('findings') or [])[:50],
+        'indicators':       list(data.get('indicators') or [])[:30],
+        'errors':           list(data.get('errors') or [])[:30],
+        'evidence':         list(data.get('evidence') or [])[:20],
+    }
+    with _rpt_lock:
+        _reports[rid] = report
+    threading.Thread(target=_rpt_save, daemon=True).start()
+    return jsonify({'ok': True, 'id': rid})
+
+@app.route('/api/reports/<rid>', methods=['GET'])
+def api_reports_get(rid):
+    with _rpt_lock:
+        r = _reports.get(rid)
+    if not r:
+        return jsonify({'error': 'not found'}), 404
+    return jsonify({'ok': True, 'report': r})
+
+@app.route('/api/reports/<rid>', methods=['DELETE'])
+def api_reports_delete(rid):
+    with _rpt_lock:
+        _reports.pop(rid, None)
+    threading.Thread(target=_rpt_save, daemon=True).start()
+    return jsonify({'ok': True})
+
+@app.route('/api/reports', methods=['DELETE'])
+def api_reports_clear():
+    with _rpt_lock:
+        _reports.clear()
+    threading.Thread(target=_rpt_save, daemon=True).start()
+    return jsonify({'ok': True})
+
+@app.route('/api/reports/<rid>/raw')
+def api_reports_raw(rid):
+    with _rpt_lock:
+        r = _reports.get(rid)
+    if not r:
+        return jsonify({'error': 'not found'}), 404
+    ts    = datetime.datetime.fromisoformat(r['timestamp']).strftime('%Y%m%d_%H%M%S')
+    fname = f"raw_{r['tool']}_{ts}.txt"
+    return Response(r.get('raw_output', ''), mimetype='text/plain',
+                    headers={'Content-Disposition': f'attachment; filename="{fname}"'})
+
+@app.route('/api/reports/<rid>/parsed')
+def api_reports_parsed_dl(rid):
+    with _rpt_lock:
+        r = _reports.get(rid)
+    if not r:
+        return jsonify({'error': 'not found'}), 404
+    ts      = datetime.datetime.fromisoformat(r['timestamp']).strftime('%Y%m%d_%H%M%S')
+    fname   = f"parsed_{r['tool']}_{ts}.json"
+    payload = r.get('parsed_output') or {}
+    return Response(json.dumps(payload, indent=2, default=str),
+                    mimetype='application/json',
+                    headers={'Content-Disposition': f'attachment; filename="{fname}"'})
+
+class _DocxHtmlWriter:
+    """Minimal HTML→docx converter: preserves tables, lists, and line structure."""
+    def __init__(self, doc, pt=8):
+        self.doc = doc
+        self.pt  = pt
+        self._rows    = []
+        self._cur_row = None
+        self._cur_cell= []
+        self._in_tbl  = False
+        self._in_cell = False
+        self._in_list = False
+        self._buf     = []
+
+    def feed(self, html):
+        from html.parser import HTMLParser
+        import html as _hm
+        w = self
+        class _P(HTMLParser):
+            def handle_starttag(self, tag, a): w._start(tag.lower())
+            def handle_endtag(self, tag):      w._end(tag.lower())
+            def handle_data(self, d):          w._data(d)
+            def handle_entityref(self, n):     w._data(_hm.unescape(f'&{n};'))
+            def handle_charref(self, n):
+                w._data(chr(int(n[1:],16) if n.startswith('x') else int(n)))
+        _P().feed(html or '')
+        t = self._flush()
+        if t: self._para(t)
+
+    # ── helpers ──
+    def _flush(self):
+        t = ''.join(self._buf).strip()
+        self._buf = []
+        return t
+
+    def _para(self, txt, bullet=False):
+        from docx.shared import Pt
+        if not txt: return
+        p = self.doc.add_paragraph(style='List Bullet' if bullet else 'Normal')
+        r = p.add_run(txt)
+        r.font.name = 'Courier New'
+        r.font.size = Pt(self.pt)
+
+    def _flush_tbl(self):
+        from docx.shared import Pt
+        if not self._rows: return
+        nc = max(len(r) for r in self._rows)
+        t  = self.doc.add_table(rows=len(self._rows), cols=nc)
+        t.style = 'Table Grid'
+        for ri, row in enumerate(self._rows):
+            for ci, txt in enumerate(row):
+                if ci < nc:
+                    cell = t.rows[ri].cells[ci]
+                    cell.text = ''
+                    run = cell.paragraphs[0].add_run(txt)
+                    run.font.name = 'Courier New'
+                    run.font.size = Pt(max(self.pt - 1, 6))
+        self._rows = []
+
+    # ── parser callbacks ──
+    def _start(self, tag):
+        if tag == 'table':
+            t = self._flush()
+            if t: self._para(t)
+            self._in_tbl = True
+            self._rows = []
+        elif tag == 'tr':
+            self._cur_row = []
+        elif tag in ('td','th'):
+            self._in_cell = True
+            self._cur_cell = []
+        elif tag == 'br':
+            if self._in_cell: self._cur_cell.append('\n')
+            else: self._buf.append('\n')
+        elif tag in ('ul','ol'):
+            t = self._flush()
+            if t: self._para(t)
+            self._in_list = True
+        elif tag == 'li':
+            self._buf = []
+
+    def _end(self, tag):
+        if tag == 'table':
+            self._flush_tbl()
+            self._in_tbl = False
+        elif tag in ('td','th'):
+            if self._cur_row is not None:
+                self._cur_row.append(''.join(self._cur_cell).strip())
+            self._in_cell = False
+            self._cur_cell = []
+        elif tag == 'tr':
+            if self._cur_row is not None:
+                self._rows.append(self._cur_row)
+            self._cur_row = None
+        elif tag == 'li':
+            self._para(self._flush(), bullet=True)
+        elif tag in ('ul','ol'):
+            self._in_list = False
+        elif tag in ('div','p') and not self._in_tbl and not self._in_cell:
+            t = self._flush()
+            if t and not self._in_list: self._para(t)
+
+    def _data(self, d):
+        if self._in_cell: self._cur_cell.append(d)
+        else: self._buf.append(d)
+
+
+@app.route('/api/reports/<rid>/export/docx')
+def api_reports_docx(rid):
+    with _rpt_lock:
+        r = _reports.get(rid)
+    if not r:
+        return jsonify({'error': 'not found'}), 404
+    try:
+        from docx import Document
+        from docx.shared import Pt, RGBColor
+        from docx.enum.text import WD_ALIGN_PARAGRAPH
+        import io as _io
+        doc = Document()
+        ts  = datetime.datetime.fromisoformat(r['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+        t   = doc.add_heading('PENTEST REPORT — 404x9-evil-kit', 0)
+        t.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p   = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        run = p.add_run(f"{r.get('tool','').upper()}  ·  {ts}  ·  ID: {r['id']}")
+        run.font.color.rgb = RGBColor(0x22, 0x88, 0x44)
+        doc.add_paragraph()
+        doc.add_heading('Detalles de Ejecución', 1)
+        tbl = doc.add_table(rows=0, cols=2)
+        tbl.style = 'Table Grid'
+        for lbl, val in [
+            ('Herramienta', r.get('tool', '')),
+            ('Target',      r.get('target', '')),
+            ('Timestamp',   ts),
+            ('Comando',     r.get('command', '')),
+            ('Auth usada',  str(r.get('credentials_used', ''))),
+        ]:
+            row = tbl.add_row()
+            row.cells[0].text = lbl
+            row.cells[1].text = str(val)
+        doc.add_paragraph()
+        doc.add_heading('Resumen', 1)
+        doc.add_paragraph(r.get('summary', ''))
+        if r.get('findings'):
+            doc.add_heading(f"Hallazgos ({len(r['findings'])})", 1)
+            for fi in r['findings']:
+                doc.add_paragraph(str(fi), style='List Bullet')
+        if r.get('indicators'):
+            doc.add_heading(f"Indicadores ({len(r['indicators'])})", 1)
+            for ind in r['indicators']:
+                doc.add_paragraph(str(ind), style='List Bullet')
+        if r.get('errors'):
+            doc.add_heading(f"Errores ({len(r['errors'])})", 1)
+            for err in r['errors']:
+                doc.add_paragraph(str(err), style='List Bullet')
+        if r.get('evidence'):
+            doc.add_heading(f"Evidencia ({len(r['evidence'])})", 1)
+            for ev in r['evidence']:
+                doc.add_paragraph(str(ev), style='List Bullet')
+        parsed_html_raw = r.get('parsed_html', '')
+        if parsed_html_raw:
+            doc.add_heading('Output PARSED', 1)
+            _DocxHtmlWriter(doc, pt=8).feed(parsed_html_raw[:200000])
+        doc.add_heading('Output RAW Completo', 1)
+        raw_p = doc.add_paragraph()
+        raw_r = raw_p.add_run(r.get('raw_output', '')[:50000])
+        raw_r.font.name = 'Courier New'
+        raw_r.font.size = Pt(7)
+        buf = _io.BytesIO()
+        doc.save(buf)
+        buf.seek(0)
+        ts2   = datetime.datetime.fromisoformat(r['timestamp']).strftime('%Y%m%d_%H%M%S')
+        fname = f"report_{r['tool']}_{ts2}.docx"
+        return Response(
+            buf.read(),
+            mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            headers={'Content-Disposition': f'attachment; filename="{fname}"'}
+        )
+    except ImportError:
+        return jsonify({'error': 'python-docx no instalado. Ejecuta: pip install python-docx'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reports/<rid>/export/pdf')
+def api_reports_pdf(rid):
+    with _rpt_lock:
+        r = _reports.get(rid)
+    if not r:
+        return jsonify({'error': 'not found'}), 404
+    try:
+        from weasyprint import HTML
+        html_content = _build_report_html(r, auto_print=False)
+        pdf_bytes = HTML(string=html_content, base_url=None).write_pdf()
+        ts2   = datetime.datetime.fromisoformat(r['timestamp']).strftime('%Y%m%d_%H%M%S')
+        fname = f"report_{r.get('tool','rpt')}_{ts2}.pdf"
+        return Response(
+            pdf_bytes,
+            mimetype='application/pdf',
+            headers={'Content-Disposition': f'attachment; filename="{fname}"'}
+        )
+    except ImportError:
+        return jsonify({'error': 'weasyprint no instalado. Ejecuta: pip install weasyprint'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/reports/<rid>/view')
+def api_reports_view(rid):
+    with _rpt_lock:
+        r = _reports.get(rid)
+    if not r:
+        return 'Report not found', 404
+    auto_print = request.args.get('print') == '1'
+    return Response(_build_report_html(r, auto_print), mimetype='text/html; charset=utf-8')
+
+_HTML_STRIP_RE = re.compile(r'<[^>]+>')
+def _strip_html(html):
+    """Strip HTML tags for plain-text use in Word/text exports."""
+    txt = re.sub(r'<br\s*/?>', '\n', html or '', flags=re.IGNORECASE)
+    txt = re.sub(r'<[^>]+>', ' ', txt)
+    txt = re.sub(r'[ \t]{2,}', ' ', txt)
+    return '\n'.join(l.strip() for l in txt.splitlines() if l.strip())
+
+def _build_report_html(r, auto_print=False):
+    ts      = datetime.datetime.fromisoformat(r['timestamp']).strftime('%Y-%m-%d %H:%M:%S')
+    tool    = r.get('tool', '')
+    target  = r.get('target', '')
+    cmd     = r.get('command', '')
+    creds   = r.get('credentials_used') or {}
+    summary = r.get('summary', '')
+    finds   = r.get('findings') or []
+    inds    = r.get('indicators') or []
+    errs    = r.get('errors') or []
+    evids   = r.get('evidence') or []
+    raw     = r.get('raw_output', '')
+    parsed_html = r.get('parsed_html', '')
+
+    def esc(s):
+        return str(s).replace('&','&amp;').replace('<','&lt;').replace('>','&gt;').replace('"','&quot;')
+
+    def mk_list(items, cls):
+        if not items:
+            return '<p class="none-msg">— ninguno —</p>'
+        li = ''.join(f'<li class="li-{cls}">{esc(i)}</li>' for i in items)
+        return f'<ul class="flist">{li}</ul>'
+
+    cred_rows = ''
+    if creds:
+        for k, v in creds.items():
+            cred_rows += f'<tr><td class="td-lbl">{esc(k)}</td><td>{esc(str(v))}</td></tr>'
+    else:
+        cred_rows = '<tr><td colspan="2" class="none-msg">— no registradas —</td></tr>'
+
+    parsed_sec = ''
+    if parsed_html:
+        parsed_sec = f'''<div class="section">
+      <div class="sec-hdr">OUTPUT PARSED</div>
+      <div class="sec-body parsed-wrap">{parsed_html[:300000]}</div>
+    </div>'''
+
+    ap_js = '<script>window.onload=()=>setTimeout(()=>window.print(),800)</script>' if auto_print else ''
+    raw_lines = len(raw.splitlines())
+
+    return f'''<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PENTEST REPORT — {esc(tool)} — {esc(ts)}</title>
+<style>
+:root{{--g:#00ff88;--g2:#4dc880;--bg:#030604;--bg2:#050a06;--brd:#163019;--txt:#c8ffdc;--mut:#3d8a56;--red:#ff4f4f;--yellow:#f5c542;--cyan:#00d8ff;--blue:#4da6ff}}
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:'JetBrains Mono',Consolas,'Courier New',monospace;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.6}}
+a{{color:var(--cyan)}}
+.page{{max-width:1080px;margin:16px auto;background:var(--bg2);border:1px solid var(--brd);border-radius:4px;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.8)}}
+.hdr{{background:linear-gradient(135deg,#030a04,#081208);padding:24px 28px;border-bottom:1px solid var(--brd)}}
+.hdr-title{{font-size:22px;color:var(--g);font-weight:700;letter-spacing:5px;text-shadow:0 0 16px rgba(0,255,136,.3);margin-bottom:5px}}
+.hdr-sub{{font-size:11px;color:var(--mut);letter-spacing:2px}}
+.body{{padding:18px 24px}}
+.cards{{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:18px}}
+.card{{background:#020503;border:1px solid #0f1e10;border-radius:3px;padding:8px 12px}}
+.card-lbl{{font-size:9px;color:var(--mut);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px}}
+.card-val{{font-size:15px;font-weight:700;word-break:break-all}}
+.cv-g{{color:var(--g)}}.cv-c{{color:var(--cyan)}}.cv-r{{color:var(--red)}}.cv-y{{color:var(--yellow)}}.cv-w{{color:var(--txt)}}
+.sum-box{{background:#010401;border-left:3px solid var(--g);padding:10px 14px;margin-bottom:14px;border-radius:0 3px 3px 0;font-size:13px;color:var(--txt);line-height:1.7}}
+.section{{border:1px solid #0f1e10;border-radius:3px;overflow:hidden;margin-bottom:12px}}
+.sec-hdr{{background:#030803;padding:7px 14px;font-size:10px;font-weight:700;color:var(--mut);letter-spacing:3px;text-transform:uppercase;border-bottom:1px solid #0f1e10}}
+.sec-body{{padding:10px 14px;background:#020402}}
+table.t{{width:100%;border-collapse:collapse}}
+table.t td{{padding:5px 8px;border-bottom:1px solid #0a1209;font-size:12px;vertical-align:top;color:var(--txt)}}
+.td-lbl{{color:var(--mut);width:130px;white-space:nowrap;font-size:11px;letter-spacing:1px}}
+.flist{{list-style:none;padding:0;margin:0}}
+.flist li{{padding:3px 0;font-size:12px;border-bottom:1px solid #080e09;word-break:break-all;line-height:1.6}}
+.li-find{{color:var(--g);padding-left:8px;border-left:2px solid var(--g)}}
+.li-ind{{color:var(--cyan);padding-left:8px;border-left:2px solid var(--cyan)}}
+.li-err{{color:var(--red);padding-left:8px;border-left:2px solid var(--red)}}
+.li-evd{{color:var(--yellow);padding-left:8px;border-left:2px solid var(--yellow)}}
+.bdg{{display:inline-block;font-size:9px;padding:1px 6px;border-radius:2px;font-weight:700;margin-left:6px;letter-spacing:1px}}
+.bdg-g{{background:#0a1a0a;color:var(--g);border:1px solid #1a3a1a}}
+.bdg-c{{background:#01090e;color:var(--cyan);border:1px solid #0a1e2e}}
+.bdg-r{{background:#0e0a0a;color:var(--red);border:1px solid #280e0e}}
+.bdg-y{{background:#0e0d00;color:var(--yellow);border:1px solid #281e00}}
+.code{{font-family:'JetBrains Mono',Consolas,'Courier New',monospace;font-size:11px;color:#8acc90;background:#010301;padding:10px;border-radius:2px;white-space:pre-wrap;word-break:break-all;max-height:600px;overflow-y:auto;line-height:1.55}}
+.none-msg{{color:var(--mut);font-size:12px;padding:6px 0}}
+.footer{{background:#030703;padding:9px 24px;font-size:10px;color:var(--mut);letter-spacing:2px;border-top:1px solid var(--brd)}}
+/* ── Parsed HTML embed ── */
+.parsed-wrap{{font-size:12px;overflow-x:auto;line-height:1.6;font-family:'JetBrains Mono',Consolas,'Courier New',monospace}}
+.parsed-wrap table{{border-collapse:collapse;width:100%;margin:6px 0;font-size:11px}}
+.parsed-wrap td,.parsed-wrap th{{border:1px solid #1a3a1a;padding:4px 8px;color:var(--txt);vertical-align:top;word-break:break-word}}
+.parsed-wrap th{{background:#030803;color:var(--mut);font-size:10px;letter-spacing:1px;font-weight:700;text-transform:uppercase}}
+.parsed-wrap tr:nth-child(even) td{{background:#010301}}
+.parsed-wrap ul,.parsed-wrap ol{{padding-left:18px;margin:4px 0}}
+.parsed-wrap li{{padding:2px 0;font-size:12px;line-height:1.7}}
+.parsed-wrap pre{{white-space:pre-wrap;word-break:break-all;font-size:11px;margin:4px 0}}
+.parsed-wrap div{{margin:1px 0}}
+@media print{{
+  :root{{--bg:#fff;--bg2:#fff;--txt:#111;--g:#1a6e33;--mut:#555;--cyan:#0a5a7a;--red:#8a1a1a;--yellow:#7a5a00;--brd:#ddd}}
+  body{{background:#fff;color:#111}}
+  .page{{box-shadow:none;margin:0;border-radius:0;max-width:none;border:none}}
+  .hdr{{background:#f0f6f1 !important;border-bottom:2px solid #ccc}}
+  .hdr-title{{color:#1a6e33 !important;text-shadow:none}}
+  .sec-hdr{{background:#f0f6f1 !important;color:#333 !important}}
+  .sec-body{{background:#fafff8 !important}}
+  .code{{background:#f4f8f4 !important;color:#1a2a1a !important;max-height:none !important;overflow:visible !important}}
+  .card{{background:#f7fdf8 !important;border-color:#c8e5ce !important}}
+  .sum-box{{background:#f7fdf8 !important;border-color:#2da84c !important}}
+  .parsed-wrap{{color:#111 !important}}
+  .parsed-wrap td,.parsed-wrap th{{border-color:#ccc !important;color:#111 !important;background:#fff !important}}
+  .parsed-wrap th{{background:#f0f6f1 !important;color:#333 !important}}
+  .parsed-wrap tr:nth-child(even) td{{background:#f8fdf8 !important}}
+  .parsed-wrap span{{color:#111 !important}}
+  .parsed-wrap *{{color:#111 !important}}
+}}
+</style>{ap_js}
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <div class="hdr-title">PENTEST REPORT</div>
+    <div class="hdr-sub">404x9-evil-kit &nbsp;·&nbsp; by @xfraylin &nbsp;·&nbsp; {esc(ts)} &nbsp;·&nbsp; ID: {esc(r['id'])}</div>
+  </div>
+  <div class="body">
+    <div class="cards">
+      <div class="card"><div class="card-lbl">Herramienta</div><div class="card-val cv-g">{esc(tool)}</div></div>
+      <div class="card"><div class="card-lbl">Target</div><div class="card-val cv-w" style="font-size:12px">{esc(target or '—')}</div></div>
+      <div class="card"><div class="card-lbl">Hallazgos</div><div class="card-val cv-g">{len(finds)}</div></div>
+      <div class="card"><div class="card-lbl">Indicadores</div><div class="card-val cv-c">{len(inds)}</div></div>
+      <div class="card"><div class="card-lbl">Errores</div><div class="card-val cv-r">{len(errs)}</div></div>
+      <div class="card"><div class="card-lbl">Evidencia</div><div class="card-val cv-y">{len(evids)}</div></div>
+    </div>
+
+    <div class="section">
+      <div class="sec-hdr">Detalles de Ejecución</div>
+      <div class="sec-body">
+        <table class="t">
+          <tr><td class="td-lbl">Comando</td><td style="color:var(--cyan);font-size:11px">{esc(cmd)}</td></tr>
+          <tr><td class="td-lbl">Credenciales</td><td><table class="t">{cred_rows}</table></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="sum-box"><span style="color:var(--g);font-weight:700">Resumen:</span> {esc(summary)}</div>
+
+    <div class="section">
+      <div class="sec-hdr">Hallazgos <span class="bdg bdg-g">{len(finds)}</span></div>
+      <div class="sec-body">{mk_list(finds,'find')}</div>
+    </div>
+    <div class="section">
+      <div class="sec-hdr">Indicadores <span class="bdg bdg-c">{len(inds)}</span></div>
+      <div class="sec-body">{mk_list(inds,'ind')}</div>
+    </div>
+    <div class="section">
+      <div class="sec-hdr">Errores <span class="bdg bdg-r">{len(errs)}</span></div>
+      <div class="sec-body">{mk_list(errs,'err')}</div>
+    </div>
+    <div class="section">
+      <div class="sec-hdr">Evidencia <span class="bdg bdg-y">{len(evids)}</span></div>
+      <div class="sec-body">{mk_list(evids,'evd')}</div>
+    </div>
+
+    {parsed_sec}
+
+    <div class="section">
+      <div class="sec-hdr">Output RAW Completo <span class="bdg" style="background:#060d07;color:var(--mut);border:1px solid var(--brd)">{raw_lines} líneas</span></div>
+      <div class="sec-body"><pre class="code">{esc(raw[:80000])}</pre></div>
+    </div>
+  </div>
+  <div class="footer">404x9-evil-kit &nbsp;·&nbsp; by @xfraylin &nbsp;·&nbsp; {esc(ts)}</div>
+</div>
+</body></html>'''
+
 def _restore_state():
     """Restore persisted state on server startup."""
     s = _load_state()
@@ -1462,6 +2056,7 @@ def _restore_state():
           f'{len(s.get("phish_creds",[]))} creds, '
           f'{len(s.get("deployed_pages",{}))} pages, '
           f'tg={"on" if s.get("tg_config",{}).get("enabled") else "off"}')
+    _rpt_load()
 
 if __name__ == '__main__':
     _restore_state()

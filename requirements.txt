@@ -1,6 +1,7 @@
 # ── Servidor web ──────────────────────────────────────────────────────────────
 flask>=3.0.0
 flask-cors>=4.0.0
+flask-sock>=0.7.0          # optional native WebSocket stream for NetExec jobs
 
 # ── Herramientas Python (aisladas en el venv) ─────────────────────────────────
 sqlmap                  # SQL injection
@@ -21,3 +22,7 @@ adidnsdump              # AD-integrated DNS enumeration via LDAP
 ldeep                   # LDAP enumeration for AD
 ldap3                   # windapsearch dependency (pure-Python LDAP3 client)
 gssapi                  # windapsearch dependency (Kerberos GSSAPI)
+
+# ── Reports ───────────────────────────────────────────────────────────────────
+python-docx             # Word (.docx) report export
+weasyprint              # PDF real server-side (descarga directa)
