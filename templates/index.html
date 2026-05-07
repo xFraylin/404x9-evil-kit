@@ -6296,7 +6296,7 @@ parsers.adc = r => {
 
   // ── Async JSON enrichment ─────────────────────────────────
   if (savedJSON && typeof serverOk !== 'undefined' && serverOk) {
-    setTimeout(() => _adcEnrichJson(savedJSON, ['/opt/x9-evilkit', '/root', '/home', '/tmp']), 400);
+    setTimeout(() => _adcEnrichJson(savedJSON, ['/opt/404x9-evil-kit', '/root', '/home', '/tmp']), 400);
   }
 
   return o;
@@ -8092,7 +8092,7 @@ const _AE_HINTS = {
     style: 'border:1px solid #2a1a00;background:#060300;color:var(--yellow)',
     html:  '⚠ Requiere <b>ldap3</b> en el venv — si aparece <i>No module named \'ldap\'</i>: ' +
            '<button class="kbtn" style="padding:2px 8px;font-size:11px;margin-left:6px" ' +
-           'onclick="execDirect(\'/opt/x9-evilkit/venv/bin/pip install ldap3 gssapi\')">⬇ pip install ldap3</button>',
+           'onclick="execDirect(\'/opt/404x9-evil-kit/venv/bin/pip install ldap3 gssapi\')">⬇ pip install ldap3</button>',
   },
 };
 
@@ -9180,7 +9180,7 @@ function tktSetKrb5() {
   const u = gv('tgt-u').trim();
   const name = (u && u !== 'user') ? `${u}.ccache` : '*.ccache';
   execDirect(
-    `f=$(find /opt/x9-evilkit . /tmp ~ -maxdepth 4 -name "${name}" 2>/dev/null | head -1); ` +
+    `f=$(find /opt/404x9-evil-kit . /tmp ~ -maxdepth 4 -name "${name}" 2>/dev/null | head -1); ` +
     `if [ -n "$f" ]; then export KRB5CCNAME="$f"; echo "[+] KRB5CCNAME=$KRB5CCNAME"; ` +
     `else echo "[-] No se encontró ${name} — ejecuta getTGT primero"; fi`
   );

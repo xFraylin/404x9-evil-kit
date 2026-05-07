@@ -365,11 +365,11 @@ sudo bash install.sh
 The installer will:
 1. Clone the repo automatically if run via `curl`
 2. Install system binaries via `apt` (skips already installed tools)
-3. Copy all files to `/opt/x9-evilkit/`
-4. Create an isolated venv at `/opt/x9-evilkit/venv/`
+3. Copy all files to `/opt/404x9-evil-kit/`
+4. Create an isolated venv at `/opt/404x9-evil-kit/venv/`
 5. Activate the venv and install all Python dependencies from `requirements.txt`
-6. Create the `/usr/local/bin/404x9-evil-kit` launcher
-7. Create a desktop shortcut
+6. Create the `/usr/local/bin/404x9-evil-kit` launcher (alias: `404x9kit`)
+7. Create a desktop shortcut (`404x9-evil-kit.desktop`)
 
 ---
 
@@ -384,8 +384,8 @@ The launcher activates the venv automatically and opens `http://localhost:5000` 
 ### Manual start
 
 ```bash
-source /opt/x9-evilkit/venv/bin/activate
-cd /opt/x9-evilkit
+source /opt/404x9-evil-kit/venv/bin/activate
+cd /opt/404x9-evil-kit
 python3 server.py
 ```
 
@@ -399,6 +399,9 @@ python3 server.py
 ├── requirements.txt    # Python dependencies (installed inside venv)
 ├── install.sh          # Installer — one-liner compatible
 ├── run.sh              # Quick launcher (activates venv + starts server)
+├── modules/
+│   ├── __init__.py
+│   └── netexec_panel.py  # NXC command builder, module discovery and output parser
 ├── data/
 │   └── state.json      # Persistent state (auto-created on first run)
 ├── templates/

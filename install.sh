@@ -24,7 +24,7 @@ DIM='\033[0;90m'
 NC='\033[0m'
 
 REPO_URL="https://github.com/xFraylin/404x9-evil-kit.git"
-INSTALL_DIR="/opt/x9-evilkit"
+INSTALL_DIR="/opt/404x9-evil-kit"
 VENV_DIR="${INSTALL_DIR}/venv"
 REQ_HASH_FILE="${INSTALL_DIR}/.req_hash"
 
@@ -232,11 +232,12 @@ echo ""
 
 # ── 2. Copiar archivos del proyecto ──────────────────────
 echo -e "${CYAN}[*] Sincronizando archivos...${NC}"
-mkdir -p "${INSTALL_DIR}/templates" "${INSTALL_DIR}/static"
+mkdir -p "${INSTALL_DIR}/templates" "${INSTALL_DIR}/static" "${INSTALL_DIR}/modules"
 cp "${SCRIPT_DIR}/server.py"            "${INSTALL_DIR}/"
 cp "${SCRIPT_DIR}/requirements.txt"     "${INSTALL_DIR}/"
 cp "${SCRIPT_DIR}/templates/index.html" "${INSTALL_DIR}/templates/"
-[ -d "${SCRIPT_DIR}/static" ] && cp -r "${SCRIPT_DIR}/static/." "${INSTALL_DIR}/static/"
+[ -d "${SCRIPT_DIR}/static" ]   && cp -r "${SCRIPT_DIR}/static/."   "${INSTALL_DIR}/static/"
+[ -d "${SCRIPT_DIR}/modules" ]  && cp -r "${SCRIPT_DIR}/modules/."  "${INSTALL_DIR}/modules/"
 echo -e "${GREEN}[✓] Archivos sincronizados${NC}"
 echo ""
 
@@ -276,14 +277,14 @@ source ${VENV_DIR}/bin/activate
 python3 server.py
 EOF
 chmod +x /usr/local/bin/404x9-evil-kit
-ln -sf /usr/local/bin/404x9-evil-kit /usr/local/bin/x9-evilkit 2>/dev/null
+ln -sf /usr/local/bin/404x9-evil-kit /usr/local/bin/404x9kit 2>/dev/null
 
 # ── 6. Acceso directo en el escritorio ───────────────────
 REAL_HOME=$(getent passwd "${SUDO_USER:-$USER}" | cut -d: -f6)
 mkdir -p "${REAL_HOME}/Desktop"
-cat > "${REAL_HOME}/Desktop/x9-evilkit.desktop" << 'DEOF'
+cat > "${REAL_HOME}/Desktop/404x9-evil-kit.desktop" << 'DEOF'
 [Desktop Entry]
-Name=x9 Evil Kit
+Name=404x9 Evil Kit
 Comment=Pentesting Web Toolkit
 Exec=bash -c '404x9-evil-kit'
 Icon=kali-menu
@@ -291,7 +292,7 @@ Terminal=true
 Type=Application
 Categories=Security;
 DEOF
-chmod +x "${REAL_HOME}/Desktop/x9-evilkit.desktop" 2>/dev/null
+chmod +x "${REAL_HOME}/Desktop/404x9-evil-kit.desktop" 2>/dev/null
 
 # ── Resultado ─────────────────────────────────────────────
 echo ""
