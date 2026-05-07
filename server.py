@@ -1831,7 +1831,7 @@ def api_reports_pdf(rid):
         return Response(
             pdf_bytes,
             mimetype='application/pdf',
-            headers={'Content-Disposition': f'attachment; filename="{fname}"'}
+            headers={'Content-Disposition': f'inline; filename="{fname}"'}
         )
     except ImportError:
         return jsonify({'error': 'weasyprint no instalado. Ejecuta: pip install weasyprint'}), 500

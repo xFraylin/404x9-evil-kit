@@ -13738,12 +13738,7 @@ function rptClose() {
 function rptExportPDF(id) {
   id = id || _lastReportId;
   if (!id) { alert('No hay reporte activo.'); return; }
-  const a = document.createElement('a');
-  a.href = API + '/reports/' + id + '/export/pdf';
-  a.download = '';
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  window.open(API + '/reports/' + id + '/export/pdf', '_blank');
 }
 
 function rptExportDocx(id) {
