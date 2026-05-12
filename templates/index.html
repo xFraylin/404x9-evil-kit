@@ -419,6 +419,53 @@ textarea.fi{resize:vertical;min-height:48px}
 .out-content{max-height:clamp(120px,20vh,260px)}
 .out-parsed{max-height:clamp(160px,26vh,340px)}
 
+/* ─── GIT-DUMPER DASHBOARD ───────────────────────────── */
+.gd-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:6px}
+.gd-header-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.gd-header-right{display:flex;align-items:center;gap:8px}
+.gd-badge{font-size:10px;font-weight:700;letter-spacing:.8px;padding:2px 7px;border-radius:2px;border:1px solid}
+.gd-badge.util{border-color:var(--mut);color:var(--mut)}
+.gd-badge.recon{border-color:var(--cyan);color:var(--cyan)}
+.gd-badge.safe{border-color:#4aad80;color:#4aad80}
+.gd-ver{font-size:11px;color:var(--dim);font-family:inherit;letter-spacing:.5px}
+.gd-dot{width:8px;height:8px;border-radius:50%;background:var(--dim);border:1px solid var(--brd);display:inline-block;flex-shrink:0}
+.gd-dot.ok{background:var(--g);box-shadow:0 0 6px var(--g)}
+.gd-dot.err{background:var(--red);box-shadow:0 0 5px var(--red)}
+.gd-warn{padding:6px 10px;margin-bottom:10px;background:#070301;border:1px solid #2a1500;border-radius:3px;font-size:12px;color:var(--mut);line-height:1.4}
+.gd-inst-block{background:#020403;border:1px solid var(--brd);border-radius:4px;padding:8px 10px;margin-bottom:12px}
+.gd-inst-title{font-size:11px;color:var(--dim);letter-spacing:1.2px;margin-bottom:6px}
+.gd-inst-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.gd-inst-cmd{font-size:11px;color:var(--dim);margin-top:5px}
+.gd-status-msg{font-size:12px;color:var(--mut);min-width:140px}
+.gd-target-block{background:#020403;border:1px solid var(--brd);border-radius:4px;padding:8px 10px;margin-bottom:8px}
+.gd-section-label{font-size:11px;color:var(--dim);letter-spacing:1.2px;margin-bottom:7px}
+.gd-target-row{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap}
+.gd-target-actions{display:flex;flex-direction:column;gap:5px;padding-bottom:2px}
+.gd-precheck-btn{min-width:112px;text-align:center}
+.gd-url-preview{display:flex;align-items:center;gap:8px;margin-top:7px;padding:5px 8px;background:#030604;border:1px solid #143314;border-radius:3px;font-size:12px;overflow:hidden}
+.gd-prev-label{color:var(--dim);white-space:nowrap;font-size:11px;letter-spacing:.8px;flex-shrink:0}
+.gd-prev-val{color:var(--g);font-family:inherit;word-break:break-all}
+.gd-precheck-result{margin-top:6px;padding:5px 10px;border-radius:3px;font-size:12px;border:1px solid var(--brd);display:flex;align-items:center;gap:6px}
+.gd-precheck-result.ok{border-color:var(--g);color:var(--g);background:#010d01}
+.gd-precheck-result.err{border-color:var(--red);color:var(--red);background:#0a0101}
+.gd-precheck-result.checking{border-color:var(--cyan);color:var(--cyan);background:#010408}
+.gd-history-bar{display:flex;align-items:center;gap:8px;margin:6px 0 8px;padding:5px 8px;background:#020403;border:1px solid var(--brd);border-radius:3px;flex-wrap:wrap}
+.gd-hist-label{font-size:11px;color:var(--dim);white-space:nowrap;letter-spacing:.8px;flex-shrink:0}
+.gd-hist-items{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+.gd-hist-item{font-size:11px;color:var(--cyan);cursor:pointer;padding:2px 7px;border:1px solid #1a3a3a;border-radius:2px;background:#020608;white-space:nowrap;max-width:200px;overflow:hidden;text-overflow:ellipsis}
+.gd-hist-item:hover{border-color:var(--cyan);background:#030c0c}
+.gd-hist-clear{font-size:11px;color:var(--dim);background:none;border:none;cursor:pointer;font-family:inherit;padding:0;white-space:nowrap;flex-shrink:0}
+.gd-hist-clear:hover{color:var(--red)}
+.gd-adv-wrap{margin:8px 0 10px;display:flex;flex-direction:column;gap:4px}
+.gd-adv-cat{border:1px solid var(--brd);border-radius:3px;overflow:hidden;background:#010302}
+.gd-adv-toggle{display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;user-select:none;background:#020403}
+.gd-adv-toggle:hover{background:#030604}
+.gd-adv-arrow{font-size:9px;color:var(--dim);transition:transform .15s;display:inline-block;width:9px;flex-shrink:0}
+.gd-adv-arrow.open{transform:rotate(90deg)}
+.gd-adv-cat-label{font-size:12px;font-weight:700;letter-spacing:1px;color:var(--mut)}
+.gd-adv-hint{font-size:11px;color:var(--dim);margin-left:2px}
+.gd-adv-body{padding:8px 10px;border-top:1px solid var(--brd)}
+
 /* ── 4K / XL ≥1800px: scale panels up ─────────────── */
 @media(min-width:1800px){
   #sidebar{width:260px}
@@ -3565,115 +3612,188 @@ textarea.fi{resize:vertical;min-height:48px}
 
 <!-- ══ GIT-DUMPER ══ -->
 <div id="p-gitdumper" class="panel">
-  <div class="pt">GIT-DUMPER <span class="ptd">— Extrae repositorios .git expuestos</span></div>
 
-  <!-- AVISO -->
-  <div style="padding:5px 9px;margin-bottom:9px;background:#070301;border:1px solid #2a1500;border-radius:3px;font-size:12px;color:var(--mut)">
-    ⚠ Uso exclusivo en entornos autorizados. git-dumper recupera el repositorio completo si el servidor sirve .git/ sin restricciones.
+  <!-- HEADER -->
+  <div class="gd-header">
+    <div class="gd-header-left">
+      <span class="pt" style="margin:0">GIT-DUMPER</span>
+      <span class="gd-badge util">UTIL</span>
+      <span class="gd-badge recon">RECON</span>
+      <span class="gd-badge safe">SAFE MODE</span>
+    </div>
+    <div class="gd-header-right">
+      <span class="gd-ver" id="gd-version">v—</span>
+      <span class="gd-dot" id="gd-dot" title="Estado de instalación"></span>
+    </div>
   </div>
+  <div class="ptd" style="margin-bottom:10px">Extrae repositorios .git expuestos — recupera código fuente, historial y secretos</div>
+
+  <!-- WARN -->
+  <div class="gd-warn">⚠ Uso exclusivo en entornos autorizados. git-dumper recupera el repositorio completo si el servidor sirve .git/ sin restricciones.</div>
 
   <!-- INSTALL BLOCK -->
-  <div style="background:#020403;border:1px solid var(--brd);border-radius:4px;padding:7px 10px;margin-bottom:10px">
-    <div style="font-size:12px;color:var(--mut);letter-spacing:1px;margin-bottom:5px">INSTALACIÓN</div>
-    <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
-      <button class="kbtn" style="border-color:#c8a020;color:#c8a020" onclick="gdInstall()">⬇ INSTALAR git-dumper</button>
+  <div class="gd-inst-block">
+    <div class="gd-inst-title">INSTALACIÓN</div>
+    <div class="gd-inst-row">
+      <button class="kbtn" style="border-color:#c8a020;color:#c8a020" onclick="gdInstall()">⬇ INSTALAR</button>
       <button class="kbtn" onclick="gdCheckInstall()">✓ VERIFICAR</button>
-      <span id="gd-install-status" style="font-size:12px;color:var(--mut)"></span>
+      <button class="kbtn" onclick="gdUpdate()">↑ ACTUALIZAR</button>
+      <span id="gd-install-status" class="gd-status-msg"></span>
     </div>
-    <div style="font-size:11px;color:var(--dim);margin-top:5px">pip3 install git-dumper</div>
+    <div class="gd-inst-cmd">pip3 install git-dumper</div>
   </div>
 
-  <!-- INPUTS PRINCIPALES -->
-  <div class="row">
-    <div class="ig w4">
-      <div class="lbl">URL TARGET <span style="color:var(--dim);font-size:11px">— /.git se agrega automáticamente</span></div>
-      <input class="fi" id="gd-url" placeholder="http://target.com" oninput="bGd()">
+  <!-- TARGET -->
+  <div class="gd-target-block">
+    <div class="gd-section-label">TARGET</div>
+    <div class="gd-target-row">
+      <div class="ig" style="flex:1;min-width:200px">
+        <div class="lbl">DOMINIO / URL <span style="color:var(--dim);font-size:11px">— https:// y /.git se gestionan automáticamente</span></div>
+        <input class="fi" id="gd-url" placeholder="example.com  o  https://target.com/app" oninput="bGd()">
+      </div>
+      <div class="gd-target-actions">
+        <button class="kbtn gd-precheck-btn" id="gd-precheck-btn" onclick="gdPrecheck()">
+          <span id="gd-precheck-ico">⬡</span> PRE-CHECK
+        </button>
+      </div>
     </div>
-    <div class="ig">
+    <div class="gd-url-preview">
+      <span class="gd-prev-label">URL NORMALIZADA →</span>
+      <span class="gd-prev-val" id="gd-prev-val">—</span>
+    </div>
+    <div class="gd-precheck-result" id="gd-precheck-result" style="display:none"></div>
+  </div>
+
+  <!-- OUTPUT DIR -->
+  <div class="row" style="margin-top:0;margin-bottom:4px">
+    <div class="ig" style="flex:1">
       <div class="lbl">CARPETA DE SALIDA</div>
       <div class="wl-row">
         <input class="fi" id="gd-outdir" value="./dumped-repo" oninput="bGd()">
         <button class="wl-browse" onclick="wlBrowse('gd-outdir', bGd)" title="Explorar">📂</button>
+        <button class="kbtn" onclick="gdRandomName()" title="Nombre aleatorio" style="padding:0 9px;font-size:15px">⟳</button>
       </div>
     </div>
   </div>
 
-  <!-- FLAGS NUMÉRICOS -->
-  <div class="row" style="margin-top:6px">
-    <div class="ig" style="max-width:80px">
-      <div class="lbl">--jobs</div>
-      <input class="fi" id="gd-jobs" placeholder="10" oninput="bGd()">
-    </div>
-    <div class="ig" style="max-width:80px">
-      <div class="lbl">--retry</div>
-      <input class="fi" id="gd-retry" placeholder="3" oninput="bGd()">
-    </div>
-    <div class="ig" style="max-width:80px">
-      <div class="lbl">--timeout</div>
-      <input class="fi" id="gd-timeout" placeholder="10" oninput="bGd()">
-    </div>
-    <div class="ig">
-      <div class="lbl">--proxy</div>
-      <input class="fi" id="gd-proxy" placeholder="http://127.0.0.1:8080" oninput="bGd()">
-    </div>
-    <div class="ig">
-      <div class="lbl">--user-agent</div>
-      <input class="fi" id="gd-ua" placeholder="Mozilla/5.0" oninput="bGd()">
-    </div>
-    <div class="ig">
-      <div class="lbl">--cookie</div>
-      <input class="fi" id="gd-cookie" placeholder="session=abc123" oninput="bGd()">
-    </div>
+  <!-- HISTORY BAR -->
+  <div class="gd-history-bar" id="gd-history-bar" style="display:none">
+    <span class="gd-hist-label">RECIENTES:</span>
+    <div class="gd-hist-items" id="gd-hist-items"></div>
+    <button class="gd-hist-clear" onclick="gdClearHistory()">LIMPIAR</button>
   </div>
 
-  <!-- HEADERS DINÁMICOS -->
-  <div class="lbl" style="margin:7px 0 4px">--header <span style="color:var(--dim);font-size:11px">— múltiples</span></div>
-  <div id="gd-headers">
-    <div class="header-row">
-      <input class="fi" placeholder="Header name" style="max-width:140px">
-      <input class="fi" placeholder="Value">
-      <button class="del-btn" onclick="gdDelHeader(this)">✕</button>
-    </div>
-  </div>
-  <button class="kbtn" onclick="gdAddHeader()" style="margin-bottom:9px;font-size:12px">+ ADD HEADER</button>
+  <!-- OPCIONES AVANZADAS (colapsables) -->
+  <div class="gd-adv-wrap">
 
-  <!-- FLAGS TOGGLE -->
-  <div class="lbl" style="margin-bottom:4px">OPCIONES</div>
-  <div class="checks" id="gd-op">
-    <div class="ck" data-v="--verbose">--verbose</div>
+    <!-- NETWORK: -j · -r · -t · --proxy -->
+    <div class="gd-adv-cat">
+      <div class="gd-adv-toggle" onclick="gdToggleAdv('network')">
+        <span class="gd-adv-arrow" id="gd-arr-network">▶</span>
+        <span class="gd-adv-cat-label">NETWORK</span>
+        <span class="gd-adv-hint">--jobs · --retry · --timeout · --proxy</span>
+      </div>
+      <div class="gd-adv-body" id="gd-body-network" style="display:none">
+        <div class="row">
+          <div class="ig" style="max-width:80px">
+            <div class="lbl">-j / --jobs</div>
+            <input class="fi" id="gd-jobs" placeholder="10" oninput="bGd()">
+          </div>
+          <div class="ig" style="max-width:80px">
+            <div class="lbl">-r / --retry</div>
+            <input class="fi" id="gd-retry" placeholder="3" oninput="bGd()">
+          </div>
+          <div class="ig" style="max-width:90px">
+            <div class="lbl">-t / --timeout</div>
+            <input class="fi" id="gd-timeout" placeholder="10" oninput="bGd()">
+          </div>
+          <div class="ig" style="flex:1">
+            <div class="lbl">--proxy</div>
+            <input class="fi" id="gd-proxy" placeholder="http://127.0.0.1:8080" oninput="bGd()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUTHENTICATION: -u · -H (NAME=VALUE) · cert -->
+    <div class="gd-adv-cat">
+      <div class="gd-adv-toggle" onclick="gdToggleAdv('auth')">
+        <span class="gd-adv-arrow" id="gd-arr-auth">▶</span>
+        <span class="gd-adv-cat-label">AUTHENTICATION</span>
+        <span class="gd-adv-hint">--user-agent · --header · cert</span>
+      </div>
+      <div class="gd-adv-body" id="gd-body-auth" style="display:none">
+        <div class="row" style="margin-bottom:8px">
+          <div class="ig" style="flex:1">
+            <div class="lbl">-u / --user-agent</div>
+            <input class="fi" id="gd-ua" placeholder="Mozilla/5.0" oninput="bGd()">
+          </div>
+        </div>
+        <div class="lbl" style="margin:0 0 4px">-H / --header <span style="color:var(--dim);font-size:11px">— formato NAME=VALUE · múltiples</span></div>
+        <div id="gd-headers">
+          <div class="header-row">
+            <input class="fi" placeholder="Authorization" style="max-width:160px" oninput="bGd()">
+            <input class="fi" placeholder="Bearer TOKEN" oninput="bGd()">
+            <button class="del-btn" onclick="gdDelHeader(this)">✕</button>
+          </div>
+        </div>
+        <button class="kbtn" onclick="gdAddHeader()" style="margin:6px 0 10px;font-size:12px">+ ADD HEADER</button>
+        <div class="row" style="margin-top:4px">
+          <div class="ig" style="flex:1">
+            <div class="lbl">--client-cert-p12 <span style="color:var(--dim);font-size:11px">— cert PKCS#12</span></div>
+            <div class="wl-row">
+              <input class="fi" id="gd-cert" placeholder="/path/to/cert.p12" oninput="bGd()">
+              <button class="wl-browse" onclick="wlBrowse('gd-cert', bGd)" title="Explorar">📂</button>
+            </div>
+          </div>
+          <div class="ig" style="max-width:160px">
+            <div class="lbl">--client-cert-p12-password</div>
+            <input class="fi" id="gd-cert-pass" type="password" placeholder="contraseña" oninput="bGd()">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRANCHES: -b (repeatable) -->
+    <div class="gd-adv-cat">
+      <div class="gd-adv-toggle" onclick="gdToggleAdv('perf')">
+        <span class="gd-adv-arrow" id="gd-arr-perf">▶</span>
+        <span class="gd-adv-cat-label">BRANCHES</span>
+        <span class="gd-adv-hint">-b / --branch (repetible)</span>
+      </div>
+      <div class="gd-adv-body" id="gd-body-perf" style="display:none">
+        <div style="font-size:11px;color:var(--dim);margin-bottom:6px">Ramas adicionales a descargar además de HEAD</div>
+        <div id="gd-branches">
+          <div class="header-row">
+            <input class="fi" placeholder="develop" oninput="bGd()">
+            <button class="del-btn" onclick="this.parentElement.remove();bGd()">✕</button>
+          </div>
+        </div>
+        <button class="kbtn" onclick="gdAddBranch()" style="margin-top:6px;font-size:12px">+ ADD BRANCH</button>
+        <div id="gd-op" style="display:none"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- COMANDO GENERADO -->
-  <div class="cmd-preview">
-    <div class="cmd-lbl">COMANDO GIT-DUMPER</div>
-    <div class="cmd-text" id="gd-cmd"></div>
-  </div>
-
-  <!-- BOTONES -->
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO GENERADO</div><div class="cmd-text" id="gd-cmd"><span style="color:var(--dim)">git-dumper https://target.com/.git ./dumped-repo</span></div></div>
   <div class="run-row">
-    <button class="rbtn" id="gd-run" onclick="runTool('gd')">▶ EJECUTAR</button>
+    <button class="rbtn" id="gd-run" onclick="gdRun()">▶ EJECUTAR</button>
     <button class="sbtn" id="gd-stop" onclick="stopTool('gd')" disabled>■ STOP</button>
-    <button class="kbtn" onclick="cpCmd('gd-cmd')">COPY CMD</button>
-  </div>
-
-  <!-- PAYLOADS RÁPIDOS -->
-  <div class="sdiv">PAYLOADS RÁPIDOS</div>
-  <div class="plist">
-    <div class="pitem"><span class="ptxt">git-dumper http://target.com/.git ./repo</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
-    <div class="pitem"><span class="ptxt">git-dumper http://target.com/.git ./repo --jobs 20</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
-    <div class="pitem"><span class="ptxt">git-dumper http://target.com/.git ./repo --proxy http://127.0.0.1:8080</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
-    <div class="pitem"><span class="ptxt">git-dumper http://target.com/.git ./repo --header 'Authorization: Bearer TOKEN'</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>
-    <div class="pitem"><span class="ptxt">git log --oneline --all</span><span class="pcopy" onclick="runAndCopy(this)">RUN</span></div>
-    <div class="pitem"><span class="ptxt">git diff HEAD~1 HEAD --stat</span><span class="pcopy" onclick="runAndCopy(this)">RUN</span></div>
-    <div class="pitem"><span class="ptxt">git log --all --oneline --name-only | grep -iE '\.env|password|secret|config|key'</span><span class="pcopy" onclick="runAndCopy(this)">RUN</span></div>
-    <div class="pitem"><span class="ptxt">find ./dumped-repo -type f | xargs grep -lrE 'password|secret|api_key|token' 2>/dev/null</span><span class="pcopy" onclick="runAndCopy(this)">RUN</span></div>
+    <button class="kbtn" onclick="cpCmd('gd-cmd')">COPY</button>
+    <button class="kbtn" onclick="gdExportSh()">⬇ .SH</button>
+    <button class="kbtn" onclick="gdExportJson()">⬇ JSON</button>
   </div>
 
   <!-- OUTPUT -->
   <div class="out-area" id="gd-out">
     <div class="out-hdr">
       <span class="out-title">OUTPUT — GIT-DUMPER</span>
-      <button class="kbtn" onclick="clrOut('gd-out')">CLEAR</button>
+      <div style="display:flex;gap:5px">
+        <button class="kbtn" onclick="gdExportLogs()">⬇ EXPORT LOGS</button>
+        <button class="kbtn" onclick="clrOut('gd-out')">CLEAR</button>
+      </div>
     </div>
     <div class="out-content" id="gd-out-c"></div>
   </div>
@@ -9341,73 +9461,250 @@ function acCrack() {
   execDirect(getCmdText('ac-4'));
 }
 
-/* ─── GIT-DUMPER BUILDER ──────────────────────────────── */
-function bGd() {
-  let url = gv('gd-url').trim();
-  if (!url) { setH('gd-cmd', '<span style="color:var(--dim)">git-dumper http://target.com/.git ./dumped-repo</span>'); return; }
+/* ─── GIT-DUMPER DASHBOARD ────────────────────────────── */
+const GD_HIST_KEY = 'gd_url_history';
+const GD_HIST_MAX = 6;
 
-  // Normalize: ensure scheme
-  if (!url.match(/^https?:\/\//i)) url = 'http://' + url;
-  // Auto-append /.git if missing
-  if (!url.replace(/\/$/, '').endsWith('/.git')) {
-    url = url.replace(/\/$/, '') + '/.git';
+function _gdNormUrl(raw) {
+  if (!raw) return '';
+  let u = raw.trim();
+  if (!u.match(/^https?:\/\//i)) u = 'https://' + u;
+  if (!u.replace(/\/$/, '').endsWith('/.git')) u = u.replace(/\/$/, '') + '/.git';
+  return u;
+}
+
+function bGd() {
+  const raw = gv('gd-url').trim();
+  const prevEl = document.getElementById('gd-prev-val');
+  if (!raw) {
+    setH('gd-cmd', '<span style="color:var(--dim)">git-dumper https://target.com/.git ./dumped-repo</span>');
+    if (prevEl) prevEl.textContent = '—';
+    return;
   }
 
-  const outDir  = gv('gd-outdir')   || './dumped-repo';
+  const url     = _gdNormUrl(raw);
+  if (prevEl) prevEl.textContent = url;
+
+  const outDir  = gv('gd-outdir')  || './dumped-repo';
   const jobs    = gv('gd-jobs');
   const retry   = gv('gd-retry');
   const timeout = gv('gd-timeout');
   const proxy   = gv('gd-proxy');
   const ua      = gv('gd-ua');
-  const cookie  = gv('gd-cookie');
-  const extra   = chks('gd-op');
+  const cert    = gv('gd-cert');
+  const certPwd = gv('gd-cert-pass');
 
-  // Collect dynamic headers
+  // Headers: format is NAME=VALUE (not NAME: VALUE)
   const hdrs = [];
   document.querySelectorAll('#gd-headers .header-row').forEach(row => {
     const ins = row.querySelectorAll('input');
     const k = ins[0] ? ins[0].value.trim() : '';
     const v = ins[1] ? ins[1].value.trim() : '';
-    if (k && v) hdrs.push(`${k}: ${v}`);
+    if (k && v) hdrs.push(`${k}=${v}`);
   });
 
-  let parts = [];
-  if (jobs)    parts.push(`--jobs ${jobs}`);
-  if (retry)   parts.push(`--retry ${retry}`);
-  if (timeout) parts.push(`--timeout ${timeout}`);
-  if (proxy)   parts.push(`--proxy ${proxy}`);
-  if (ua)      parts.push(`--user-agent '${ua}'`);
-  if (cookie)  parts.push(`--cookie '${cookie}'`);
-  hdrs.forEach(h => parts.push(`--header '${h}'`));
-  if (extra)   parts.push(extra);
-
-  const flagStr = parts.length ? ' ' + parts.join(' ') : '';
-  const full    = `git-dumper ${url} ${outDir}${flagStr}`;
+  // Branches: -b BRANCH (repeatable)
+  const branches = [];
+  document.querySelectorAll('#gd-branches .header-row').forEach(row => {
+    const inp = row.querySelector('input');
+    const b = inp ? inp.value.trim() : '';
+    if (b) branches.push(b);
+  });
 
   setH('gd-cmd',
     `<span class="b">git-dumper</span> <span class="v">${url}</span> <span class="v">${outDir}</span>` +
-    (jobs    ? ` <span class="f">--jobs</span> <span class="v">${jobs}</span>` : '') +
-    (retry   ? ` <span class="f">--retry</span> <span class="v">${retry}</span>` : '') +
-    (timeout ? ` <span class="f">--timeout</span> <span class="v">${timeout}</span>` : '') +
-    (proxy   ? ` <span class="f">--proxy</span> <span class="v">${proxy}</span>` : '') +
-    (ua      ? ` <span class="f">--user-agent</span> <span class="v">'${ua}'</span>` : '') +
-    (cookie  ? ` <span class="f">--cookie</span> <span class="v">'${cookie}'</span>` : '') +
-    hdrs.map(h => ` <span class="f">--header</span> <span class="v">'${h}'</span>`).join('') +
-    (extra   ? ` <span class="f">${extra}</span>` : '')
+    (jobs     ? ` <span class="f">--jobs</span> <span class="v">${jobs}</span>` : '') +
+    (retry    ? ` <span class="f">--retry</span> <span class="v">${retry}</span>` : '') +
+    (timeout  ? ` <span class="f">--timeout</span> <span class="v">${timeout}</span>` : '') +
+    (proxy    ? ` <span class="f">--proxy</span> <span class="v">${proxy}</span>` : '') +
+    (ua       ? ` <span class="f">--user-agent</span> <span class="v">'${ua}'</span>` : '') +
+    hdrs.map(h => ` <span class="f">-H</span> <span class="v">'${h}'</span>`).join('') +
+    branches.map(b => ` <span class="f">-b</span> <span class="v">${b}</span>`).join('') +
+    (cert     ? ` <span class="f">--client-cert-p12</span> <span class="v">${cert}</span>` : '') +
+    (certPwd  ? ` <span class="f">--client-cert-p12-password</span> <span class="v">${certPwd}</span>` : '')
   );
+}
+
+function gdToggleAdv(cat) {
+  const body  = document.getElementById('gd-body-' + cat);
+  const arrow = document.getElementById('gd-arr-' + cat);
+  if (!body) return;
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : '';
+  if (arrow) arrow.classList.toggle('open', !isOpen);
+}
+
+function gdPrecheck() {
+  const raw = gv('gd-url').trim();
+  if (!raw) { alert('Ingresa un dominio primero'); return; }
+  const headUrl = _gdNormUrl(raw).replace(/\/$/, '') + '/HEAD';
+
+  const resEl = document.getElementById('gd-precheck-result');
+  const ico   = document.getElementById('gd-precheck-ico');
+  const btn   = document.getElementById('gd-precheck-btn');
+
+  if (resEl) { resEl.className = 'gd-precheck-result checking'; resEl.textContent = '⟳ Verificando ' + headUrl + ' …'; resEl.style.display = 'flex'; }
+  if (ico) ico.textContent = '⟳';
+  if (btn) btn.disabled = true;
+
+  if (!serverOk) {
+    if (resEl) { resEl.className = 'gd-precheck-result err'; resEl.textContent = '✗ Servidor offline — inicia el backend primero'; resEl.style.display = 'flex'; }
+    if (btn) btn.disabled = false;
+    return;
+  }
+
+  fetch(API + '/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ cmd: `curl -sk -o /dev/null -w "%{http_code}" "${headUrl}" -m 8` })
+  }).then(r => r.json()).then(d => {
+    if (!d.job_id) throw new Error('no job_id');
+    const es = new EventSource(API + '/stream/' + d.job_id);
+    let out = '';
+    es.onmessage = e => {
+      const msg = JSON.parse(e.data);
+      if (msg.type === 'output') out += msg.data.trim();
+      if (msg.type === 'done' || msg.type === 'error') {
+        es.close();
+        const code = out.trim();
+        if (btn) btn.disabled = false;
+        if (ico) ico.textContent = code === '200' ? '✓' : '⬡';
+        if (resEl) {
+          if (code === '200') {
+            resEl.className = 'gd-precheck-result ok';
+            resEl.innerHTML = '✓ <strong>EXPUESTO</strong> — HTTP 200 · ' + headUrl + ' · Listo para dumpear';
+          } else if (code) {
+            resEl.className = 'gd-precheck-result err';
+            resEl.textContent = '✗ No expuesto — HTTP ' + code + ' · ' + headUrl;
+          } else {
+            resEl.className = 'gd-precheck-result err';
+            resEl.textContent = '✗ Sin respuesta — host inaccesible o timeout (8s)';
+          }
+          resEl.style.display = 'flex';
+        }
+      }
+    };
+    es.onerror = () => {
+      es.close();
+      if (btn) btn.disabled = false;
+      if (ico) ico.textContent = '⬡';
+      if (resEl) { resEl.className = 'gd-precheck-result err'; resEl.textContent = '✗ Error de conexión al backend'; resEl.style.display = 'flex'; }
+    };
+  }).catch(() => {
+    if (btn) btn.disabled = false;
+    if (ico) ico.textContent = '⬡';
+    if (resEl) { resEl.className = 'gd-precheck-result err'; resEl.textContent = '✗ Error de red'; resEl.style.display = 'flex'; }
+  });
+}
+
+function gdRun() {
+  const url = gv('gd-url').trim();
+  if (url) gdSaveHistory(url);
+  runTool('gd');
+}
+
+function gdRandomName() {
+  const pfx = ['repo', 'dump', 'leaked', 'git', 'src', 'code', 'data'];
+  const rand = Math.random().toString(36).slice(2, 6);
+  document.getElementById('gd-outdir').value = './' + pfx[Math.floor(Math.random() * pfx.length)] + '-' + rand;
+  bGd();
+}
+
+function gdSaveHistory(url) {
+  let hist = JSON.parse(localStorage.getItem(GD_HIST_KEY) || '[]');
+  hist = [url, ...hist.filter(u => u !== url)].slice(0, GD_HIST_MAX);
+  localStorage.setItem(GD_HIST_KEY, JSON.stringify(hist));
+  gdRenderHistory(hist);
+}
+
+function gdLoadHistory() {
+  const hist = JSON.parse(localStorage.getItem(GD_HIST_KEY) || '[]');
+  if (hist.length) gdRenderHistory(hist);
+}
+
+function gdRenderHistory(hist) {
+  const bar   = document.getElementById('gd-history-bar');
+  const items = document.getElementById('gd-hist-items');
+  if (!bar || !items) return;
+  if (!hist.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  items.innerHTML = hist.map(u =>
+    `<span class="gd-hist-item" onclick="gdUseHistory(this)" title="${u}">${u}</span>`
+  ).join('');
+}
+
+function gdUseHistory(el) {
+  document.getElementById('gd-url').value = el.getAttribute('title') || el.textContent.trim();
+  bGd();
+}
+
+function gdClearHistory() {
+  localStorage.removeItem(GD_HIST_KEY);
+  const bar = document.getElementById('gd-history-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+function gdExportSh() {
+  const cmd = document.getElementById('gd-cmd');
+  if (!cmd) return;
+  const text = cmd.textContent.trim();
+  if (!text || text.startsWith('git-dumper https://target.com')) { alert('Genera un comando válido primero'); return; }
+  const blob = new Blob(['#!/bin/bash\n' + text + '\n'], { type: 'text/plain' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gitdumper-run.sh'; a.click();
+}
+
+function gdExportJson() {
+  const url = gv('gd-url').trim();
+  if (!url) { alert('Ingresa un target primero'); return; }
+  const hdrs = [];
+  document.querySelectorAll('#gd-headers .header-row').forEach(row => {
+    const ins = row.querySelectorAll('input');
+    const k = ins[0] ? ins[0].value.trim() : '';
+    const v = ins[1] ? ins[1].value.trim() : '';
+    if (k && v) hdrs.push(k + '=' + v);
+  });
+  const branches = [];
+  document.querySelectorAll('#gd-branches .header-row input').forEach(inp => {
+    const b = inp.value.trim(); if (b) branches.push(b);
+  });
+  const cfg = {
+    target_raw: url, target_normalized: _gdNormUrl(url),
+    outdir: gv('gd-outdir') || './dumped-repo',
+    jobs: gv('gd-jobs') || null, retry: gv('gd-retry') || null,
+    timeout: gv('gd-timeout') || null, proxy: gv('gd-proxy') || null,
+    user_agent: gv('gd-ua') || null,
+    headers: hdrs.length ? hdrs : null,
+    branches: branches.length ? branches : null,
+    client_cert_p12: gv('gd-cert') || null,
+    client_cert_p12_password: gv('gd-cert-pass') || null
+  };
+  const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gitdumper-config.json'; a.click();
+}
+
+function gdExportLogs() {
+  const c = document.getElementById('gd-out-c');
+  if (!c || !c.innerText.trim()) { alert('No hay logs que exportar'); return; }
+  const blob = new Blob([c.innerText], { type: 'text/plain' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'gitdumper-' + Date.now() + '.log'; a.click();
 }
 
 function gdAddHeader() {
   const c = document.getElementById('gd-headers'); if (!c) return;
-  const row = document.createElement('div');
-  row.className = 'header-row';
-  row.innerHTML = '<input class="fi" placeholder="Header name" style="max-width:140px" oninput="bGd()">' +
-                  '<input class="fi" placeholder="Value" oninput="bGd()">' +
+  const row = document.createElement('div'); row.className = 'header-row';
+  row.innerHTML = '<input class="fi" placeholder="Authorization" style="max-width:160px" oninput="bGd()">' +
+                  '<input class="fi" placeholder="Bearer TOKEN" oninput="bGd()">' +
                   '<button class="del-btn" onclick="gdDelHeader(this)">✕</button>';
-  c.appendChild(row);
-  bGd();
+  c.appendChild(row); bGd();
 }
 function gdDelHeader(btn) { btn.parentElement.remove(); bGd(); }
+
+function gdAddBranch() {
+  const c = document.getElementById('gd-branches'); if (!c) return;
+  const row = document.createElement('div'); row.className = 'header-row';
+  row.innerHTML = '<input class="fi" placeholder="feature/branch-name" oninput="bGd()">' +
+                  '<button class="del-btn" onclick="this.parentElement.remove();bGd()">✕</button>';
+  c.appendChild(row); bGd();
+}
 
 function gdInstall() {
   const s = document.getElementById('gd-install-status');
@@ -9415,19 +9712,36 @@ function gdInstall() {
   execCmd('pip3 install git-dumper', 'gd-out-c', 'gd-out', 'gd-inst');
 }
 
-function gdCheckInstall() {
+function gdUpdate() {
   const s = document.getElementById('gd-install-status');
-  if (!serverOk) { if (s) { s.style.color = 'var(--red)'; s.textContent = 'Servidor offline'; } return; }
+  if (s) { s.style.color = 'var(--mut)'; s.textContent = 'Actualizando...'; }
+  execCmd('pip3 install --upgrade git-dumper', 'gd-out-c', 'gd-out', 'gd-inst');
+}
+
+function gdCheckInstall() {
+  const s   = document.getElementById('gd-install-status');
+  const dot = document.getElementById('gd-dot');
+  const ver = document.getElementById('gd-version');
+  if (!serverOk) {
+    if (s) { s.style.color = 'var(--red)'; s.textContent = 'Servidor offline'; }
+    return;
+  }
   fetch(API + '/check', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ tool: 'git-dumper' })
   }).then(r => r.json()).then(d => {
-    if (s) {
-      if (d.found) { s.style.color = 'var(--g)'; s.textContent = '✓ instalado en ' + (d.path || 'PATH'); }
-      else         { s.style.color = 'var(--red)'; s.textContent = '✗ git-dumper: not found — usa INSTALAR'; }
+    if (d.found) {
+      if (s)   { s.style.color = 'var(--g)';  s.textContent = '✓ ' + (d.path || 'en PATH'); }
+      if (dot) { dot.className = 'gd-dot ok'; }
+      if (ver && d.version) ver.textContent = d.version;
+    } else {
+      if (s)   { s.style.color = 'var(--red)'; s.textContent = '✗ no instalado — usa INSTALAR'; }
+      if (dot) { dot.className = 'gd-dot err'; }
     }
   }).catch(() => { if (s) { s.style.color = 'var(--red)'; s.textContent = 'Error de red'; } });
 }
+
+gdLoadHistory();
 
 /* ─── WIFI DISCONNECT BUILDER ─────────────────────────── */
 function bWd() {
