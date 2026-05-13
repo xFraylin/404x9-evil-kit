@@ -232,6 +232,70 @@ Step-by-step usage guide for every attack technique — Clickjacking setup, Perm
 | **Wget** | Recursive file downloader — mirror sites, download files from targets. |
 | **HTTPX** | Fast HTTP toolkit — probes URLs for status, title, tech, CDNs and redirect chains. |
 | **Encoder** | Client-side encode/decode chain — URL, HTML, Base64, Hex, Unicode, JSON, ROT13, MD5, SHA1/256. |
+| **SQLCMD / MSSQL** | Fully automated SQL Server console — button-driven interface for recon, enumeration, admin tasks, pentesting snippets, and global cross-DB text search. |
+
+---
+
+### MSSQL / SQLCMD Console
+
+Fully automated SQL Server panel under **Utils → SQLCMD**. No manual command typing — every operation is button-driven with real-time SSE streaming output.
+
+#### Connection
+- Fields: Host, Port (default 1433), Database, User, Password (show/hide toggle)
+- Connects via `master` first to avoid failures caused by an offline user default database
+- Visual state indicator: `CONNECTED` / `DISCONNECTED` / `ERROR` / `RUNNING`
+- Auto-loads database list on connect; auto-selects target database in the dropdown
+
+#### Auto-load chain
+Select a database → schemas load automatically → select schema → tables load → select table → **TABLE INFO** runs Columns + Primary Keys + Indexes + Preview TOP 10 in sequence
+
+#### Tabs
+
+| Tab | Operations |
+|---|---|
+| **CONNECTION** | Server version, current user, current DB, server time, connection string display |
+| **DATABASES** | List databases, DB sizes, active DB, schemas, USE DATABASE |
+| **TABLES** | List tables, columns, describe table, primary keys, foreign keys, indexes, row count, preview TOP N, search table by name |
+| **DATA** | SELECT TOP N, paginated results (prev/next page), search text in column, **Global Search across all DBs** |
+| **ADMIN** | Active connections, sessions, locks, running queries, kill session (confirm dialog), DB users, permissions |
+| **DIAG** | Ping host, check port, check sqlcmd install, check ODBC drivers, prerequisites install (add repo / install / add to PATH / all-in-one) |
+| **CUSTOM SQL** | Free SQL textarea + 16 pentesting snippets (xp_cmdshell, OPENROWSET hash capture, EXECUTE AS, linked servers, sp_who2, user enumeration, etc.) |
+
+#### Global Search — All DBs
+
+Searches a value across **all text/varchar columns** of **all accessible databases** in one operation.
+
+- Fetches all `ONLINE` databases from `sys.databases`
+- For each DB builds dynamic T-SQL: iterates `INFORMATION_SCHEMA.COLUMNS` for `char/varchar/nchar/nvarchar/text/ntext` columns, constructs a `UNION ALL` query, executes via `sp_executesql` with the term as a bound `@t` parameter (no injection risk)
+- Returns TOP 5 matches per column, labelled `[db_name] table.column|value`
+- Live progress status: `[3/38] Escaneando: dbname...`
+- **■ STOP** button cancels mid-search: kills the current SSE stream + sends `/kill/<job_id>` to the server
+
+#### Export
+- **⬇ TXT** — downloads current output console as `.txt` (client-side blob)
+- **⬇ CSV** — exports selected table to CSV, sent as browser download (`Content-Disposition: attachment`, UTF-8 BOM for Excel)
+- **⬇ PDF** — opens a styled print window with the output and triggers `window.print()`
+
+#### Security design
+- Password passed via `SQLCMDPASSWORD` env var — never appears in CLI args, process list (`ps aux`), or logs
+- Dangerous SQL (`DROP`, `TRUNCATE`, `DELETE`, `UPDATE`, `KILL`) requires `confirm()` dialog
+- `sqlcmd` resolved by probing known install paths (`/opt/mssql-tools18/bin`, `/opt/mssql-tools/bin`, etc.) — works inside isolated venv without PATH manipulation
+
+#### Prerequisites
+- `mssql-tools18` + `unixodbc-dev` (install via the **DIAG** tab or manually)
+- `sqlcmd` path: `/opt/mssql-tools18/bin/sqlcmd`
+
+#### Backend routes
+
+| Route | Description |
+|---|---|
+| `POST /api/mssql/run` | Build and stream a sqlcmd query via SSE |
+| `POST /api/mssql/query` | Run query synchronously, return structured JSON (for dropdown auto-load) |
+| `POST /api/mssql/check` | Check sqlcmd install, ODBC drivers, TCP port reachability |
+| `POST /api/mssql/export` | Export query result to `/tmp/*.csv`, return path + size |
+| `POST /api/mssql/export/download` | Export table to CSV and send as browser download attachment |
+
+---
 
 ### System
 | Panel | Description |
@@ -401,7 +465,8 @@ python3 server.py
 ├── run.sh              # Quick launcher (activates venv + starts server)
 ├── modules/
 │   ├── __init__.py
-│   └── netexec_panel.py  # NXC command builder, module discovery and output parser
+│   ├── netexec_panel.py  # NXC command builder, module discovery and output parser
+│   └── mssql_panel.py    # MSSQL/SQLCMD query builder, sync runner, path resolver, diag checks
 ├── data/
 │   └── state.json      # Persistent state (auto-created on first run)
 ├── templates/

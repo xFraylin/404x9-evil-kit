@@ -26,6 +26,17 @@ from modules.netexec_panel import (
     discover_modules,
     parse_netexec_output,
 )
+from modules.mssql_panel import (
+    build_query        as mssql_build_query,
+    build_sqlcmd_cmd   as mssql_build_cmd,
+    run_query_sync     as mssql_query_sync,
+    check_sqlcmd_installed,
+    check_odbc_drivers,
+    check_tcp_port     as mssql_check_port,
+    is_dangerous       as mssql_is_dangerous,
+    validate_conn      as mssql_validate_conn,
+    _mssql_env_path,
+)
 
 try:
     from flask_sock import Sock
@@ -2021,6 +2032,150 @@ table.t td{{padding:5px 8px;border-bottom:1px solid #0a1209;font-size:12px;verti
   <div class="footer">404x9-evil-kit &nbsp;·&nbsp; by @xfraylin &nbsp;·&nbsp; {esc(ts)}</div>
 </div>
 </body></html>'''
+
+# ── MSSQL / SQLCMD backend ───────────────────────────────────────────────────
+
+@app.route('/api/mssql/run', methods=['POST'])
+def api_mssql_run():
+    """Build and stream a sqlcmd query via SSE. Password is sent via env var."""
+    data   = request.json or {}
+    conn   = data.get('conn', {})
+    sql    = (data.get('sql') or '').strip()
+    action = (data.get('action') or '').strip()
+    params = data.get('params') or {}
+
+    try:
+        if not sql and action:
+            sql = mssql_build_query(action, params)
+        if not sql:
+            return jsonify({'error': 'SQL requerido'}), 400
+        display, argv, env = mssql_build_cmd(conn, sql)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+    job_id  = f"mssql_{int(time.time()*1000)}_{os.getpid()}"
+    run_command(job_id, display, env_extra=env)
+    return jsonify({'job_id': job_id, 'cmd_display': display})
+
+
+@app.route('/api/mssql/query', methods=['POST'])
+def api_mssql_query():
+    """Run a query synchronously and return structured JSON (for dropdown auto-load)."""
+    data   = request.json or {}
+    conn   = data.get('conn', {})
+    sql    = (data.get('sql') or '').strip()
+    action = (data.get('action') or '').strip()
+    params = data.get('params') or {}
+
+    try:
+        if not sql and action:
+            sql = mssql_build_query(action, params)
+        if not sql:
+            return jsonify({'ok': False, 'error': 'SQL requerido'}), 400
+    except ValueError as e:
+        return jsonify({'ok': False, 'error': str(e)}), 400
+
+    result = mssql_query_sync(conn, sql, timeout=15)
+    return jsonify(result)
+
+
+@app.route('/api/mssql/check', methods=['POST'])
+def api_mssql_check():
+    """Check sqlcmd installation, ODBC drivers, and TCP port connectivity."""
+    data = request.json or {}
+    what = data.get('check', 'all')
+    result = {}
+    if what in ('sqlcmd', 'all'):
+        result['sqlcmd'] = check_sqlcmd_installed()
+    if what in ('odbc', 'all'):
+        result['odbc'] = check_odbc_drivers()
+    if what in ('port', 'all'):
+        host = (data.get('host') or '').strip()
+        port = data.get('port', 1433)
+        if host:
+            try:
+                result['port'] = mssql_check_port(host, int(port))
+            except Exception as e:
+                result['port'] = {'open': False, 'error': str(e)}
+    return jsonify(result)
+
+
+@app.route('/api/mssql/export', methods=['POST'])
+def api_mssql_export():
+    """Export a query result to a CSV file under /tmp and return the path."""
+    data   = request.json or {}
+    conn   = data.get('conn', {})
+    sql    = (data.get('sql') or '').strip()
+    action = (data.get('action') or 'export_table_csv').strip()
+    params = data.get('params') or {}
+
+    try:
+        if not sql and action:
+            sql = mssql_build_query(action, params)
+        ts    = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        fname = f"/tmp/mssql_export_{ts}.csv"
+        display, argv, env = mssql_build_cmd(conn, sql, output_file=fname)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+    env_full = os.environ.copy()
+    env_full.update(env)
+    try:
+        r = subprocess.run(argv, capture_output=True, text=True, timeout=30, env=env_full)
+        if r.returncode != 0:
+            return jsonify({'error': (r.stderr or r.stdout or 'Error desconocido').strip()}), 500
+        size = os.path.getsize(fname) if os.path.isfile(fname) else 0
+        return jsonify({'ok': True, 'path': fname, 'size': size})
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Timeout durante exportacion'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/mssql/export/download', methods=['POST'])
+def api_mssql_export_download():
+    """Export table to CSV and send it directly as a browser download."""
+    import io
+    data   = request.json or {}
+    conn   = data.get('conn', {})
+    params = data.get('params') or {}
+    sql    = (data.get('sql') or '').strip()
+
+    try:
+        if not sql:
+            sql = mssql_build_query('export_table_csv', params)
+        result = mssql_query_sync(conn, sql, timeout=60)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+
+    if not result.get('ok'):
+        return jsonify({'error': result.get('error', 'Query failed')}), 500
+
+    rows    = result.get('rows', [])
+    headers = result.get('headers', [])
+    if not headers and rows:
+        headers = [k for k in rows[0].keys() if k != '_raw']
+
+    def _esc(v):
+        v = str(v) if v is not None else ''
+        if any(c in v for c in (',', '"', '\n', '\r')):
+            v = '"' + v.replace('"', '""') + '"'
+        return v
+
+    buf = io.StringIO()
+    buf.write(','.join(headers) + '\r\n')
+    for row in rows:
+        buf.write(','.join(_esc(row.get(c, '')) for c in headers) + '\r\n')
+
+    table_name = params.get('table', 'export')
+    from flask import send_file as _send_file
+    return _send_file(
+        io.BytesIO(buf.getvalue().encode('utf-8-sig')),
+        mimetype='text/csv',
+        as_attachment=True,
+        download_name=f"{table_name}.csv",
+    )
+
 
 def _restore_state():
     """Restore persisted state on server startup."""
