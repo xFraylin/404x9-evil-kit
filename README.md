@@ -88,17 +88,20 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Active Directory
 | Panel | Tools inside | Description |
 |---|---|---|
-| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch, ldeep, adidnsdump, windapsearch | Full domain enumeration — users, groups, shares, GPOs, password policies, AD-integrated DNS. Action-based UX: pick a tool and an action, get a ready-to-run command. |
+| **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch, ldeep, adidnsdump, windapsearch, lookupsid.py, samrdump.py | Full domain enumeration — users, groups, shares, GPOs, password policies, AD-integrated DNS, RID cycling, SAMR enumeration. Action-based UX: pick a tool and an action, get a ready-to-run command. |
 | **SMB Access** | smbmap, crackmapexec, netexec, nxc | Share enumeration, permission mapping, credential spraying. |
-| **Kerberos** | kerbrute, GetUserSPNs.py, GetNPUsers.py | Username enumeration, Kerberoasting and AS-REP Roasting. |
+| **Kerberos** | kerbrute, GetUserSPNs.py, GetNPUsers.py, targetedKerberoast | Username enumeration, Kerberoasting, AS-REP Roasting, and targeted Kerberoasting (exploits write permission on `msDS-SupportedEncryptionTypes`). |
 | **Tickets** | getTGT.py, getST.py, ticketer.py | Kerberos ticket operations — request TGTs, obtain impersonation service tickets (S4U2Self/S4U2Proxy), and forge Silver/Golden tickets. Inline contextual help per tab. |
 | **Execution** | psexec.py, wmiexec.py, smbexec.py, atexec.py, dcomexec.py | Remote command execution via Impacket. |
-| **Credentials** | secretsdump.py | Dumps SAM hashes, NTDS domain hashes and LSA plaintext credentials. |
+| **Credentials** | secretsdump.py, lsassy | Dumps SAM hashes, NTDS domain hashes and LSA plaintext credentials. lsassy supports multiple dump methods (wdigest, nanodump, comsvcs, createdump…). |
+| **DPAPI** | dploot | DPAPI secrets extraction — masterkeys, machine masterkeys, credentials, vaults, browser-saved passwords, Wi-Fi keys, certificates, SCCM, scheduled tasks. |
 | **ADCS** | certipy-ad | AD Certificate Services attacks (ESC1–ESC9). Interactive parsed output: counters are clickable pills that expand/collapse detailed sections; JSON enrichment pulls live data from certipy's output file. |
-| **ACL / Attacks** | bloodyad, dacledit.py, owneredit.py | ACL-based privilege escalation — GenericAll, RBCD, shadow credentials, ownership changes. |
+| **ACL / Attacks** | bloodyad, dacledit.py, owneredit.py, pyWhisker | ACL-based privilege escalation — GenericAll, RBCD, shadow credentials, ownership changes. |
 | **Coercion** | coercer, PetitPotam.py, dfscoerce.py | Authentication coercion attacks (PrinterBug, PetitPotam, DFSCoerce). Dynamic path resolution: locates binaries at runtime via `/api/tools/find-script` after install. |
 | **BloodHound** | bloodhound-python, rusthound | AD data collection for attack path analysis. Built-in Neo4j and BloodHound launchers. |
 | **MITM** | responder, mitm6, ntlmrelayx.py | LLMNR/NBT-NS/DHCPv6 poisoning and NTLM relay attacks. |
+| **Delegation** | findDelegation.py, addcomputer.py | Enumerate all delegation types (unconstrained, constrained, RBCD) and add machine accounts for resource-based constrained delegation attacks. |
+| **GPO Abuse** | bloodyAD, dacledit.py, ldapsearch, SharpGPOAbuse, Grouper2, PowerView | Full GPO attack chain — enumerate GPOs (GUID, displayName, gPCFileSysPath, linked OUs), detect write permissions (GenericAll/Write/WRITE_DACL/WRITE_OWNER), resolve GUID → OUs → computers with risk scoring (DC/SQL/WEB → HIGH). ABUSE tab delivers SharpGPOAbuse via HTTP server with 7 presets: Add Local Admin, Immediate Task, Scheduled Task, Startup/Shutdown/Logon Scripts, Cleanup/Rollback. WIN TOOLS tab serves Grouper2 (4 modes) and PowerView GPO commands with `iwr` delivery. All Linux tools run from the attacker machine; Windows tools delivered via built-in HTTP server. |
 
 ### Network
 | Tool | Description |

