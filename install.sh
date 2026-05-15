@@ -164,7 +164,7 @@ else
 fi
 echo ""
 
-# ── 1b. Herramientas AD avanzadas (git + gem) ─────────────
+# ── Función: herramientas AD avanzadas (git + gem) ────────
 _install_ad_extras() {
   echo -e "${CYAN}[*] Instalando herramientas AD avanzadas...${NC}"
 
@@ -180,7 +180,7 @@ _install_ad_extras() {
   if [ ! -d /opt/pywhisker ]; then
     echo -e "${DIM}  → pyWhisker (git)${NC}"
     git clone -q https://github.com/ShutdownRepo/pywhisker /opt/pywhisker 2>/dev/null
-    pip3 install -q -r /opt/pywhisker/requirements.txt 2>/dev/null
+    "${VENV_DIR}/bin/pip" install -q -r /opt/pywhisker/requirements.txt 2>/dev/null
     echo -e "${GREEN}    [✓] pyWhisker → /opt/pywhisker${NC}"
   else
     echo -e "${DIM}  [~] pyWhisker ya clonado${NC}"
@@ -208,7 +208,7 @@ _install_ad_extras() {
   if ! command -v windapsearch &>/dev/null && [ ! -f /opt/windapsearch/windapsearch.py ]; then
     echo -e "${DIM}  → windapsearch (git)${NC}"
     git clone -q https://github.com/ropnop/windapsearch.git /opt/windapsearch 2>/dev/null
-    pip3 install -q ldap3 gssapi 2>/dev/null
+    "${VENV_DIR}/bin/pip" install -q ldap3 gssapi 2>/dev/null
     ln -sf /opt/windapsearch/windapsearch.py /usr/local/bin/windapsearch 2>/dev/null
     echo -e "${GREEN}    [✓] windapsearch → /opt/windapsearch${NC}"
   else
@@ -222,6 +222,21 @@ _install_ad_extras() {
   echo -e "${GREEN}[✓] Herramientas AD avanzadas listas${NC}"
 }
 
+echo ""
+
+# ── 2. Entorno virtual (antes que cualquier pip install) ──
+mkdir -p "${INSTALL_DIR}"
+if [ ! -d "${VENV_DIR}" ] || [ ! -f "${VENV_DIR}/bin/python3" ]; then
+  echo -e "${CYAN}[*] Creando entorno virtual Python...${NC}"
+  python3 -m venv "${VENV_DIR}"
+  echo -e "${GREEN}[✓] Venv creado en ${VENV_DIR}${NC}"
+  echo -e "${DIM}    Todos los paquetes Python irán aquí — el sistema queda limpio.${NC}"
+else
+  echo -e "${DIM}[~] Venv existente → reutilizando${NC}"
+fi
+echo ""
+
+# ── 3. Herramientas AD avanzadas (git + venv pip) ────────
 if [ "$IS_UPDATE" = false ] || [ "$FORCE" = true ]; then
   _install_ad_extras
 else
@@ -230,7 +245,7 @@ else
 fi
 echo ""
 
-# ── 2. Copiar archivos del proyecto ──────────────────────
+# ── 4. Copiar archivos del proyecto ──────────────────────
 echo -e "${CYAN}[*] Sincronizando archivos...${NC}"
 mkdir -p "${INSTALL_DIR}/templates" "${INSTALL_DIR}/static" "${INSTALL_DIR}/modules"
 cp "${SCRIPT_DIR}/server.py"            "${INSTALL_DIR}/"
@@ -241,17 +256,7 @@ cp "${SCRIPT_DIR}/templates/index.html" "${INSTALL_DIR}/templates/"
 echo -e "${GREEN}[✓] Archivos sincronizados${NC}"
 echo ""
 
-# ── 3. Entorno virtual ────────────────────────────────────
-if [ ! -d "${VENV_DIR}" ] || [ ! -f "${VENV_DIR}/bin/python3" ]; then
-  echo -e "${CYAN}[*] Creando entorno virtual...${NC}"
-  python3 -m venv "${VENV_DIR}"
-  echo -e "${GREEN}[✓] Venv creado en ${VENV_DIR}${NC}"
-else
-  echo -e "${DIM}[~] Venv existente → reutilizando${NC}"
-fi
-echo ""
-
-# ── 4. Dependencias Python ────────────────────────────────
+# ── 5. Dependencias Python (en el venv) ──────────────────
 CURRENT_HASH=$(md5sum "${INSTALL_DIR}/requirements.txt" | awk '{print $1}')
 STORED_HASH=$(cat "${REQ_HASH_FILE}" 2>/dev/null || echo "")
 
@@ -268,7 +273,7 @@ else
 fi
 echo ""
 
-# ── 5. Lanzador del sistema ───────────────────────────────
+# ── 6. Lanzador del sistema ───────────────────────────────
 cat > /usr/local/bin/404x9-evil-kit << EOF
 #!/bin/bash
 cd ${INSTALL_DIR}
@@ -279,7 +284,7 @@ EOF
 chmod +x /usr/local/bin/404x9-evil-kit
 ln -sf /usr/local/bin/404x9-evil-kit /usr/local/bin/404x9kit 2>/dev/null
 
-# ── 6. Acceso directo en el escritorio ───────────────────
+# ── 7. Acceso directo en el escritorio ───────────────────
 REAL_HOME=$(getent passwd "${SUDO_USER:-$USER}" | cut -d: -f6)
 mkdir -p "${REAL_HOME}/Desktop"
 cat > "${REAL_HOME}/Desktop/404x9-evil-kit.desktop" << 'DEOF'
