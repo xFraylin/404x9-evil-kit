@@ -5539,6 +5539,12 @@ function stab(g, n, el) {
 
 /* ─── UTILITIES ───────────────────────────────────────── */
 function gv(id) { return (document.getElementById(id) || {}).value || ''; }
+function shQuote(v) {
+  const s = String(v || '');
+  if (!s) return "''";
+  if (/^[A-Za-z0-9_@%+=:,./-]+$/.test(s)) return s;
+  return "'" + s.replace(/'/g, "'\"'\"'") + "'";
+}
 
 // ── Wordlist smart getter: si el select está en "custom", lee el input -c ────
 function gvWl(id) {
@@ -8975,7 +8981,7 @@ function bExiftool() {
   const f=gv('ef-f')||'/tmp/file', fl=chks('ef-fl');
   let c=`<span class="b">exiftool</span>`;
   if(fl) c+=` <span class="f">${fl}</span>`;
-  c+=` <span class="v">${f}</span>`;
+  c+=` <span class="v">${shQuote(f)}</span>`;
   setH('ef-cmd', c);
 }
 
