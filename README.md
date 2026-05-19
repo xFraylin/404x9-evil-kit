@@ -20,12 +20,16 @@ Built by [@xFraylin](https://github.com/xFraylin)
 
 - Browser-based GUI — no extra GUI frameworks needed
 - Live streaming output via Server-Sent Events (SSE)
+- Cleaner workspace layout — the old right-side command terminal panel was removed to maximize tool visibility
 - Smart parsed output for every tool (clean tables, no ANSI clutter)
+- **Parser stability pass** — hardened parsers for NetExec/NXC, MSSQL, HTTPX, Nmap, credentials, lsassy, secretsdump and common edge-case formats
+- **Nmap host drill-down** — parsed scans render as clickable hosts with per-host ports, OS/service info, NSE/script output and traceroute
 - **Interactive ADCS parsed view** — certipy results as clickable pills that expand/collapse per section, with live JSON enrichment
 - **AD Enumeration action picker** — choose tool + action, get a syntactically correct command with dependency hints
 - **COERCION dynamic path resolution** — locates `coercer`, `PetitPotam.py`, `dfscoerce.py` at runtime after install, no hardcoded paths
 - **Tickets inline help** — contextual docs inside getTGT / getST / ticketer tabs: inputs, expected output, common errors
-- Scalable wordlist picker — file browser modal + custom path input
+- Scalable wordlist/document picker — file browser modal + custom path input
+- **Exiftool document picker** — browse for local documents/directories, quote paths safely, and toggle metadata flags from the UI
 - Isolated Python venv — zero system Python pollution; venv is injected into PATH for all subprocesses automatically
 - Kill switch for any running process (including sudo'd tools)
 - **State persistence** — all sessions, campaigns, credentials and config survive server restarts (`data/state.json`)
@@ -37,7 +41,7 @@ Built by [@xFraylin](https://github.com/xFraylin)
 ### Recon
 | Tool | Description |
 |---|---|
-| **Nmap** | Network scanner — open ports, services, OS detection, NSE vulnerability scripts. |
+| **Nmap** | Network scanner — open ports, services, OS detection, NSE vulnerability scripts. Parsed output groups everything by clickable host with ports, OS/NSE and traceroute details. |
 | **Subfinder** | Passive subdomain enumeration using public sources (DNS, APIs, certificates). |
 | **Amass** | In-depth attack surface mapping — subdomains, ASNs, IPs and relationships. |
 | **theHarvester** | Gathers emails, names, subdomains and IPs from public sources (Google, Bing, Shodan, etc.). |
@@ -50,7 +54,7 @@ Built by [@xFraylin](https://github.com/xFraylin)
 | **Sherlock** | Searches hundreds of social networks by username to find accounts linked to a person. |
 | **Holehe** | Checks if an email address is registered on popular websites without sending emails. |
 | **DNSRecon** | DNS enumeration — zone transfers, brute force subdomains, SRV records, DNSSEC info. |
-| **Exiftool** | Extracts metadata from files (images, PDFs, docs) — GPS, author, device, timestamps. |
+| **Exiftool** | Extracts metadata from files (images, PDFs, docs) — GPS, author, device, timestamps. Includes document/directory browser, safe shell quoting for paths with spaces/parentheses, and selectable flags (`-a`, `-u`, `-G`, `-csv`, `-r`, `-gps:all`). |
 
 ### Web
 | Tool | Description |
@@ -89,11 +93,12 @@ Built by [@xFraylin](https://github.com/xFraylin)
 | Panel | Tools inside | Description |
 |---|---|---|
 | **Enumeration** | ldapdomaindump, enum4linux-ng, rpcclient, smbclient, ldapsearch, ldeep, adidnsdump, windapsearch, lookupsid.py, samrdump.py | Full domain enumeration — users, groups, shares, GPOs, password policies, AD-integrated DNS, RID cycling, SAMR enumeration. Action-based UX: pick a tool and an action, get a ready-to-run command. |
-| **SMB Access** | smbmap, crackmapexec, netexec, nxc | Share enumeration, permission mapping, credential spraying. |
+| **SMB Access / NetExec** | netexec / nxc | Multi-protocol launcher for SMB, WinRM, LDAP, MSSQL, WMI and RDP. Includes module discovery, parsed credentials/shares/hosts, and report integration. |
+| **SMB Files** | smbclient | Friendly Windows-style SMB file browser. Connect with password, NTLM hash, Kerberos, kcache or null session; list shares; browse folders; open files inline; download files; copy connection details from NetExec; persist connection fields locally in `localStorage`. |
 | **Kerberos** | kerbrute, GetUserSPNs.py, GetNPUsers.py, targetedKerberoast | Username enumeration, Kerberoasting, AS-REP Roasting, and targeted Kerberoasting (exploits write permission on `msDS-SupportedEncryptionTypes`). |
 | **Tickets** | getTGT.py, getST.py, ticketer.py | Kerberos ticket operations — request TGTs, obtain impersonation service tickets (S4U2Self/S4U2Proxy), and forge Silver/Golden tickets. Inline contextual help per tab. |
 | **Execution** | psexec.py, wmiexec.py, smbexec.py, atexec.py, dcomexec.py | Remote command execution via Impacket. |
-| **Credentials** | secretsdump.py, lsassy | Dumps SAM hashes, NTDS domain hashes and LSA plaintext credentials. lsassy supports multiple dump methods (wdigest, nanodump, comsvcs, createdump…). |
+| **Credentials** | secretsdump.py, lsassy | Dumps SAM hashes, NTDS domain hashes and LSA plaintext credentials. Parsed output handles secretsdump hashes and lsassy `[NT]`, `[PWD]`, Kerberos tickets/TGT/TGS and ticket count summaries. |
 | **DPAPI** | dploot | DPAPI secrets extraction — masterkeys, machine masterkeys, credentials, vaults, browser-saved passwords, Wi-Fi keys, certificates, SCCM, scheduled tasks. |
 | **ADCS** | certipy-ad | AD Certificate Services attacks (ESC1–ESC9). Interactive parsed output: counters are clickable pills that expand/collapse detailed sections; JSON enrichment pulls live data from certipy's output file. |
 | **ACL / Attacks** | bloodyad, dacledit.py, owneredit.py, pyWhisker | ACL-based privilege escalation — GenericAll, RBCD, shadow credentials, ownership changes. |
@@ -102,6 +107,42 @@ Built by [@xFraylin](https://github.com/xFraylin)
 | **MITM** | responder, mitm6, ntlmrelayx.py | LLMNR/NBT-NS/DHCPv6 poisoning and NTLM relay attacks. |
 | **Delegation** | findDelegation.py, addcomputer.py | Enumerate all delegation types (unconstrained, constrained, RBCD) and add machine accounts for resource-based constrained delegation attacks. |
 | **GPO Abuse** | bloodyAD, dacledit.py, ldapsearch, SharpGPOAbuse, Grouper2, PowerView | Full GPO attack chain — enumerate GPOs (GUID, displayName, gPCFileSysPath, linked OUs), detect write permissions (GenericAll/Write/WRITE_DACL/WRITE_OWNER), resolve GUID → OUs → computers with risk scoring (DC/SQL/WEB → HIGH). ABUSE tab delivers SharpGPOAbuse via HTTP server with 7 presets: Add Local Admin, Immediate Task, Scheduled Task, Startup/Shutdown/Logon Scripts, Cleanup/Rollback. WIN TOOLS tab serves Grouper2 (4 modes) and PowerView GPO commands with `iwr` delivery. All Linux tools run from the attacker machine; Windows tools delivered via built-in HTTP server. |
+
+
+### SMB Files Browser
+
+A Windows-style SMB file explorer under **Active Directory → SMB FILES**. It uses `smbclient` through safe backend endpoints instead of shell-concatenated commands.
+
+#### Connection modes
+
+- Password auth: domain, username, password
+- NTLM hash auth: username + NTLM or LM:NTLM
+- Kerberos / kcache
+- Null session
+- **USAR DATOS NXC** copies host/domain/auth/credentials from the NetExec panel
+- Host/domain/auth/user/password/hash are restored from browser `localStorage` after page reload
+
+> Local storage note: credentials are stored in the browser profile on the operator machine for convenience. Clear site data or localStorage if using a shared workstation.
+
+#### File operations
+
+- List shares for a host
+- Browse folders using clickable directory cards and breadcrumb
+- `OPEN` opens a file inline in the browser when supported by the browser/MIME type
+- `GET` downloads the file as an attachment
+- Files are staged temporarily under `/tmp/404x9-adbrowser` before being served to the browser
+- Long/truncated SMB names are handled with direct `get`, full-path fallback and prefix `mget` fallback diagnostics
+
+#### Backend routes
+
+| Route | Description |
+|---|---|
+| `POST /api/adbrowser/shares` | List SMB shares from a target |
+| `POST /api/adbrowser/list` | List files/directories inside a share path |
+| `POST /api/adbrowser/download` | Stage a remote SMB file locally and return an open/download URL |
+| `GET /api/adbrowser/local-download/<name>` | Serve staged file inline or as attachment (`?inline=1`) |
+
+---
 
 ### Network
 | Tool | Description |
@@ -310,6 +351,18 @@ Searches a value across **all text/varchar columns** of **all accessible databas
 
 ---
 
+## Parsed Output Improvements
+
+The parser layer was tightened to make output consistent across modules and large scans:
+
+- Nmap: host-first parsed view with expandable details instead of one huge flat table
+- NetExec/NXC: more stable host, credential, share, error and finding extraction
+- Credentials: improved secretsdump and lsassy parsing, including lsassy `[NT]`, `[PWD]`, `[TGT]` rows and Kerberos ticket totals
+- MSSQL/HTTPX: safer structured transformations and more consistent summary rows
+- Parser outputs are capped where needed to keep the UI responsive on large scans
+
+---
+
 ## Reports / Evidencia
 
 Every command execution auto-generates a structured report and injects action buttons directly into the tool's output toolbar.
@@ -462,7 +515,7 @@ python3 server.py
 
 ```
 404x9-evil-kit/
-├── server.py           # Flask backend — SSE streaming, phishing engine, C2, persistence
+├── server.py           # Flask backend — SSE streaming, SMB browser APIs, phishing engine, C2, persistence
 ├── requirements.txt    # Python dependencies (installed inside venv)
 ├── install.sh          # Installer — one-liner compatible
 ├── run.sh              # Quick launcher (activates venv + starts server)
@@ -485,8 +538,9 @@ python3 server.py
 1. **Frontend** (`index.html`) sends commands to the Flask backend via POST to `/api/run`
 2. **Backend** spawns the process and streams output line-by-line via `/api/stream/<job_id>` (SSE)
 3. **Frontend** buffers all output and runs tool-specific parsers on completion to render clean tables
-4. **Kill** — `/api/kill/<job_id>` sends SIGTERM + SIGKILL to the entire process group
-5. **Phishing** — deployed pages served at `/p/<id>`; form submits captured server-side and forwarded to Telegram if configured
+4. **SMB Files** uses dedicated JSON APIs backed by `smbclient` argument arrays for share browsing and file staging/opening
+5. **Kill** — `/api/kill/<job_id>` sends SIGTERM + SIGKILL to the entire process group
+6. **Phishing** — deployed pages served at `/p/<id>`; form submits captured server-side and forwarded to Telegram if configured
 
 ---
 
