@@ -1153,7 +1153,12 @@ textarea.fi{resize:vertical;min-height:48px}
 <div id="p-exiftool" class="panel">
   <div class="pt">EXIFTOOL <span class="ptd">— Metadata extraction · imágenes, docs, PDFs</span></div>
   <div class="row">
-    <div class="ig w3"><div class="lbl">ARCHIVO / DIRECTORIO</div><input class="fi" id="ef-f" placeholder="/tmp/document.pdf" oninput="bExiftool()"></div>
+    <div class="ig w3"><div class="lbl">ARCHIVO / DIRECTORIO</div>
+      <div class="wl-row">
+        <input class="fi" id="ef-f" placeholder="/tmp/document.pdf" oninput="bExiftool()">
+        <button class="wl-browse" onclick="wlBrowse('ef-f', bExiftool, '/home/flopez')" title="Explorar documentos">📂</button>
+      </div>
+    </div>
   </div>
   <div class="checks" id="ef-fl">
     <div class="ck on" data-v="-a">-a (duplicados)</div>
@@ -5548,12 +5553,21 @@ function gvWl(id) {
 // ── File browser modal ────────────────────────────────────────────────────────
 let _wlTarget = null, _wlBuildFn = null, _wlAllEntries = [];
 
-function wlBrowse(targetId, buildFn) {
+function wlBrowseStart(targetId, fallbackPath) {
+  const val = (document.getElementById(targetId)?.value || '').trim();
+  const fallback = fallbackPath || '/usr/share/wordlists';
+  if (!val || !val.startsWith('/')) return fallback;
+  if (val.endsWith('/')) return val;
+  const slash = val.lastIndexOf('/');
+  return slash > 0 ? val.slice(0, slash) : '/';
+}
+
+function wlBrowse(targetId, buildFn, fallbackPath) {
   _wlTarget  = targetId;
   _wlBuildFn = buildFn;
   document.getElementById('wl-modal-filter').value = '';
   document.getElementById('wl-modal').classList.add('open');
-  wlModalNav('/usr/share/wordlists');
+  wlModalNav(wlBrowseStart(targetId, fallbackPath));
 }
 
 function wlModalClose() {
