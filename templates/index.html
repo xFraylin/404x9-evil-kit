@@ -206,6 +206,12 @@ textarea.fi{resize:vertical;min-height:48px}
 .p-find.warn{border-color:var(--yellow);color:var(--yellow);background:#060600}
 .p-find.crit{border-color:var(--red);color:#ff9090;background:#060202}
 .p-find.info{border-color:var(--cyan);color:var(--cyan);background:#020508}
+.nm-host{margin-bottom:8px;border:1px solid #0b160d;background:#020402;border-radius:3px;overflow:hidden}
+.nm-host-head{display:flex;align-items:center;gap:8px;padding:7px 9px;cursor:pointer;border-left:2px solid var(--cyan);font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--txt)}
+.nm-host-head:hover{background:#061007;color:var(--g2)}
+.nm-host-title{flex:1;min-width:170px;word-break:break-all}
+.nm-host-meta{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.nm-host-detail{display:none;padding:9px;border-top:1px solid #0b160d;background:#010301}
 .p-empty{font-size:13px;color:var(--dim);padding:18px;text-align:center;font-style:italic;letter-spacing:1px}
 
 /* ─── TABS ───────────────────────────────────────────── */
@@ -5859,6 +5865,15 @@ const pH = {
 };
 
 /* NMAP */
+function nmapToggle(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  const arrow = document.getElementById(id + '-arr');
+  if (arrow) arrow.textContent = open ? '▸' : '▾';
+}
+
 parsers.nm = r => {
   const L = pH.lines(r);
   const blocks = [];
@@ -5867,40 +5882,116 @@ parsers.nm = r => {
     const hm = l.match(/^Nmap scan report for\s+(.+)/i);
     if (hm) {
       if (cur) blocks.push(cur);
-      cur = { host: hm[1].trim(), lines: [l], ports: [], scripts: [] };
+      cur = { host: hm[1].trim(), lines: [l] };
       continue;
     }
-    if (!cur) cur = { host: '', lines: [], ports: [], scripts: [] };
-    cur.lines.push(l);
+    if (cur) cur.lines.push(l);
   }
   if (cur) blocks.push(cur);
 
-  const rows = [];
-  const scripts = [];
-  let up = 0, down = 0;
-  for (const b of blocks) {
-    const blob = b.lines.join('\n');
-    const upM = blob.match(/Host is\s+(up|down)/i);
-    if (upM && upM[1].toLowerCase() === 'up') up++;
-    if (upM && upM[1].toLowerCase() === 'down') down++;
-    const osM = blob.match(/OS details:\s+(.+)/i) || blob.match(/Running(?: \(JUST GUESSING\))?:\s+(.+)/i);
+  const uid = 'nm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const stateClass = st => /open/i.test(st || '') ? 'ok' : (/filtered/i.test(st || '') ? 'warn' : 'info');
+  const hostLabel = h => {
+    const m = String(h || '').match(/^(.+?)\s+\(([^)]+)\)$/);
+    return m ? `${m[1]} (${m[2]})` : (h || 'host desconocido');
+  };
+  const hostIp = h => (String(h || '').match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/) || [''])[0];
+  const parseBlock = (b, idx) => {
+    const ports = [];
+    const scripts = [];
+    const osRows = [];
+    const trace = [];
+    let status = 'unknown';
+    let latency = '';
+    let notShown = '';
+    let inTrace = false;
+
     for (const l of b.lines) {
-      const pm = l.match(/^(\d+\/(?:tcp|udp|sctp))\s+(open|closed|filtered|open\|filtered|closed\|filtered)\s+(\S+)\s*(.*)$/i);
-      if (pm) rows.push([pH.text(b.host || '—'), pH.text(pm[1]), ph.pill(pH.text(pm[2]), /open/i.test(pm[2]) ? 'ok' : 'warn'), pH.text(pm[3]), pH.text(pm[4])]);
-      if (/^\|\s|^\|_/.test(l)) scripts.push(pH.text((b.host ? b.host + ' · ' : '') + l.trim()));
+      const upM = l.match(/^Host is\s+(up|down)(?:\s+\(([^)]+)\))?/i);
+      if (upM) { status = upM[1].toLowerCase(); latency = upM[2] || ''; continue; }
+      if (/^Not shown:/i.test(l)) { notShown = l.replace(/^Not shown:\s*/i, '').trim(); continue; }
+
+      const pm = l.match(/^(\d+\/(?:tcp|udp|sctp))\s+(open\|filtered|closed\|filtered|open|closed|filtered)\s+(\S+)\s*(.*)$/i);
+      if (pm) {
+        ports.push({ port: pm[1], state: pm[2], service: pm[3], version: (pm[4] || '').trim() });
+        inTrace = false;
+        continue;
+      }
+
+      const om = l.match(/^(Device type|Running(?: \(JUST GUESSING\))?|OS details|Aggressive OS guesses|Service Info|Network Distance):\s*(.+)$/i);
+      if (om) { osRows.push([pH.text(om[1]), pH.text(om[2])]); inTrace = false; continue; }
+
+      if (/^TRACEROUTE/i.test(l)) { inTrace = true; trace.push(l.trim()); continue; }
+      if (inTrace && (/^(HOP\s+|\d+\s+|-\s+)/i.test(l) || /^\s/.test(l))) { trace.push(l.trim()); continue; }
+      if (inTrace && !l.trim()) { inTrace = false; continue; }
+
+      if (/^\|\s|^\|_/.test(l)) scripts.push(l.trim().replace(/^\|_?\s?/, ''));
     }
-    if (osM && b.host) scripts.unshift(pH.text(b.host + ' · OS: ' + osM[1].slice(0, 120)));
-  }
-  const openCount = rows.filter(r => String(r[2]).includes('open')).length;
+
+    return {
+      id: `${uid}-${idx}`,
+      host: b.host,
+      ip: hostIp(b.host),
+      status,
+      latency,
+      notShown,
+      ports,
+      scripts,
+      osRows,
+      trace,
+      openCount: ports.filter(p => /open/i.test(p.state)).length,
+    };
+  };
+
+  const hosts = blocks.map(parseBlock).filter(h => h.host || h.ports.length || h.scripts.length || h.osRows.length);
+  const up = hosts.filter(h => h.status === 'up').length;
+  const down = hosts.filter(h => h.status === 'down').length;
+  const openCount = hosts.reduce((n, h) => n + h.openCount, 0);
+  const serviceCounts = new Map();
+  for (const h of hosts) for (const p of h.ports) if (/open/i.test(p.state)) serviceCounts.set(p.service, (serviceCounts.get(p.service) || 0) + 1);
+
   let o = ph.sum([
-    ph.pill(blocks.length + ' host(s)', blocks.length ? 'info' : 'warn'),
+    ph.pill(hosts.length + ' host(s)', hosts.length ? 'info' : 'warn'),
     ph.pill(up + ' up', up ? 'ok' : 'warn'),
     down ? ph.pill(down + ' down', 'crit') : '',
     ph.pill(openCount + ' puertos abiertos', openCount ? 'warn' : 'ok'),
   ]);
-  if (rows.length) o += ph.sec('Puertos', ph.tbl(['HOST','PORT','STATE','SERVICE','VERSION'], pH.cap(rows, 500)));
-  if (scripts.length) o += ph.sec('NSE / OS', pH.cap(scripts, 80).map(s => ph.find(s,'info')).join(''));
-  if (!rows.length) o += ph.empty('Sin puertos. Verifica target, puertos y permisos (sudo para -sS).');
+
+  const services = [...serviceCounts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 12);
+  if (services.length) o += ph.sec('Servicios abiertos', ph.tbl(['SERVICE','COUNT'], services.map(([svc, count]) => [pH.text(svc), pH.text(count)])));
+
+  if (!hosts.length) return o + ph.empty('Sin hosts parseados. Verifica que el raw incluya líneas "Nmap scan report for ...".');
+
+  const hostHtml = hosts.map(h => {
+    const portRows = h.ports.map(p => [
+      pH.text(p.port),
+      ph.pill(pH.text(p.state), stateClass(p.state)),
+      pH.text(p.service),
+      pH.text(p.version),
+    ]);
+    const meta = [
+      ph.pill(h.status === 'up' ? 'up' : h.status, h.status === 'up' ? 'ok' : (h.status === 'down' ? 'crit' : 'info')),
+      ph.pill(h.openCount + ' open', h.openCount ? 'warn' : 'ok'),
+      h.ports.length ? ph.pill(h.ports.length + ' ports', 'info') : '',
+      h.latency ? ph.pill(pH.text(h.latency), 'info') : '',
+    ].filter(Boolean).join('');
+
+    let detail = '';
+    detail += h.notShown ? ph.sec('Resumen', ph.find(pH.text('Not shown: ' + h.notShown), 'info')) : '';
+    detail += h.ports.length ? ph.sec('Puertos', ph.tbl(['PORT','STATE','SERVICE','VERSION'], portRows)) : ph.sec('Puertos', ph.empty('Sin puertos detectados para este host.'));
+    detail += h.osRows.length ? ph.sec('OS / Servicio', ph.tbl(['CAMPO','VALOR'], h.osRows)) : '';
+    detail += h.scripts.length ? ph.sec('NSE / Scripts', pH.cap(h.scripts, 120).map(s => ph.find(pH.text(s), 'info')).join('')) : '';
+    detail += h.trace.length ? ph.sec('Traceroute', h.trace.map(t => ph.find(pH.text(t), 'info')).join('')) : '';
+
+    return `<div class="nm-host">` +
+      `<div class="nm-host-head" onclick="nmapToggle('${h.id}')">` +
+      `<span id="${h.id}-arr">▸</span><span class="nm-host-title">${pH.text(hostLabel(h.host))}</span>` +
+      `<span class="nm-host-meta">${meta}</span></div>` +
+      `<div id="${h.id}" class="nm-host-detail">${detail || ph.empty('Sin detalles adicionales para este host.')}</div>` +
+      `</div>`;
+  }).join('');
+
+  o += ph.sec('Hosts', hostHtml);
   return o;
 };
 
