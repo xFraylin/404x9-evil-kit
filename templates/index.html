@@ -253,6 +253,24 @@ textarea.fi{resize:vertical;min-height:48px}
 
 @media(max-width:1199px){.nxc-shell{grid-template-columns:1fr}.nxc-side{position:static}}
 
+.adfb-layout{display:grid;grid-template-columns:260px minmax(0,1fr);gap:10px;align-items:start}
+.adfb-side,.adfb-main{border:1px solid var(--brd);background:#020403;border-radius:4px;padding:8px;min-height:260px}
+.adfb-toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.adfb-status{font-size:12px;color:var(--mut);min-height:18px;margin:5px 0;word-break:break-word}
+.adfb-breadcrumb{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--cyan);border:1px solid #0d1a0f;background:#010302;padding:6px 8px;border-radius:3px;margin-bottom:8px;word-break:break-all}
+.adfb-share{display:flex;align-items:center;gap:7px;border:1px solid #0d1a0f;background:#010302;border-radius:3px;padding:7px 8px;margin-bottom:5px;cursor:pointer;font-size:13px;color:var(--txt)}
+.adfb-share:hover,.adfb-share.on{border-color:var(--g);color:var(--g2);background:#051007}
+.adfb-share-meta{margin-left:auto;color:var(--dim);font-size:10px;text-transform:uppercase}
+.adfb-files{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.adfb-file{display:flex;align-items:center;gap:8px;border:1px solid #0d1a0f;background:#010302;border-radius:4px;padding:8px;min-height:48px}
+.adfb-file.dir{cursor:pointer;border-color:#15301b}
+.adfb-file.dir:hover{background:#061007;border-color:var(--g)}
+.adfb-ico{font-size:20px;width:24px;text-align:center;color:var(--cyan)}
+.adfb-name{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--txt);word-break:break-all;line-height:1.35}
+.adfb-meta{font-size:10px;color:var(--dim);margin-top:2px}
+.adfb-actions{margin-left:auto;display:flex;gap:4px;align-items:center}
+@media(max-width:900px){.adfb-layout{grid-template-columns:1fr}.adfb-files{grid-template-columns:1fr}}
+
 /* ─── PAYLOAD LIST ───────────────────────────────────── */
 .plist{display:flex;flex-direction:column;gap:3px}
 .pitem{display:flex;align-items:center;background:#020403;border:1px solid var(--brd);border-radius:3px;padding:5px 9px;gap:7px;transition:border .1s}
@@ -798,6 +816,7 @@ textarea.fi{resize:vertical;min-height:48px}
   <div class="acc-items">
     <div class="s-item" onclick="sw('ad-enum',this)"><div class="s-dot"></div><span class="s-icon">⬡</span>ENUMERATION</div>
     <div class="s-item" onclick="sw('ad-smb',this);nxcLoadModules()"><div class="s-dot"></div><span class="s-icon">◈</span>NETEXEC <span class="s-badge">NXC</span></div>
+    <div class="s-item" onclick="sw('ad-files',this)"><div class="s-dot"></div><span class="s-icon">≡</span>SMB FILES <span class="s-badge">GUI</span></div>
     <div class="s-item" onclick="sw('ad-kerb',this)"><div class="s-dot"></div><span class="s-icon">⚿</span>KERBEROS</div>
     <div class="s-item" onclick="sw('ad-exec',this)"><div class="s-dot"></div><span class="s-icon">▶</span>EXECUTION</div>
     <div class="s-item" onclick="sw('ad-creds',this)"><div class="s-dot"></div><span class="s-icon">⊕</span>CREDENTIALS</div>
@@ -2045,6 +2064,53 @@ textarea.fi{resize:vertical;min-height:48px}
 
       <div class="sdiv">RUNNING JOBS</div>
       <div id="sm-job-panel" class="nxc-mini">0 jobs activos</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AD SMB FILE BROWSER ══ -->
+<div id="p-ad-files" class="panel">
+  <div class="pt">SMB FILE BROWSER <span class="ptd">— Navegador grafico de shares y carpetas Windows/AD</span></div>
+  <div id="fb-val" class="val-msg"></div>
+  <div class="nxc-section">
+    <div class="nxc-section-title">CONEXION SMB</div>
+    <div class="row">
+      <div class="ig w2"><div class="lbl">HOST / IP</div><input class="fi" id="fb-h" placeholder="172.16.13.5" oninput="adfbUpdateHint()"></div>
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="fb-d" placeholder="domain.local"></div>
+      <div class="ig"><div class="lbl">AUTH</div>
+        <select class="fi" id="fb-auth" onchange="adfbAuthChanged()">
+          <option value="password">password</option>
+          <option value="hash">NTLM hash</option>
+          <option value="kerberos">kerberos</option>
+          <option value="kcache">kcache</option>
+          <option value="null">null session</option>
+        </select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="fb-u" placeholder="user"></div>
+      <div class="ig"><div class="lbl">PASSWORD</div><input class="fi" id="fb-p" type="password" placeholder="Password1!"></div>
+      <div class="ig"><div class="lbl">NTLM HASH</div><input class="fi" id="fb-hash" placeholder="NTLM o LM:NTLM"></div>
+    </div>
+    <div class="adfb-toolbar">
+      <button class="rbtn" onclick="adfbLoadShares()">▶ CONECTAR / SHARES</button>
+      <button class="kbtn" onclick="adfbUseNxc()">USAR DATOS NXC</button>
+      <button class="kbtn" onclick="adfbRefresh()">REFRESH</button>
+      <button class="kbtn" onclick="adfbUp()">ARRIBA</button>
+      <button class="kbtn" onclick="adfbClear()">CLEAR</button>
+    </div>
+    <div class="adfb-status" id="fb-status">Selecciona host y credenciales, luego conecta para listar shares.</div>
+  </div>
+
+  <div class="adfb-layout">
+    <div class="adfb-side">
+      <div class="nxc-section-title">SHARES</div>
+      <div id="fb-shares"><div class="nxc-mini">Sin conexion.</div></div>
+    </div>
+    <div class="adfb-main">
+      <div class="nxc-section-title">CARPETAS / ARCHIVOS</div>
+      <div class="adfb-breadcrumb" id="fb-breadcrumb">//host/share/</div>
+      <div id="fb-files" class="adfb-files"><div class="nxc-mini">Abre un share para navegar.</div></div>
     </div>
   </div>
 </div>
@@ -9808,6 +9874,137 @@ function nxcAttachLiveStream(jobId) {
   }
 }
 
+
+/* ── AD SMB File Browser ───────────────────────────────── */
+const adfb = { target:'', share:'', path:'', entries:[] };
+
+function adfbSetStatus(msg, type) {
+  const el = document.getElementById('fb-status');
+  if (!el) return;
+  el.style.color = type === 'err' ? 'var(--red)' : type === 'ok' ? 'var(--g2)' : type === 'warn' ? 'var(--yellow)' : 'var(--mut)';
+  el.textContent = msg || '';
+}
+function adfbAuthChanged() {
+  const auth = gv('fb-auth') || 'password';
+  const p = document.getElementById('fb-p');
+  const h = document.getElementById('fb-hash');
+  if (p) p.disabled = auth === 'hash' || auth === 'kcache' || auth === 'null';
+  if (h) h.disabled = auth !== 'hash';
+}
+function adfbUpdateHint() {
+  const h = gv('fb-h');
+  const bc = document.getElementById('fb-breadcrumb');
+  if (bc && !adfb.share) bc.textContent = '//' + (h || 'host') + '/share/';
+}
+function adfbPayload(extra) {
+  return Object.assign({
+    target: gv('fb-h'), domain: gv('fb-d'), username: gv('fb-u'), password: gv('fb-p'),
+    hash: gv('fb-hash'), auth_mode: gv('fb-auth') || 'password', share: adfb.share, path: adfb.path,
+  }, extra || {});
+}
+function adfbUseNxc() {
+  const map = [['fb-h','sm-h'],['fb-d','sm-d'],['fb-u','sm-u'],['fb-p','sm-p'],['fb-hash','sm-hash'],['fb-auth','sm-auth']];
+  map.forEach(([dst, src]) => { const d=document.getElementById(dst), s=document.getElementById(src); if(d && s) d.value = s.value || ''; });
+  adfbAuthChanged(); adfbUpdateHint(); adfbSetStatus('Datos copiados desde NetExec.', 'ok');
+}
+function adfbClear() {
+  adfb.share = ''; adfb.path = ''; adfb.entries = [];
+  const sh = document.getElementById('fb-shares'); if (sh) sh.innerHTML = '<div class="nxc-mini">Sin conexion.</div>';
+  const fl = document.getElementById('fb-files'); if (fl) fl.innerHTML = '<div class="nxc-mini">Abre un share para navegar.</div>';
+  adfbUpdateCrumb(); adfbSetStatus('Limpio.', 'info');
+}
+function adfbArg(v) { return String(JSON.stringify(v)).replace(/"/g, '&quot;'); }
+function adfbUpdateCrumb() {
+  const bc = document.getElementById('fb-breadcrumb');
+  if (!bc) return;
+  const base = '//' + (gv('fb-h') || 'host') + '/' + (adfb.share || 'share') + '/';
+  bc.textContent = base + (adfb.path ? adfb.path.replace(/\\/g, '/') : '');
+}
+function adfbRenderShares(shares) {
+  const el = document.getElementById('fb-shares'); if (!el) return;
+  if (!shares || !shares.length) { el.innerHTML = '<div class="nxc-mini">No hay shares visibles.</div>'; return; }
+  el.innerHTML = shares.map(s => {
+    const name = escH(s.name || '');
+    const typ = escH(s.type || 'Disk');
+    const active = (s.name || '') === adfb.share ? ' on' : '';
+    return `<div class="adfb-share${active}" onclick="adfbOpenShare(${adfbArg(s.name || '')})"><span>▣</span><span>${name}</span><span class="adfb-share-meta">${typ}</span></div>`;
+  }).join('');
+}
+function adfbRenderFiles(entries) {
+  const el = document.getElementById('fb-files'); if (!el) return;
+  adfbUpdateCrumb();
+  if (!entries || !entries.length) { el.innerHTML = '<div class="nxc-mini">Directorio vacio o sin permisos de lectura.</div>'; return; }
+  el.innerHTML = entries.map(e => {
+    const name = escH(e.name || '');
+    const meta = e.is_dir ? 'folder' : fmtSize(e.size || 0) + (e.modified ? ' · ' + escH(e.modified) : '');
+    if (e.is_dir) {
+      return `<div class="adfb-file dir" onclick="adfbOpenDir(${adfbArg(e.name || '')})"><div class="adfb-ico">▣</div><div style="min-width:0"><div class="adfb-name">${name}</div><div class="adfb-meta">${meta}</div></div></div>`;
+    }
+    return `<div class="adfb-file"><div class="adfb-ico">□</div><div style="min-width:0;flex:1"><div class="adfb-name">${name}</div><div class="adfb-meta">${meta}</div></div><div class="adfb-actions"><button class="kbtn" style="font-size:10px;padding:2px 7px" onclick="adfbDownload(${adfbArg(e.name || '')})">GET</button></div></div>`;
+  }).join('');
+}
+async function adfbLoadShares() {
+  if (!serverOk) { adfbSetStatus('Servidor offline.', 'err'); return; }
+  const target = gv('fb-h');
+  if (!target) { adfbSetStatus('Falta host/IP.', 'err'); return; }
+  adfb.target = target; adfb.share = ''; adfb.path = '';
+  adfbSetStatus('Conectando y listando shares...', 'warn');
+  try {
+    const r = await fetch(API + '/adbrowser/shares', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(adfbPayload())});
+    const d = await r.json();
+    if (!d.ok && !(d.shares || []).length) throw new Error(d.error || 'No se pudieron listar shares');
+    const shares = d.shares || [];
+    adfbRenderShares(shares);
+    adfbSetStatus(shares.length + ' share(s) encontrados.', shares.length ? 'ok' : 'warn');
+    const firstDisk = shares.find(s => /disk/i.test(s.type || '')) || shares[0];
+    if (firstDisk) adfbOpenShare(firstDisk.name);
+  } catch(e) { adfbSetStatus('Error: ' + e.message, 'err'); }
+}
+async function adfbOpenShare(name) {
+  adfb.share = name || ''; adfb.path = '';
+  document.querySelectorAll('.adfb-share').forEach(x => x.classList.toggle('on', x.textContent.includes(adfb.share)));
+  await adfbList();
+}
+async function adfbList() {
+  if (!adfb.share) return;
+  adfbSetStatus('Listando //' + (gv('fb-h') || '') + '/' + adfb.share + '/' + (adfb.path || ''), 'warn');
+  try {
+    const r = await fetch(API + '/adbrowser/list', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(adfbPayload())});
+    const d = await r.json();
+    if (!d.ok && !(d.entries || []).length) throw new Error(d.error || 'No se pudo listar carpeta');
+    adfb.entries = d.entries || [];
+    adfbRenderFiles(adfb.entries);
+    adfbSetStatus(adfb.entries.length + ' item(s).', 'ok');
+  } catch(e) { adfbRenderFiles([]); adfbSetStatus('Error: ' + e.message, 'err'); }
+}
+function adfbOpenDir(name) {
+  if (!name) return;
+  adfb.path = adfb.path ? adfb.path + '\\' + name : name;
+  adfbList();
+}
+function adfbUp() {
+  if (!adfb.path) return;
+  const parts = adfb.path.split('\\').filter(Boolean);
+  parts.pop();
+  adfb.path = parts.join('\\');
+  adfbList();
+}
+function adfbRefresh() {
+  if (adfb.share) adfbList();
+  else adfbLoadShares();
+}
+async function adfbDownload(name) {
+  if (!name || !adfb.share) return;
+  adfbSetStatus('Descargando ' + name + '...', 'warn');
+  try {
+    const r = await fetch(API + '/adbrowser/download', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(adfbPayload({name}))});
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'download failed');
+    adfbSetStatus('Descargado: ' + d.path + ' (' + fmtSize(d.size || 0) + ')', 'ok');
+    window.open(API + d.url, '_blank');
+  } catch(e) { adfbSetStatus('Error descargando: ' + e.message, 'err'); }
+}
+
 onDoneHooks.sm = function(){ nxcParseNow(); };
 function kerbToolChange() {
   const t = gv('kb-t');
@@ -15039,7 +15236,7 @@ startC2AutoRefresh();
 
 /* ─── INIT ────────────────────────────────────────────── */
 bNmap(); bSf(); bAmass(); bHarv(); bWw(); bWp();
-bSherlock(); bHolehe(); bDnsrecon(); bExiftool();
+bSherlock(); bHolehe(); bDnsrecon(); bExiftool(); adfbAuthChanged();
 bFfuf(); bGob(); bNikto(); bWfuzz(); bDalfox();
 bSql(); bJohn(); bHc(); bHyd(); bMedusa();
 bMsf(); bSs(); bAdEnum(); bSmb(); bKerb();

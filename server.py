@@ -522,6 +522,195 @@ def api_tools_status():
         status[s] = get_impacket(s) is not None
     return jsonify(status)
 
+
+_ADB_DL_DIR = '/tmp/404x9-adbrowser'
+
+def _adb_err(msg, code=400, **extra):
+    payload = {'ok': False, 'error': msg}
+    payload.update(extra)
+    return jsonify(payload), code
+
+def _adb_clean_target(v):
+    v = str(v or '').strip().replace('\\', '/').strip('/')
+    if not v or any(c in v for c in [';', '\n', '\r', '|', '&', '`', '$']):
+        return ''
+    return v
+
+def _adb_clean_share(v):
+    v = str(v or '').strip().strip('/\\')
+    if not v or any(c in v for c in [';', '\n', '\r', '|', '&', '`', '$', '/', '\\']):
+        return ''
+    return v
+
+def _adb_clean_remote_path(v, allow_empty=True):
+    v = str(v or '').strip().replace('/', '\\').strip('\\')
+    if not v and allow_empty:
+        return ''
+    if any(c in v for c in [';', '\n', '\r', '|', '&', '`', '$', '"']):
+        return None
+    parts = [x for x in v.split('\\') if x and x not in ['.', '..']]
+    return '\\'.join(parts)
+
+def _adb_auth_args(data):
+    mode = (data.get('auth_mode') or 'password').strip().lower()
+    domain = (data.get('domain') or '').strip()
+    user = (data.get('username') or '').strip()
+    password = data.get('password') or ''
+    nt_hash = (data.get('hash') or '').strip()
+    args = []
+    if domain:
+        args += ['-W', domain]
+    if mode == 'null':
+        args += ['-N']
+    elif mode in ('kerberos', 'kcache'):
+        args += ['--use-kerberos=required']
+        if user:
+            args += ['-U', user]
+    elif mode == 'hash':
+        secret = nt_hash or password
+        if not user or not secret:
+            return None, 'Falta usuario o NTLM hash.'
+        if ':' in secret:
+            secret = secret.split(':')[-1]
+        args += ['-U', f'{user}%{secret}', '--pw-nt-hash']
+    else:
+        if not user:
+            return None, 'Falta usuario.'
+        args += ['-U', f'{user}%{password}']
+    return args, ''
+
+def _adb_run_smbclient(data, extra_args, timeout=25):
+    target = _adb_clean_target(data.get('target'))
+    if not target:
+        return None, 'Target inválido.'
+    auth, err = _adb_auth_args(data)
+    if err:
+        return None, err
+    argv = ['smbclient'] + auth + extra_args
+    try:
+        r = subprocess.run(argv, capture_output=True, text=True, timeout=timeout, env=os.environ.copy())
+        return r, ''
+    except FileNotFoundError:
+        return None, 'smbclient no está instalado.'
+    except subprocess.TimeoutExpired:
+        return None, 'Timeout ejecutando smbclient.'
+
+
+def _adb_parse_shares(raw):
+    shares = []
+    for line in (raw or '').splitlines():
+        line = line.rstrip()
+        if not line.strip():
+            continue
+        if '|' in line:
+            parts = line.split('|')
+            if len(parts) >= 2 and parts[0] in ('Disk', 'IPC', 'Printer'):
+                shares.append({'name': parts[1].strip(), 'type': parts[0].strip(), 'comment': '|'.join(parts[2:]).strip()})
+                continue
+        m = re.match(r'^\s*(\S+)\s+(Disk|IPC|Printer)\s*(.*)$', line, re.I)
+        if m and m.group(1).lower() not in ('sharename', '---------'):
+            shares.append({'name': m.group(1), 'type': m.group(2), 'comment': m.group(3).strip()})
+    seen = set()
+    out = []
+    for sh in shares:
+        key = sh['name'].lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(sh)
+    return out
+
+
+def _adb_parse_ls(raw):
+    entries = []
+    for line in (raw or '').splitlines():
+        if not line.startswith('  ') and not line.startswith('\t'):
+            continue
+        t = line.strip()
+        if not t or t.startswith('.') or 'blocks of size' in t.lower():
+            continue
+        m = re.match(r'^(.+?)\s+([A-Z]+)\s+(\d+)\s+(.+)$', t)
+        if not m:
+            continue
+        name = m.group(1).rstrip()
+        if name in ('.', '..'):
+            continue
+        attr = m.group(2)
+        entries.append({
+            'name': name,
+            'is_dir': 'D' in attr,
+            'size': int(m.group(3)),
+            'attr': attr,
+            'modified': m.group(4).strip(),
+        })
+    entries.sort(key=lambda x: (not x['is_dir'], x['name'].lower()))
+    return entries
+
+@app.route('/api/adbrowser/shares', methods=['POST'])
+def api_adbrowser_shares():
+    data = request.json or {}
+    target = _adb_clean_target(data.get('target'))
+    if not target:
+        return _adb_err('Target inválido.')
+    r, err = _adb_run_smbclient(data, ['-g', '-L', f'//{target}'], timeout=25)
+    if err:
+        return _adb_err(err, 500)
+    raw = (r.stdout or '') + (r.stderr or '')
+    shares = _adb_parse_shares(raw)
+    return jsonify({'ok': r.returncode == 0 or bool(shares), 'shares': shares, 'raw': raw, 'code': r.returncode})
+
+@app.route('/api/adbrowser/list', methods=['POST'])
+def api_adbrowser_list():
+    data = request.json or {}
+    target = _adb_clean_target(data.get('target'))
+    share = _adb_clean_share(data.get('share'))
+    remote_path = _adb_clean_remote_path(data.get('path'), allow_empty=True)
+    if not target or not share:
+        return _adb_err('Target/share inválido.')
+    if remote_path is None:
+        return _adb_err('Ruta remota inválida.')
+    cmd = 'ls' if not remote_path else f'cd "{remote_path}"; ls'
+    r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', cmd], timeout=25)
+    if err:
+        return _adb_err(err, 500)
+    raw = (r.stdout or '') + (r.stderr or '')
+    entries = _adb_parse_ls(raw)
+    return jsonify({'ok': r.returncode == 0 or bool(entries), 'entries': entries, 'path': remote_path, 'raw': raw, 'code': r.returncode})
+
+@app.route('/api/adbrowser/download', methods=['POST'])
+def api_adbrowser_download():
+    data = request.json or {}
+    target = _adb_clean_target(data.get('target'))
+    share = _adb_clean_share(data.get('share'))
+    remote_path = _adb_clean_remote_path(data.get('path'), allow_empty=True)
+    name = _adb_clean_remote_path(data.get('name'), allow_empty=False)
+    if not target or not share or remote_path is None or not name or '\\' in name:
+        return _adb_err('Parámetros inválidos.')
+    os.makedirs(_ADB_DL_DIR, exist_ok=True)
+    token = uuid.uuid4().hex
+    safe_name = os.path.basename(name).replace('/', '_').replace('\\', '_')
+    local = os.path.join(_ADB_DL_DIR, token + '_' + safe_name)
+    remote = name if not remote_path else remote_path + '\\' + name
+    cmd = f'get "{remote}" "{local}"'
+    r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', cmd], timeout=120)
+    if err:
+        return _adb_err(err, 500)
+    raw = (r.stdout or '') + (r.stderr or '')
+    if r.returncode != 0 or not os.path.isfile(local):
+        return _adb_err('No se pudo descargar el archivo.', 500, raw=raw, code=r.returncode)
+    return jsonify({'ok': True, 'name': safe_name, 'path': local, 'size': os.path.getsize(local), 'url': '/api/adbrowser/local-download/' + os.path.basename(local), 'raw': raw})
+
+@app.route('/api/adbrowser/local-download/<name>')
+def api_adbrowser_local_download(name):
+    from flask import send_file
+    if '/' in name or '\\' in name or '..' in name:
+        return 'Invalid file', 400
+    path = os.path.join(_ADB_DL_DIR, name)
+    if not os.path.isfile(path):
+        return 'Not found', 404
+    display = name.split('_', 1)[1] if '_' in name else name
+    return send_file(path, as_attachment=True, download_name=display)
+
 @app.route('/api/files/list')
 def api_files_list():
     dirs = ['/tmp', os.path.expanduser('~'), '/root']
