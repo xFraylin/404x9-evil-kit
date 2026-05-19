@@ -642,6 +642,7 @@ def _adb_parse_ls(raw):
             'size': int(m.group(3)),
             'attr': attr,
             'modified': m.group(4).strip(),
+            'raw': t,
         })
     entries.sort(key=lambda x: (not x['is_dir'], x['name'].lower()))
     return entries
@@ -690,14 +691,25 @@ def api_adbrowser_download():
     token = uuid.uuid4().hex
     safe_name = os.path.basename(name).replace('/', '_').replace('\\', '_')
     local = os.path.join(_ADB_DL_DIR, token + '_' + safe_name)
-    cmd = f'get "{name}" "{local}"' if not remote_path else f'cd "{remote_path}"; get "{name}" "{local}"'
-    r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', cmd], timeout=120)
-    if err:
-        return _adb_err(err, 500)
-    raw = (r.stdout or '') + (r.stderr or '')
-    if r.returncode != 0 or not os.path.isfile(local):
-        return _adb_err('No se pudo descargar el archivo.', 500, raw=raw, code=r.returncode)
-    return jsonify({'ok': True, 'name': safe_name, 'path': local, 'size': os.path.getsize(local), 'url': '/api/adbrowser/local-download/' + os.path.basename(local), 'raw': raw})
+    cmds = []
+    if remote_path:
+        full_remote = remote_path + '\\' + name
+        cmds.append(f'cd "{remote_path}"; get "{name}" "{local}"')
+        cmds.append(f'get "{full_remote}" "{local}"')
+    else:
+        cmds.append(f'get "{name}" "{local}"')
+    raw_parts = []
+    last_code = -1
+    for cmd in cmds:
+        r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', cmd], timeout=120)
+        if err:
+            return _adb_err(err, 500)
+        raw = (r.stdout or '') + (r.stderr or '')
+        raw_parts.append('$ smbclient -c ' + cmd + '\n' + raw)
+        last_code = r.returncode
+        if r.returncode == 0 and os.path.isfile(local):
+            return jsonify({'ok': True, 'name': safe_name, 'path': local, 'size': os.path.getsize(local), 'url': '/api/adbrowser/local-download/' + os.path.basename(local), 'raw': '\n'.join(raw_parts)})
+    return _adb_err('No se pudo descargar el archivo.', 500, raw='\n'.join(raw_parts), code=last_code, remote_path=remote_path, name=name)
 
 @app.route('/api/adbrowser/local-download/<name>')
 def api_adbrowser_local_download(name):

@@ -9936,7 +9936,7 @@ function adfbRenderFiles(entries) {
   if (!entries || !entries.length) { el.innerHTML = '<div class="nxc-mini">Directorio vacio o sin permisos de lectura.</div>'; return; }
   el.innerHTML = entries.map(e => {
     const name = escH(e.name || '');
-    const meta = e.is_dir ? 'folder' : fmtSize(e.size || 0) + (e.modified ? ' · ' + escH(e.modified) : '');
+    const meta = (e.is_dir ? 'folder' : fmtSize(e.size || 0)) + (e.attr ? ' · ' + escH(e.attr) : '') + (e.modified ? ' · ' + escH(e.modified) : '');
     if (e.is_dir) {
       return `<div class="adfb-file dir" onclick="adfbOpenDir(${adfbArg(e.name || '')})"><div class="adfb-ico">▣</div><div style="min-width:0"><div class="adfb-name">${name}</div><div class="adfb-meta">${meta}</div></div></div>`;
     }
