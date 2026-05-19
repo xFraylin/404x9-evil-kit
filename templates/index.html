@@ -10005,7 +10005,7 @@ async function adfbFetchFile(name, inline) {
       throw new Error((d.error || 'download failed') + matches + (raw ? ' · ' + raw.slice(0, 700).replace(/\s+/g, ' ') : ''));
     }
     adfbSetStatus((inline ? 'Abierto: ' : 'Descargado: ') + d.path + ' (' + fmtSize(d.size || 0) + ')' + (d.matched_by ? ' · ' + d.matched_by : ''), 'ok');
-    window.open(API + d.url + (inline ? '?inline=1' : ''), '_blank');
+    window.open(window.location.origin + d.url + (inline ? '?inline=1' : ''), '_blank');
   } catch(e) { adfbSetStatus('Error ' + (inline ? 'abriendo' : 'descargando') + ': ' + e.message, 'err'); }
 }
 function adfbOpenFile(name) { adfbFetchFile(name, true); }
