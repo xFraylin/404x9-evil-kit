@@ -621,6 +621,15 @@ def _adb_parse_shares(raw):
     return out
 
 
+
+def _adb_list_entries(data, target, share, remote_path, timeout=25):
+    cmd = 'ls' if not remote_path else f'cd "{remote_path}"; ls'
+    r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', cmd], timeout=timeout)
+    if err:
+        return [], err, ''
+    raw = (r.stdout or '') + (r.stderr or '')
+    return _adb_parse_ls(raw), '', raw
+
 def _adb_parse_ls(raw):
     entries = []
     for line in (raw or '').splitlines():
@@ -670,13 +679,10 @@ def api_adbrowser_list():
         return _adb_err('Target/share inválido.')
     if remote_path is None:
         return _adb_err('Ruta remota inválida.')
-    cmd = 'ls' if not remote_path else f'cd "{remote_path}"; ls'
-    r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', cmd], timeout=25)
+    entries, err, raw = _adb_list_entries(data, target, share, remote_path, timeout=25)
     if err:
         return _adb_err(err, 500)
-    raw = (r.stdout or '') + (r.stderr or '')
-    entries = _adb_parse_ls(raw)
-    return jsonify({'ok': r.returncode == 0 or bool(entries), 'entries': entries, 'path': remote_path, 'raw': raw, 'code': r.returncode})
+    return jsonify({'ok': bool(entries) or 'NT_STATUS' not in raw, 'entries': entries, 'path': remote_path, 'raw': raw, 'code': 0 if entries else -1})
 
 @app.route('/api/adbrowser/download', methods=['POST'])
 def api_adbrowser_download():
@@ -691,14 +697,32 @@ def api_adbrowser_download():
     token = uuid.uuid4().hex
     safe_name = os.path.basename(name).replace('/', '_').replace('\\', '_')
     local = os.path.join(_ADB_DL_DIR, token + '_' + safe_name)
+    candidates = [name]
+    entries, list_err, list_raw = _adb_list_entries(data, target, share, remote_path, timeout=25)
+    if list_raw:
+        # If smbclient displayed a shortened long filename, prefer exact candidates from a fresh listing.
+        norm = name.lower().rstrip('.')
+        for ent in entries:
+            en = ent.get('name', '')
+            if ent.get('is_dir'):
+                continue
+            low = en.lower()
+            if low == norm or low.startswith(norm) or norm.startswith(low):
+                if en not in candidates:
+                    candidates.append(en)
     cmds = []
-    if remote_path:
-        full_remote = remote_path + '\\' + name
-        cmds.append(f'cd "{remote_path}"; get "{name}" "{local}"')
-        cmds.append(f'get "{full_remote}" "{local}"')
-    else:
-        cmds.append(f'get "{name}" "{local}"')
+    for cand in candidates:
+        if remote_path:
+            full_remote = remote_path + '\\' + cand
+            cmds.append(f'cd "{remote_path}"; get "{cand}" "{local}"')
+            cmds.append(f'get "{full_remote}" "{local}"')
+        else:
+            cmds.append(f'get "{cand}" "{local}"')
     raw_parts = []
+    if list_err:
+        raw_parts.append('[list warning] ' + list_err)
+    elif list_raw:
+        raw_parts.append('[fresh listing]\n' + list_raw)
     last_code = -1
     for cmd in cmds:
         r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', cmd], timeout=120)
@@ -709,6 +733,28 @@ def api_adbrowser_download():
         last_code = r.returncode
         if r.returncode == 0 and os.path.isfile(local):
             return jsonify({'ok': True, 'name': safe_name, 'path': local, 'size': os.path.getsize(local), 'url': '/api/adbrowser/local-download/' + os.path.basename(local), 'raw': '\n'.join(raw_parts)})
+
+    prefix_dir = os.path.join(_ADB_DL_DIR, token + '_mget')
+    os.makedirs(prefix_dir, exist_ok=True)
+    pattern = name.rstrip('.') + '*'
+    mget_cmd = f'lcd "{prefix_dir}"; prompt off; mget "{pattern}"' if not remote_path else f'lcd "{prefix_dir}"; cd "{remote_path}"; prompt off; mget "{pattern}"'
+    r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', mget_cmd], timeout=120)
+    if err:
+        return _adb_err(err, 500)
+    raw = (r.stdout or '') + (r.stderr or '')
+    raw_parts.append('$ smbclient -c ' + mget_cmd + '\n' + raw)
+    last_code = r.returncode
+    try:
+        matches = [os.path.join(prefix_dir, x) for x in os.listdir(prefix_dir) if os.path.isfile(os.path.join(prefix_dir, x))]
+    except OSError:
+        matches = []
+    if len(matches) == 1:
+        real_name = os.path.basename(matches[0])
+        final = os.path.join(_ADB_DL_DIR, token + '_' + real_name)
+        os.replace(matches[0], final)
+        return jsonify({'ok': True, 'name': real_name, 'path': final, 'size': os.path.getsize(final), 'url': '/api/adbrowser/local-download/' + os.path.basename(final), 'raw': '\n'.join(raw_parts), 'matched_by': 'mget-prefix'})
+    if len(matches) > 1:
+        return _adb_err('El prefijo coincide con varios archivos; entra a una carpeta mas especifica o usa un nombre mas exacto.', 409, raw='\n'.join(raw_parts), matches=[os.path.basename(x) for x in matches[:20]], remote_path=remote_path, name=name)
     return _adb_err('No se pudo descargar el archivo.', 500, raw='\n'.join(raw_parts), code=last_code, remote_path=remote_path, name=name)
 
 @app.route('/api/adbrowser/local-download/<name>')
@@ -720,7 +766,8 @@ def api_adbrowser_local_download(name):
     if not os.path.isfile(path):
         return 'Not found', 404
     display = name.split('_', 1)[1] if '_' in name else name
-    return send_file(path, as_attachment=True, download_name=display)
+    inline = request.args.get('inline') == '1'
+    return send_file(path, as_attachment=not inline, download_name=display)
 
 @app.route('/api/files/list')
 def api_files_list():

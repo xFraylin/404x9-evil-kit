@@ -9940,7 +9940,7 @@ function adfbRenderFiles(entries) {
     if (e.is_dir) {
       return `<div class="adfb-file dir" onclick="adfbOpenDir(${adfbArg(e.name || '')})"><div class="adfb-ico">▣</div><div style="min-width:0"><div class="adfb-name">${name}</div><div class="adfb-meta">${meta}</div></div></div>`;
     }
-    return `<div class="adfb-file"><div class="adfb-ico">□</div><div style="min-width:0;flex:1"><div class="adfb-name">${name}</div><div class="adfb-meta">${meta}</div></div><div class="adfb-actions"><button class="kbtn" style="font-size:10px;padding:2px 7px" onclick="adfbDownload(${adfbArg(e.name || '')})">GET</button></div></div>`;
+    return `<div class="adfb-file"><div class="adfb-ico">□</div><div style="min-width:0;flex:1"><div class="adfb-name">${name}</div><div class="adfb-meta">${meta}</div></div><div class="adfb-actions"><button class="kbtn" style="font-size:10px;padding:2px 7px" onclick="adfbOpenFile(${adfbArg(e.name || '')})">OPEN</button><button class="kbtn" style="font-size:10px;padding:2px 7px" onclick="adfbDownload(${adfbArg(e.name || '')})">GET</button></div></div>`;
   }).join('');
 }
 async function adfbLoadShares() {
@@ -9993,20 +9993,23 @@ function adfbRefresh() {
   if (adfb.share) adfbList();
   else adfbLoadShares();
 }
-async function adfbDownload(name) {
+async function adfbFetchFile(name, inline) {
   if (!name || !adfb.share) return;
-  adfbSetStatus('Descargando ' + name + '...', 'warn');
+  adfbSetStatus((inline ? 'Abriendo ' : 'Descargando ') + name + '...', 'warn');
   try {
     const r = await fetch(API + '/adbrowser/download', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(adfbPayload({name}))});
     const d = await r.json();
     if (!d.ok) {
       const raw = (d.raw || '').trim();
-      throw new Error((d.error || 'download failed') + (raw ? ' · ' + raw.slice(0, 500).replace(/\s+/g, ' ') : ''));
+      const matches = d.matches && d.matches.length ? ' · Matches: ' + d.matches.join(', ') : '';
+      throw new Error((d.error || 'download failed') + matches + (raw ? ' · ' + raw.slice(0, 700).replace(/\s+/g, ' ') : ''));
     }
-    adfbSetStatus('Descargado: ' + d.path + ' (' + fmtSize(d.size || 0) + ')', 'ok');
-    window.open(API + d.url, '_blank');
-  } catch(e) { adfbSetStatus('Error descargando: ' + e.message, 'err'); }
+    adfbSetStatus((inline ? 'Abierto: ' : 'Descargado: ') + d.path + ' (' + fmtSize(d.size || 0) + ')' + (d.matched_by ? ' · ' + d.matched_by : ''), 'ok');
+    window.open(API + d.url + (inline ? '?inline=1' : ''), '_blank');
+  } catch(e) { adfbSetStatus('Error ' + (inline ? 'abriendo' : 'descargando') + ': ' + e.message, 'err'); }
 }
+function adfbOpenFile(name) { adfbFetchFile(name, true); }
+function adfbDownload(name) { adfbFetchFile(name, false); }
 
 onDoneHooks.sm = function(){ nxcParseNow(); };
 function kerbToolChange() {
