@@ -5901,42 +5901,98 @@ function ldapMore(btn, id) {
 // ─── PARSERS ───────────────────────────────────────────
 const parsers = {};
 
+// Shared parser helpers. Keep parser output stable: dedupe, strip ANSI once,
+// validate noisy network primitives, and cap large tables before rendering.
+const pH = {
+  clean: r => stripAnsi(String(r || '')).replace(/\r/g, ''),
+  lines: r => stripAnsi(String(r || '')).replace(/\r/g, '').split('\n').map(l => l.trimEnd()).filter(l => l.trim()),
+  uniq: arr => [...new Set((arr || []).filter(v => v !== undefined && v !== null).map(v => String(v).trim()).filter(Boolean))],
+  cap: (arr, n = 300) => (arr || []).slice(0, n),
+  ip: s => {
+    const parts = String(s || '').split('.').map(Number);
+    return parts.length === 4 && parts.every(n => Number.isInteger(n) && n >= 0 && n <= 255);
+  },
+  status: s => {
+    const n = parseInt(String(s || '').match(/\d{3}/)?.[0] || '0', 10);
+    return n ? sBadge(String(n)) : ph.pill('?', 'info');
+  },
+  text: s => ph.esc(String(s || '').trim()),
+  domains: r => pH.uniq((String(r || '').match(/\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}\b/gi) || [])
+    .map(d => d.toLowerCase()).filter(d => !/^\d+\.\d+\.\d+\.\d+$/.test(d))),
+  ips: r => pH.uniq(String(r || '').match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g) || []).filter(pH.ip),
+  urls: r => pH.uniq(String(r || '').match(/https?:\/\/[^\s"'<>\])]+/gi) || []).map(u => u.replace(/[),.;]+$/, '')),
+};
+
 /* NMAP */
 parsers.nm = r => {
-  const L=r.split('\n');
-  const hostM=r.match(/Nmap scan report for (.+)/);
-  const upM=r.match(/Host is (up|down)/i);
-  const osM=r.match(/OS details: (.+)/);
-  const doneM=r.match(/scanned in (.+)/);
-  const ports=[];
-  for (const l of L){const m=l.match(/^(\d+\/\w+)\s+(open|closed|filtered)\s+(\S+)\s*(.*)/);if(m)ports.push([ph.esc(m[1]),m[2]==='open'?ph.pill('open','ok'):ph.pill(m[2],'warn'),ph.esc(m[3]),ph.esc(m[4].trim())]);}
-  const nOpen=ports.filter(p=>p[1].includes('"ok"')).length||ports.filter(p=>p[1].includes('open')).length;
-  const scripts=L.filter(l=>/^\|\s|\|_/.test(l)).map(l=>ph.esc(l.trim())).slice(0,20);
-  let o=ph.sum([hostM?ph.pill(hostM[1].trim(),'info'):'',upM?ph.pill('Host '+upM[1],upM[1]==='up'?'ok':'crit'):'',ph.pill(nOpen+' puertos abiertos',nOpen>0?'warn':'ok'),osM?ph.pill(osM[1].slice(0,40),'info'):'',doneM?ph.pill(doneM[1].trim(),''):'']);
-  if (ports.length) o+=ph.sec('Puertos',ph.tbl(['PORT','STATE','SERVICE','VERSION'],ports));
-  if (scripts.length) o+=ph.sec('NSE Scripts',scripts.map(s=>ph.find(s,'info')).join(''));
-  if (!ports.length) o+=ph.empty('Sin puertos. Verifica target, puertos y permisos (sudo para -sS).');
+  const L = pH.lines(r);
+  const blocks = [];
+  let cur = null;
+  for (const l of L) {
+    const hm = l.match(/^Nmap scan report for\s+(.+)/i);
+    if (hm) {
+      if (cur) blocks.push(cur);
+      cur = { host: hm[1].trim(), lines: [l], ports: [], scripts: [] };
+      continue;
+    }
+    if (!cur) cur = { host: '', lines: [], ports: [], scripts: [] };
+    cur.lines.push(l);
+  }
+  if (cur) blocks.push(cur);
+
+  const rows = [];
+  const scripts = [];
+  let up = 0, down = 0;
+  for (const b of blocks) {
+    const blob = b.lines.join('\n');
+    const upM = blob.match(/Host is\s+(up|down)/i);
+    if (upM && upM[1].toLowerCase() === 'up') up++;
+    if (upM && upM[1].toLowerCase() === 'down') down++;
+    const osM = blob.match(/OS details:\s+(.+)/i) || blob.match(/Running(?: \(JUST GUESSING\))?:\s+(.+)/i);
+    for (const l of b.lines) {
+      const pm = l.match(/^(\d+\/(?:tcp|udp|sctp))\s+(open|closed|filtered|open\|filtered|closed\|filtered)\s+(\S+)\s*(.*)$/i);
+      if (pm) rows.push([pH.text(b.host || '—'), pH.text(pm[1]), ph.pill(pH.text(pm[2]), /open/i.test(pm[2]) ? 'ok' : 'warn'), pH.text(pm[3]), pH.text(pm[4])]);
+      if (/^\|\s|^\|_/.test(l)) scripts.push(pH.text((b.host ? b.host + ' · ' : '') + l.trim()));
+    }
+    if (osM && b.host) scripts.unshift(pH.text(b.host + ' · OS: ' + osM[1].slice(0, 120)));
+  }
+  const openCount = rows.filter(r => String(r[2]).includes('open')).length;
+  let o = ph.sum([
+    ph.pill(blocks.length + ' host(s)', blocks.length ? 'info' : 'warn'),
+    ph.pill(up + ' up', up ? 'ok' : 'warn'),
+    down ? ph.pill(down + ' down', 'crit') : '',
+    ph.pill(openCount + ' puertos abiertos', openCount ? 'warn' : 'ok'),
+  ]);
+  if (rows.length) o += ph.sec('Puertos', ph.tbl(['HOST','PORT','STATE','SERVICE','VERSION'], pH.cap(rows, 500)));
+  if (scripts.length) o += ph.sec('NSE / OS', pH.cap(scripts, 80).map(s => ph.find(s,'info')).join(''));
+  if (!rows.length) o += ph.empty('Sin puertos. Verifica target, puertos y permisos (sudo para -sS).');
   return o;
 };
 
 /* SUBFINDER / AMASS */
 parsers.sf = parsers.am = r => {
-  const subs=[...new Set(r.split('\n').map(l=>l.trim()).filter(l=>l&&/^[\w.-]+\.\w{2,}$/.test(l)&&!l.startsWith('[')&&!l.startsWith('>')))];
-  let o=ph.sum([ph.pill(subs.length+' subdominios',subs.length>0?'ok':'warn')]);
-  o+=subs.length?ph.sec('Subdominios ('+subs.length+')',subs.map(s=>ph.find(ph.esc(s),'ok')).join('')):ph.empty('Sin subdominios encontrados.');
+  const subs = pH.domains(r).filter(d => !/^(www\.)?github\.com$|^projectdiscovery\.io$/.test(d));
+  let o = ph.sum([ph.pill(subs.length + ' subdominios', subs.length ? 'ok' : 'warn')]);
+  o += subs.length
+    ? ph.sec('Subdominios (' + subs.length + ')', pH.cap(subs, 1000).map(s => ph.find(ph.esc(s), 'ok')).join(''))
+    : ph.empty('Sin subdominios encontrados.');
   return o;
 };
 
 /* THEHARVESTER */
 parsers.th = r => {
-  const emails=[...new Set(r.match(/[\w.+%-]+@[\w-]+\.\w{2,}/g)||[])];
-  const ips=[...new Set(r.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g)||[])];
-  const hosts=[...new Set((r.match(/^\s*([\w.-]+\.\w{2,})\s*$/gm)||[]).map(m=>m.trim()).filter(h=>h&&!h.match(/^\d/)))];
-  let o=ph.sum([ph.pill(emails.length+' emails',emails.length>0?'crit':'ok'),ph.pill(hosts.length+' hosts',hosts.length>0?'warn':'ok'),ph.pill(ips.length+' IPs',ips.length>0?'info':'ok')]);
-  if (emails.length) o+=ph.sec('Emails',emails.map(e=>ph.find(ph.esc(e),'crit')).join(''));
-  if (hosts.length)  o+=ph.sec('Hosts',hosts.map(h=>ph.find(ph.esc(h),'ok')).join(''));
-  if (ips.length)    o+=ph.sec('IPs',ips.map(i=>ph.find(ph.esc(i),'info')).join(''));
-  if (!emails.length&&!hosts.length) o+=ph.empty('Sin resultados OSINT.');
+  const emails = pH.uniq(String(r || '').match(/[\w.+%-]+@[\w.-]+\.[A-Za-z]{2,63}/g) || []).map(e => e.toLowerCase());
+  const ips = pH.ips(r);
+  const hosts = pH.domains(r).filter(h => !emails.some(e => e.endsWith('@' + h)));
+  let o = ph.sum([
+    ph.pill(emails.length + ' emails', emails.length ? 'crit' : 'ok'),
+    ph.pill(hosts.length + ' hosts', hosts.length ? 'warn' : 'ok'),
+    ph.pill(ips.length + ' IPs', ips.length ? 'info' : 'ok'),
+  ]);
+  if (emails.length) o += ph.sec('Emails', pH.cap(emails, 300).map(e => ph.find(ph.esc(e), 'crit')).join(''));
+  if (hosts.length)  o += ph.sec('Hosts', pH.cap(hosts, 500).map(h => ph.find(ph.esc(h), 'ok')).join(''));
+  if (ips.length)    o += ph.sec('IPs', ips.map(i => ph.find(ph.esc(i), 'info')).join(''));
+  if (!emails.length && !hosts.length && !ips.length) o += ph.empty('Sin resultados OSINT.');
   return o;
 };
 
@@ -6394,25 +6450,37 @@ parsers.wp = r => {
 
 /* FFUF */
 parsers.ff = r => {
-  const rows=[];
-  for (const l of r.split('\n')){const m=l.match(/^(.+?)\s+\[Status: (\d+), Size: (\d+), Words: (\d+), Lines: (\d+), Duration: (.+?)\]/);if(m)rows.push([ph.esc(m[1].trim()),sBadge(m[2]),m[3],m[6]]);}
-  let o=ph.sum([ph.pill(rows.length+' resultados',rows.length>0?'ok':'warn')]);
-  o+=rows.length?ph.sec('Resultados ('+rows.length+')',ph.tbl(['PATH/WORD','STATUS','SIZE','TIME'],rows)):ph.empty('Sin resultados. Revisa filtros MC/MS o la wordlist.');
+  const rows = [];
+  for (const l of pH.lines(r)) {
+    let m = l.match(/^(.+?)\s+\[Status:\s*(\d+),\s*Size:\s*(\d+),\s*Words:\s*(\d+),\s*Lines:\s*(\d+)(?:,\s*Duration:\s*([^\]]+))?/i);
+    if (m) { rows.push([pH.text(m[1]), pH.status(m[2]), pH.text(m[3]), pH.text(m[4]), pH.text(m[5]), pH.text(m[6] || '—')]); continue; }
+    try {
+      const j = JSON.parse(l);
+      if (j && (j.url || j.input || j.host)) rows.push([pH.text(j.url || j.input?.FUZZ || j.host), pH.status(j.status), pH.text(j.length || j.size || '—'), pH.text(j.words || '—'), pH.text(j.lines || '—'), pH.text(j.duration || '—')]);
+    } catch(_) {}
+  }
+  const uniqRows = pH.cap(rows.filter((r, i, a) => a.findIndex(x => x.join('\t') === r.join('\t')) === i), 500);
+  let o = ph.sum([ph.pill(uniqRows.length + ' resultados', uniqRows.length ? 'ok' : 'warn')]);
+  o += uniqRows.length ? ph.sec('Resultados (' + uniqRows.length + ')', ph.tbl(['PATH/URL','STATUS','SIZE','WORDS','LINES','TIME'], uniqRows)) : ph.empty('Sin resultados. Revisa filtros MC/MS o la wordlist.');
   return o;
 };
 
 /* GOBUSTER */
 parsers.gb = r => {
-  const dirs=[],dns=[];
-  for (const l of r.split('\n')){
-    const d=l.match(/^(\/.+?)\s+\(Status: (\d+)\)(?:\s+\[Size: (\d+)\])?/);
-    if(d){dirs.push([ph.esc(d[1]),sBadge(d[2]),d[3]||'—']);continue;}
-    if(/^Found:\s/.test(l))dns.push(l.replace(/^Found:\s*/,'').trim());
+  const dirs = [], dns = [];
+  for (const l of pH.lines(r)) {
+    const d = l.match(/^(\/\S*|https?:\/\/\S+)\s+\(Status:\s*(\d+)\)(?:\s+\[Size:\s*(\d+)\])?/i)
+           || l.match(/^(\/\S*|https?:\/\/\S+)\s+Status:\s*(\d+)\s+Size:\s*(\d+)/i);
+    if (d) { dirs.push([pH.text(d[1]), pH.status(d[2]), pH.text(d[3] || '—')]); continue; }
+    const f = l.match(/^(?:Found|Found vhost|Found DNS):\s*(\S+)/i);
+    if (f) dns.push(f[1].replace(/^https?:\/\//, '').replace(/\/$/, ''));
   }
-  let o=ph.sum([ph.pill((dirs.length+dns.length)+' hallazgos',dirs.length+dns.length>0?'ok':'warn')]);
-  if (dirs.length) o+=ph.sec('Paths/Archivos ('+dirs.length+')',ph.tbl(['PATH','STATUS','SIZE'],dirs));
-  if (dns.length)  o+=ph.sec('Subdominios ('+dns.length+')',dns.map(s=>ph.find(ph.esc(s),'ok')).join(''));
-  if (!dirs.length&&!dns.length) o+=ph.empty('Sin resultados. Verifica wordlist, modo y extensiones.');
+  const uniqDirs = pH.cap(dirs.filter((r, i, a) => a.findIndex(x => x[0] === r[0] && x[1] === r[1]) === i), 500);
+  const uniqDns = pH.uniq(dns);
+  let o = ph.sum([ph.pill((uniqDirs.length + uniqDns.length) + ' hallazgos', uniqDirs.length + uniqDns.length ? 'ok' : 'warn')]);
+  if (uniqDirs.length) o += ph.sec('Paths/Archivos (' + uniqDirs.length + ')', ph.tbl(['PATH','STATUS','SIZE'], uniqDirs));
+  if (uniqDns.length)  o += ph.sec('Subdominios/VHosts (' + uniqDns.length + ')', pH.cap(uniqDns, 500).map(s => ph.find(ph.esc(s), 'ok')).join(''));
+  if (!uniqDirs.length && !uniqDns.length) o += ph.empty('Sin resultados. Verifica wordlist, modo y extensiones.');
   return o;
 };
 
@@ -6433,10 +6501,15 @@ parsers.nk = r => {
 
 /* WFUZZ */
 parsers.wf = r => {
-  const rows=[];
-  for (const l of r.split('\n')){const m=l.match(/(\d{6}):\s+(\d+)\s+(\d+) L\s+(\d+) W\s+(\d+) Ch\s+"(.+)"/);if(m)rows.push([sBadge(m[2]),m[3],m[4],m[5],ph.esc(m[6])]);}
-  let o=ph.sum([ph.pill(rows.length+' hits',rows.length>0?'ok':'warn')]);
-  o+=rows.length?ph.sec('Resultados',ph.tbl(['STATUS','LINES','WORDS','CHARS','PAYLOAD'],rows)):ph.empty('Sin hits. Revisa filtros --hc/--hw/--hh.');
+  const rows = [];
+  for (const l of pH.lines(r)) {
+    const m = l.match(/\d{6}:\s+(\d+)\s+(\d+)\s+L\s+(\d+)\s+W\s+(\d+)\s+Ch\s+"(.+)"/)
+           || l.match(/^(\d{3})\s+(\d+)\s+L\s+(\d+)\s+W\s+(\d+)\s+Ch\s+(.+)$/i);
+    if (m) rows.push([pH.status(m[1]), pH.text(m[2]), pH.text(m[3]), pH.text(m[4]), pH.text(m[5])]);
+  }
+  const uniqRows = pH.cap(rows.filter((r, i, a) => a.findIndex(x => x.join('\t') === r.join('\t')) === i), 500);
+  let o = ph.sum([ph.pill(uniqRows.length + ' hits', uniqRows.length ? 'ok' : 'warn')]);
+  o += uniqRows.length ? ph.sec('Resultados', ph.tbl(['STATUS','LINES','WORDS','CHARS','PAYLOAD'], uniqRows)) : ph.empty('Sin hits. Revisa filtros --hc/--hw/--hh.');
   return o;
 };
 
@@ -6469,28 +6542,33 @@ parsers.sq = r => {
 
 /* JOHN / HASHCAT */
 parsers.jn = parsers.hc = r => {
-  const cracks=[];
-  for (const l of r.split('\n')){
-    const m1=l.match(/^(.+?)\s{2,}\((.+?)\)\s*$/);if(m1){cracks.push([ph.esc(m1[2]),ph.esc(m1[1])]);continue;}
-    const m2=l.match(/^([a-f0-9]{16,}[^:]*):(.+)$/i);if(m2)cracks.push([ph.esc(m2[1].slice(0,40))+'…',ph.esc(m2[2])]);
+  const cracks = [];
+  for (const l of pH.lines(r)) {
+    if (/^(?:Loaded|Cost|Will run|Press|Session|Status|Guessing|Use the|Watchdog|Started:|Stopped:)/i.test(l)) continue;
+    let m = l.match(/^(.+?)\s{2,}\((.+?)\)\s*$/);
+    if (m) { cracks.push([pH.text(m[2]), `<code>${pH.text(m[1])}</code>`]); continue; }
+    m = l.match(/^([^:\s][^:]{0,120}):(.+)$/);
+    if (m && !/^\s*(?:Path|Input|Output|Session)/i.test(m[1])) cracks.push([pH.text(m[1].slice(0, 80)), `<code>${pH.text(m[2])}</code>`]);
   }
-  let o=ph.sum([ph.pill(cracks.length+' crackeados',cracks.length>0?'crit':'ok')]);
-  o+=cracks.length?ph.sec('Contraseñas crackeadas',ph.tbl(['HASH / USER','PASSWORD'],cracks)):ph.empty('Sin hashes crackeados. Prueba otra wordlist o --rules.');
+  const uniq = pH.cap(cracks.filter((r, i, a) => a.findIndex(x => x.join('\t') === r.join('\t')) === i), 500);
+  let o = ph.sum([ph.pill(uniq.length + ' crackeados', uniq.length ? 'crit' : 'ok')]);
+  o += uniq.length ? ph.sec('Contraseñas crackeadas', ph.tbl(['HASH / USER','PASSWORD'], uniq)) : ph.empty('Sin hashes crackeados. Prueba otra wordlist o --rules.');
   return o;
 };
 
 /* HYDRA / MEDUSA */
 parsers.hy = parsers.md = r => {
-  const creds=[];
-  for (const l of r.split('\n')){
-    const m=l.match(/\[(\d+)\]\[(\w+)\]\s+host:\s+(\S+)\s+login:\s+(\S+)\s+password:\s+(\S+)/);
-    if(m){creds.push([ph.esc(m[3]),ph.esc(m[2]),ph.esc(m[4]),ph.esc(m[5])]);continue;}
-    const m2=l.match(/ACCOUNT FOUND:.*Host:\s*(\S+)\s+User:\s*(\S+)\s+Password:\s*(\S+)/i);
-    if(m2)creds.push([ph.esc(m2[1]),'—',ph.esc(m2[2]),ph.esc(m2[3])]);
+  const creds = [];
+  for (const l of pH.lines(r)) {
+    let m = l.match(/\[(\d+)\]\[(\w+)\]\s+host:\s+(\S+)\s+login:\s+(.*?)\s+password:\s*(.*)$/i);
+    if (m) { creds.push([pH.text(m[3]), pH.text(m[2]), pH.text(m[4]), `<code>${pH.text(m[5])}</code>`]); continue; }
+    m = l.match(/ACCOUNT FOUND:.*Host:\s*(\S+)\s+User:\s*(.*?)\s+Password:\s*(.*)$/i);
+    if (m) creds.push([pH.text(m[1]), '—', pH.text(m[2]), `<code>${pH.text(m[3])}</code>`]);
   }
-  const atM=r.match(/(\d+ of \d+ target)/i);
-  let o=ph.sum([ph.pill(creds.length+' credenciales',creds.length>0?'crit':'ok'),atM?ph.pill(atM[1],'info'):'']);
-  o+=creds.length?ph.sec('Credenciales válidas',ph.tbl(['HOST','PROTO','USER','PASSWORD'],creds)):ph.empty('Sin credenciales válidas. Prueba otra wordlist o usuario.');
+  const uniq = pH.cap(creds.filter((r, i, a) => a.findIndex(x => x.join('\t') === r.join('\t')) === i), 300);
+  const atM = String(r || '').match(/(\d+\s+of\s+\d+\s+targets?)/i);
+  let o = ph.sum([ph.pill(uniq.length + ' credenciales', uniq.length ? 'crit' : 'ok'), atM ? ph.pill(atM[1], 'info') : '']);
+  o += uniq.length ? ph.sec('Credenciales válidas', ph.tbl(['HOST','PROTO','USER','PASSWORD'], uniq)) : ph.empty('Sin credenciales válidas. Prueba otra wordlist o usuario.');
   return o;
 };
 
@@ -6793,7 +6871,179 @@ parsers.sm = r => {
 
 /* CRACKMAPEXEC / NETEXEC */
 parsers.cd = r => {
-  const L = r.split('\n');
+  const L = pH.lines(r);
+
+  // ── lsassy parser ─────────────────────────────────────────────────────────
+  // lsassy output changed across versions and methods. Support table output,
+  // key/value blocks, compact DOMAIN\user:secret lines, and NTLM hash rows.
+  const isLsassy = /\blsassy\b|Dumping lsass|Found\s+\d+\s+secret|credentials? found|\bwdigest\b|\bkerberos\b|\bcredman\b|\bmsv\b/i.test(r)
+                && !/secretsdump|Dumping local SAM|Dumping Domain Credentials/i.test(r);
+
+  if (isLsassy) {
+    const plaintext = [];
+    const hashes = [];
+    const tickets = [];
+    const infos = [];
+    let ticketWrittenCount = null;
+    let currentSource = '';
+    let kv = {};
+
+    const pushPlain = (source, domain, user, secret) => {
+      source = pH.text(source || currentSource || 'lsassy');
+      domain = pH.text(domain || '');
+      user = pH.text(user || '');
+      secret = String(secret || '').trim();
+      if (!user || !secret || /^<empty>|^\(null\)$/i.test(secret)) return;
+      const row = [source, domain || '—', user, `<code>${pH.text(secret)}</code>`];
+      if (!plaintext.some(x => x.join('\t') === row.join('\t'))) plaintext.push(row);
+    };
+    const pushHash = (source, domain, user, ntlm, sha1 = '', host = '') => {
+      ntlm = String(ntlm || '').trim();
+      if (!/^[a-f0-9]{32}$/i.test(ntlm)) return;
+      const row = [
+        pH.text(host || '—'),
+        pH.text(source || currentSource || 'msv'),
+        pH.text(domain || '—'),
+        pH.text(user || '—'),
+        `<code>${pH.text(ntlm)}</code>`,
+        sha1 ? `<code>${pH.text(sha1)}</code>` : '—',
+      ];
+      if (!hashes.some(x => x.join('\t') === row.join('\t'))) hashes.push(row);
+    };
+    const pushTicket = (host, domain, user, type, endTime, file, line) => {
+      const row = [pH.text(host || '—'), pH.text(domain || '—'), pH.text(user || '—'), pH.text(type || 'ticket'), pH.text(endTime || '—'), file ? `<code>${pH.text(file)}</code>` : pH.text(line || '')];
+      if (!tickets.some(x => x.join('\t') === row.join('\t'))) tickets.push(row);
+    };
+    const flushKv = () => {
+      const user = kv.username || kv.user || kv.login || kv.account;
+      const domain = kv.domain || kv.realm || '';
+      const pass = kv.password || kv.pass || kv.secret || kv.value;
+      const ntlm = kv.ntlm || kv.nthash || kv.hash;
+      if (pass) pushPlain(kv.source, domain, user, pass);
+      if (ntlm) pushHash(kv.source, domain, user, ntlm);
+      kv = {};
+    };
+
+    for (const rawLine of L) {
+      const line = rawLine.trim();
+      if (!line) { flushKv(); continue; }
+      if (/^[-=]{3,}$/.test(line)) { flushKv(); continue; }
+
+      const writtenM = line.match(/(\d+)\s+Kerberos tickets? written to\s+(.+)/i);
+      if (writtenM) {
+        ticketWrittenCount = parseInt(writtenM[1], 10);
+        infos.push(ph.find(`${pH.text(writtenM[1])} Kerberos tickets written to <code>${pH.text(writtenM[2])}</code>`, 'info'));
+        continue;
+      }
+
+      // Real lsassy row format:
+      // 172.16.150.15 - DOMAIN\user [NT] hash | [SHA1] sha1
+      // 172.16.150.15 - DOMAIN\user [PWD] secret
+      // 172.16.150.15 - DOMAIN\user [TGT] Domain: X - End time: ... (file.kirbi)
+      const rowM = line.match(/^(\S+)\s+-\s+(.+?)\s+\[([A-Z0-9_]+)\]\s+(.+)$/i);
+      if (rowM) {
+        const host = rowM[1];
+        const account = rowM[2].trim();
+        const typ = rowM[3].toUpperCase();
+        const val = rowM[4].trim();
+        let domain = '', user = account;
+        if (account.includes('\\')) [domain, user] = account.split('\\', 2);
+        else if (account.includes('@')) [user, domain] = account.split('@', 2);
+
+        if (typ === 'NT' || typ === 'NTLM') {
+          const nt = (val.match(/\b[a-f0-9]{32}\b/i) || [])[0];
+          const sha = (val.match(/\[SHA1\]\s*([a-f0-9]{40})/i) || [,''])[1];
+          pushHash('NT', domain, user, nt, sha, host);
+          continue;
+        }
+        if (typ === 'PWD' || typ === 'PASSWORD' || typ === 'DPAPI') {
+          pushPlain(typ, domain, user, val);
+          continue;
+        }
+        if (/^(TGT|TGS|KIRBI|CCACHE)$/.test(typ)) {
+          const dom = (val.match(/Domain:\s*([^\s-]+)/i) || [,''])[1] || domain;
+          const end = (val.match(/End time:\s*([^()]+?)(?:\s*\(|$)/i) || [,''])[1].trim();
+          const file = (val.match(/\(([^()]+\.(?:kirbi|ccache))\)/i) || [,''])[1];
+          pushTicket(host, dom, user, typ, end, file, line);
+          continue;
+        }
+      }
+
+      const sourceM = line.match(/^\[?\+?\]?\s*(wdigest|kerberos|credman|msv|ssp|livessp|dpapi|tspkg)\b/i)
+                   || line.match(/^\s*(wdigest|kerberos|credman|msv|ssp|livessp|dpapi|tspkg)\s*[:|]/i);
+      if (sourceM) currentSource = sourceM[1].toLowerCase();
+
+      if (/\[[-*!]\]|error|failed|denied|timeout|Authentication/i.test(line) && !/successful|success/i.test(line)) {
+        infos.push(ph.find(pH.text(line), /error|failed|denied|timeout/i.test(line) ? 'warn' : 'info'));
+      }
+
+      // Table style: | source | domain | username | password | ntlm |
+      if ((line.includes('|') || line.includes('│')) && !/^[+┌└├][-─+┬┴┼]+[+┐┘┤]?$/.test(line)) {
+        const cells = line.split(/[|│]/).map(c => c.trim()).filter(Boolean);
+        const lc = cells.map(c => c.toLowerCase());
+        if (lc.some(c => /user|domain|password|ntlm|sha1|source/.test(c)) && !lc.some(c => /^[a-f0-9]{32}$/.test(c))) continue;
+        if (cells.length >= 3) {
+          const ntlm = cells.find(c => /^[a-f0-9]{32}$/i.test(c));
+          const pass = cells.find(c => c && !/^[a-f0-9]{32}$/i.test(c) && !/^(wdigest|kerberos|credman|msv|ssp|domain|username|password|ntlm)$/i.test(c) && c.length > 1 && !c.includes('\\'));
+          const acct = cells.find(c => /\\|@/.test(c)) || '';
+          let domain = '', user = '';
+          if (acct.includes('\\')) [domain, user] = acct.split('\\', 2);
+          else if (acct.includes('@')) [user, domain] = acct.split('@', 2);
+          if (!user) {
+            user = cells.find(c => !/^[a-f0-9]{32}$/i.test(c) && !/^(wdigest|kerberos|credman|msv|ssp)$/i.test(c) && c !== pass) || '';
+          }
+          const src = cells.find(c => /^(wdigest|kerberos|credman|msv|ssp|livessp|dpapi|tspkg)$/i.test(c)) || currentSource;
+          if (pass) pushPlain(src, domain, user, pass);
+          if (ntlm) pushHash(src, domain, user, ntlm);
+        }
+        continue;
+      }
+
+      // Key/value style across several lines.
+      const kvm = line.match(/^\s*(source|package|domain|realm|username|user|login|account|password|pass|secret|value|ntlm|nthash|hash)\s*[:=]\s*(.+)$/i);
+      if (kvm) {
+        const key = kvm[1].toLowerCase();
+        kv[key === 'package' ? 'source' : key] = kvm[2].trim();
+        if (/^(password|pass|secret|value|ntlm|nthash|hash)$/i.test(key)) flushKv();
+        continue;
+      }
+
+      // DOMAIN\user:password or user@domain:password; keep passwords with spaces.
+      const plainM = line.match(/(?:^|\s)(?:\[\+\]\s*)?([\w.-]+)\\([^:\s]+):(.+)$/)
+                  || line.match(/(?:^|\s)(?:\[\+\]\s*)?([^:\s@]+)@([\w.-]+):(.+)$/);
+      if (plainM) {
+        if (line.includes('@') && !line.includes('\\')) pushPlain(currentSource, plainM[2], plainM[1], plainM[3]);
+        else pushPlain(currentSource, plainM[1], plainM[2], plainM[3]);
+        continue;
+      }
+
+      // NTLM hash style: DOMAIN\user aad3...:ntlm or DOMAIN\user:rid:lm:ntlm:::
+      const hashM = line.match(/([\w.-]+)\\([^\s:]+).*?\b([a-f0-9]{32})\b/i)
+                 || line.match(/^([^:]+):\d+:[a-f0-9]{32}:([a-f0-9]{32}):::/i);
+      if (hashM) {
+        if (hashM.length === 4) pushHash(currentSource || 'msv', hashM[1], hashM[2], hashM[3]);
+        else pushHash(currentSource || 'msv', '', hashM[1], hashM[2]);
+        continue;
+      }
+
+      if (/ticket|kirbi|ccache/i.test(line)) pushTicket('', '', '', 'ticket', '', '', line);
+    }
+    flushKv();
+
+    const ticketCount = ticketWrittenCount || tickets.length;
+    const total = plaintext.length + hashes.length + tickets.length;
+    let o = ph.sum([
+      ph.pill(plaintext.length + ' plaintext/PWD', plaintext.length ? 'crit' : 'ok'),
+      ph.pill(hashes.length + ' NTLM', hashes.length ? 'warn' : 'ok'),
+      ticketCount ? ph.pill(ticketCount + ' tickets', 'info') : '',
+    ]);
+    if (plaintext.length) o += ph.sec('lsassy — Plaintext / PWD', ph.tbl(['FUENTE','DOMINIO','USUARIO','SECRETO'], plaintext));
+    if (hashes.length)    o += ph.sec('lsassy — NTLM Hashes', ph.tbl(['HOST','FUENTE','DOMINIO','USUARIO','NTLM','SHA1'], hashes));
+    if (tickets.length)   o += ph.sec('lsassy — Tickets / Kerberos' + (ticketWrittenCount && ticketWrittenCount !== tickets.length ? ` (${tickets.length} mostrados / ${ticketWrittenCount} escritos)` : ''), ph.tbl(['HOST','DOMINIO','USUARIO','TIPO','END TIME','FILE'], tickets.slice(0, 300)));
+    if (infos.length)     o += ph.sec('lsassy — Info / Errores', infos.slice(0, 60).join(''));
+    if (!total) o += ph.empty('lsassy ejecutó, pero no se detectaron credenciales parseables. Revisa RAW, privilegios y método de dump.');
+    return o;
+  }
 
   // ── Detect secretsdump output ─────────────────────────────────────────────
   const HASH_LINE_RE  = /^[^:]+:\d+:[a-f0-9]{32}:[a-f0-9]{32}:::/i;
@@ -7707,58 +7957,93 @@ parsers.ae = r => {
 
 /* RESPONDER / MITM6 */
 parsers.mt = r => {
-  const hashes=r.split('\n').filter(l=>/NTLMv[12]|NetNTLMv|hash.*captured|::.*captured/i.test(l)).map(l=>ph.esc(l.trim()));
-  const creds=r.split('\n').filter(l=>/\[HTTP\].*User|username.*password/i.test(l)).map(l=>ph.esc(l.trim()));
-  let o=ph.sum([ph.pill(hashes.length+' hashes capturados',hashes.length>0?'crit':'ok'),creds.length?ph.pill(creds.length+' credenciales clear','crit'):'']);
-  if (hashes.length) o+=ph.sec('Hashes NTLM (para crack con hashcat -m 5600)',hashes.slice(0,30).map(h=>ph.find(h,'crit')).join(''));
-  if (creds.length)  o+=ph.sec('Credenciales en claro',creds.map(c=>ph.find(c,'crit')).join(''));
-  if (!hashes.length&&!creds.length) o+=ph.empty('Sin credenciales capturadas aún. Espera tráfico de autenticación.');
+  const lines = pH.lines(r);
+  const hashes = pH.uniq(lines.filter(l => /NTLMv[12]|NetNTLMv|hash.*captured|::.*(?:[A-Fa-f0-9]{16,}|captured)/i.test(l))).map(pH.text);
+  const creds = pH.uniq(lines.filter(l => /\[HTTP\].*User|username.*password|cleartext|Basic\s+Auth/i.test(l))).map(pH.text);
+  let o = ph.sum([
+    ph.pill(hashes.length + ' hashes capturados', hashes.length ? 'crit' : 'ok'),
+    creds.length ? ph.pill(creds.length + ' credenciales clear', 'crit') : '',
+  ]);
+  if (hashes.length) o += ph.sec('Hashes NTLM (para crack con hashcat -m 5600)', pH.cap(hashes, 80).map(h => ph.find(h, 'crit')).join(''));
+  if (creds.length)  o += ph.sec('Credenciales en claro', pH.cap(creds, 80).map(c => ph.find(c, 'crit')).join(''));
+  if (!hashes.length && !creds.length) o += ph.empty('Sin credenciales capturadas aún. Espera tráfico de autenticación.');
   return o;
 };
 
 /* TCPDUMP */
 parsers.td = r => {
-  const L=r.split('\n').filter(l=>l.trim());
-  const pkts=L.filter(l=>/^\d{2}:\d{2}:\d{2}/.test(l)).length;
-  const protoMap={};
-  for(const l of L){const m=l.match(/\b(TCP|UDP|ICMP|ARP|DNS|HTTP|TLS|SSH|QUIC)\b/i);if(m){const k=m[1].toUpperCase();protoMap[k]=(protoMap[k]||0)+1;}}
-  const ips=[...new Set(r.match(/\b(?:\d{1,3}\.){3}\d{1,3}\b/g)||[])];
-  let o=ph.sum([ph.pill(pkts+' paquetes','info'),ph.pill(ips.length+' IPs únicas','warn')]);
-  const protos=Object.entries(protoMap).sort((a,b)=>b[1]-a[1]);
-  if (protos.length) o+=ph.sec('Protocolos',ph.tbl(['PROTO','PAQUETES'],protos.map(([k,v])=>[k,String(v)])));
-  if (ips.length)    o+=ph.sec('IPs observadas',ips.slice(0,40).map(i=>ph.find(ph.esc(i),'info')).join(''));
-  if (!pkts)         o+=ph.empty('Sin paquetes capturados. Verifica la interfaz (-i) y permisos.');
+  const L = pH.lines(r);
+  const pkts = L.filter(l => /^\d{2}:\d{2}:\d{2}|^\d{4}-\d{2}-\d{2}/.test(l)).length;
+  const protoMap = {};
+  for (const l of L) {
+    const m = l.match(/\b(TCP|UDP|ICMP6?|ARP|DNS|HTTP|TLS|SSH|QUIC|LLMNR|MDNS|NBNS)\b/i);
+    if (m) { const k = m[1].toUpperCase(); protoMap[k] = (protoMap[k] || 0) + 1; }
+  }
+  const ips = pH.ips(r);
+  let o = ph.sum([ph.pill(pkts + ' paquetes', pkts ? 'info' : 'warn'), ph.pill(ips.length + ' IPs únicas', ips.length ? 'warn' : 'ok')]);
+  const protos = Object.entries(protoMap).sort((a,b) => b[1] - a[1]);
+  if (protos.length) o += ph.sec('Protocolos', ph.tbl(['PROTO','PAQUETES'], protos.map(([k,v]) => [ph.esc(k), String(v)])));
+  if (ips.length)    o += ph.sec('IPs observadas', pH.cap(ips, 80).map(i => ph.find(ph.esc(i), 'info')).join(''));
+  if (!pkts)         o += ph.empty('Sin paquetes capturados. Verifica la interfaz (-i) y permisos.');
   return o;
 };
 
 /* CURL */
 parsers.cu = r => {
-  const stM=r.match(/HTTP\/[\d.]+ (\d{3}[^\r\n]*)/);
-  const srvM=r.match(/[Ss]erver: (.+)/);
-  const ctM=r.match(/[Cc]ontent-[Tt]ype: (.+)/);
-  const szM=r.match(/[Cc]ontent-[Ll]ength: (\d+)/);
-  const hdrs=r.split('\n').filter(l=>/^[\w-]+:\s/.test(l)).map(l=>ph.esc(l.trim())).slice(0,15);
-  let o=ph.sum([stM?sBadge(stM[1].split(' ')[0]):'',srvM?ph.pill(srvM[1].trim().slice(0,40),'info'):'',ctM?ph.pill(ctM[1].trim().slice(0,30),''):'',szM?ph.pill(szM[1]+' bytes',''):'']);
-  if (hdrs.length) o+=ph.sec('Headers respuesta',hdrs.map(h=>ph.find(h,'info')).join(''));
+  const clean = pH.clean(r);
+  const statusMatches = [...clean.matchAll(/^HTTP\/[^\s]+\s+(\d{3}[^\r\n]*)/gmi)];
+  const st = statusMatches.length ? statusMatches[statusMatches.length - 1][1] : '';
+  const srvM = clean.match(/^Server:\s*(.+)$/im);
+  const ctM = clean.match(/^Content-Type:\s*(.+)$/im);
+  const szM = clean.match(/^Content-Length:\s*(\d+)/im);
+  const locM = clean.match(/^Location:\s*(.+)$/im);
+  const hdrs = pH.lines(clean).filter(l => /^[\w-]+:\s/.test(l)).slice(0, 40).map(l => ph.find(pH.text(l), 'info')).join('');
+  let o = ph.sum([
+    st ? pH.status(st) : ph.pill('sin status', 'warn'),
+    srvM ? ph.pill(pH.text(srvM[1].slice(0, 40)), 'info') : '',
+    ctM ? ph.pill(pH.text(ctM[1].slice(0, 45)), '') : '',
+    szM ? ph.pill(szM[1] + ' bytes', '') : '',
+    locM ? ph.pill('redirect', 'info') : '',
+  ]);
+  if (locM) o += ph.sec('Redirect', ph.find(pH.text(locM[1]), 'info'));
+  if (hdrs) o += ph.sec('Headers respuesta', hdrs);
+  if (!st && !hdrs) o += ph.empty('Sin respuesta HTTP parseable. Revisa errores de conexión en RAW.');
   return o;
 };
 
 /* WGET */
 parsers.wg = r => {
-  const saved=r.match(/saved \[(\d+)\/(\d+)\]|'(.+)' saved/);
-  const url=r.match(/URL:\s*(.+)|--(.+)\s+Saving/);
-  const err=r.match(/ERROR|failed|unable/i);
-  let o=ph.sum([saved?ph.pill('Descargado: '+saved[0].slice(0,40),'ok'):err?ph.pill('Error de descarga','crit'):ph.pill('Sin info de descarga','warn')]);
-  if (url) o+=ph.sec('URL',ph.find(ph.esc(url[1]||url[2]),'info'));
+  const clean = pH.clean(r);
+  const saved = clean.match(/['"]?([^'"\n]+)['"]?\s+saved\s+\[(\d+(?:\/\d+)?)\]/i)
+             || clean.match(/Saving to:\s*[‘'`](.+?)[’'`]/i);
+  const urls = pH.urls(clean);
+  const err = clean.match(/ERROR\s+\d+|failed|unable|Name or service not known|Connection refused|timed out/i);
+  let o = ph.sum([
+    saved ? ph.pill('Descargado', 'ok') : err ? ph.pill('Error de descarga', 'crit') : ph.pill('Sin info de descarga', 'warn'),
+    urls.length ? ph.pill(urls.length + ' URL', 'info') : '',
+  ]);
+  if (saved) o += ph.sec('Archivo', ph.find(pH.text(saved[1] || saved[0]), 'ok'));
+  if (urls.length) o += ph.sec('URL', urls.slice(0, 10).map(u => ph.find(ph.esc(u), 'info')).join(''));
+  if (err) o += ph.sec('Error', ph.find(pH.text(err[0]), 'warn'));
   return o;
 };
 
 /* HTTPX */
 parsers.hx = r => {
-  const rows=[];
-  for(const l of r.split('\n')){const m=l.match(/^(https?:\/\/\S+)\s+\[(\d+)\]/);if(m){const ex=(l.match(/\[([^\[\]]+)\]/g)||[]).slice(2).map(e=>ph.esc(e.replace(/[\[\]]/g,''))).join(' ');rows.push([ph.esc(m[1]),sBadge(m[2]),ex]);}}
-  let o=ph.sum([ph.pill(rows.length+' hosts activos',rows.length>0?'ok':'warn')]);
-  o+=rows.length?ph.sec('Hosts respondiendo',ph.tbl(['URL','STATUS','INFO'],rows)):ph.empty('Sin hosts respondiendo en el rango dado.');
+  const rows = [];
+  for (const l of pH.lines(r)) {
+    let url = (l.match(/^(https?:\/\/\S+)/i) || [])[1];
+    if (!url) continue;
+    url = url.replace(/[),.;]+$/, '');
+    const groups = [...l.matchAll(/\[([^\[\]]+)\]/g)].map(m => m[1]);
+    const codes = groups.flatMap(g => (g.match(/\b\d{3}\b/g) || []));
+    const lastCode = codes.length ? codes[codes.length - 1] : '';
+    const info = groups.filter(g => !/^\d{3}(?:,\d{3})*$/.test(g)).slice(0, 5).map(pH.text).join(' ');
+    rows.push([ph.esc(url), lastCode ? pH.status(lastCode) : ph.pill('?', 'info'), codes.length > 1 ? pH.text(codes.join(' → ')) : '—', info || '—']);
+  }
+  const uniq = pH.cap(rows.filter((r, i, a) => a.findIndex(x => x[0] === r[0]) === i), 1000);
+  let o = ph.sum([ph.pill(uniq.length + ' hosts activos', uniq.length ? 'ok' : 'warn')]);
+  o += uniq.length ? ph.sec('Hosts respondiendo', ph.tbl(['URL','STATUS','CHAIN','INFO'], uniq)) : ph.empty('Sin hosts respondiendo en el rango dado.');
   return o;
 };
 
@@ -7786,35 +8071,42 @@ parsers.pe = r => {
 };
 /* SHERLOCK */
 parsers.sk = r => {
-  const found=[...r.matchAll(/\[\+\]\s+(.+?):\s+(https?:\/\/\S+)/g)].map(m=>([ph.esc(m[1]),`<a href="${ph.esc(m[2])}" style="color:var(--cyan)">${ph.esc(m[2])}</a>`]));
-  const errors=r.split('\n').filter(l=>/\[!\]/.test(l)).length;
-  let o=ph.sum([ph.pill(found.length+' perfiles encontrados',found.length>0?'crit':'ok'),errors?ph.pill(errors+' errores','warn'):'']);
-  o+=found.length?ph.sec('Perfiles encontrados ('+found.length+')',ph.tbl(['PLATAFORMA','URL'],found)):ph.empty('Sin perfiles. Verifica que sherlock esté instalado: pip3 install sherlock-project');
+  const found = [];
+  for (const m of String(r || '').matchAll(/\[\+\]\s+(.+?):\s+(https?:\/\/\S+)/g)) {
+    const url = m[2].replace(/[),.;]+$/, '');
+    found.push([pH.text(m[1]), `<a href="${ph.esc(url)}" style="color:var(--cyan)">${ph.esc(url)}</a>`]);
+  }
+  const uniq = found.filter((r, i, a) => a.findIndex(x => x[1] === r[1]) === i);
+  const errors = pH.lines(r).filter(l => /\[!\]|error|timeout/i.test(l)).length;
+  let o = ph.sum([ph.pill(uniq.length + ' perfiles encontrados', uniq.length ? 'crit' : 'ok'), errors ? ph.pill(errors + ' errores', 'warn') : '']);
+  o += uniq.length ? ph.sec('Perfiles encontrados (' + uniq.length + ')', ph.tbl(['PLATAFORMA','URL'], pH.cap(uniq, 300))) : ph.empty('Sin perfiles. Verifica que sherlock esté instalado: pip3 install sherlock-project');
   return o;
 };
 
 /* HOLEHE */
 parsers.he = r => {
-  const used=[...r.matchAll(/\[\+\]\s+(\S+)/g)].map(m=>ph.esc(m[1])).filter(s=>!s.includes('@'));
-  const notused=r.split('\n').filter(l=>/\[-\]/.test(l)).length;
-  const rateLimit=r.split('\n').filter(l=>/\[~\]/.test(l)).length;
-  let o=ph.sum([ph.pill(used.length+' sitios registrados',used.length>0?'crit':'ok'),notused?ph.pill(notused+' no encontrados','ok'):'',rateLimit?ph.pill(rateLimit+' rate limited','warn'):'']);
-  o+=used.length?ph.sec('Cuenta registrada en',used.map(s=>ph.find(s,'crit')).join('')):ph.empty('Email no encontrado en los sitios verificados.');
+  const lines = pH.lines(r);
+  const used = pH.uniq(lines.map(l => (l.match(/\[\+\]\s+([^\s:]+)/) || [,''])[1]).filter(Boolean).filter(s => !s.includes('@')));
+  const notused = lines.filter(l => /\[-\]/.test(l)).length;
+  const rateLimit = lines.filter(l => /\[~\]|rate.?limit|too many/i.test(l)).length;
+  let o = ph.sum([ph.pill(used.length + ' sitios registrados', used.length ? 'crit' : 'ok'), notused ? ph.pill(notused + ' no encontrados', 'ok') : '', rateLimit ? ph.pill(rateLimit + ' rate limited', 'warn') : '']);
+  o += used.length ? ph.sec('Cuenta registrada en', used.map(s => ph.find(ph.esc(s), 'crit')).join('')) : ph.empty('Email no encontrado en los sitios verificados.');
   return o;
 };
 
 /* DNSRECON */
 parsers.dr = r => {
-  const L=r.split('\n');
-  const records=[];
-  for(const l of L){
-    const m=l.match(/\[\*\]\s+(\w+)\s+(\S+)\s+(.+)/)||l.match(/\[[\+\*]\]\s+(\w+)\s+(\S+)\s+(.+)/);
-    if(m&&/^(A|AAAA|MX|NS|SOA|TXT|CNAME|SRV|PTR)$/.test(m[1]))records.push([ph.pill(m[1],'info'),ph.esc(m[2]),ph.esc(m[3].trim())]);
+  const records = [];
+  for (const l of pH.lines(r)) {
+    const m = l.match(/\[[+*]\]\s+(A|AAAA|MX|NS|SOA|TXT|CNAME|SRV|PTR)\s+(\S+)\s+(.+)/i)
+           || l.match(/^\s*(A|AAAA|MX|NS|SOA|TXT|CNAME|SRV|PTR)\s+(\S+)\s+(.+)/i);
+    if (m) records.push([ph.pill(ph.esc(m[1].toUpperCase()), 'info'), pH.text(m[2]), pH.text(m[3])]);
   }
-  const axfr=r.includes('Zone Transfer was successful');
-  const wildcard=r.includes('wildcard');
-  let o=ph.sum([ph.pill(records.length+' registros DNS',records.length>0?'ok':'warn'),axfr?ph.pill('AXFR exitoso','crit'):'',wildcard?ph.pill('wildcard detectado','warn'):'']);
-  o+=records.length?ph.sec('Registros DNS',ph.tbl(['TIPO','HOST','VALOR'],records)):ph.empty('Sin registros. Prueba con -t axfr para zone transfer.');
+  const uniq = pH.cap(records.filter((r, i, a) => a.findIndex(x => x.join('\t') === r.join('\t')) === i), 500);
+  const axfr = /Zone Transfer was successful|AXFR.*successful/i.test(r);
+  const wildcard = /wildcard/i.test(r);
+  let o = ph.sum([ph.pill(uniq.length + ' registros DNS', uniq.length ? 'ok' : 'warn'), axfr ? ph.pill('AXFR exitoso', 'crit') : '', wildcard ? ph.pill('wildcard detectado', 'warn') : '']);
+  o += uniq.length ? ph.sec('Registros DNS', ph.tbl(['TIPO','HOST','VALOR'], uniq)) : ph.empty('Sin registros. Prueba con -t axfr para zone transfer.');
   return o;
 };
 
@@ -8292,7 +8584,7 @@ async function execCmd(cmd, outCId, outAreaId, prefix) {
             : cb => setTimeout(cb, 0);
           _schedule(() => {
             try {
-              injectParsedTabs(prefix, parsers[prefix](raw));
+              injectParsedTabs(prefix, parsers[prefix](pH.clean(raw)));
             } catch(parseErr) {
               injectParsedTabs(prefix, ph.empty('Error en parser: ' + parseErr.message));
               console.error('[parser error]', prefix, parseErr);
@@ -9224,6 +9516,8 @@ function nxcSelectModule(name) {
 function nxcRenderParsed(parsed) {
   const p = parsed || {};
   const s = p.summary || {};
+  const hostOf = x => x.target || x.ip || x.host || '';
+  const lineOf = x => x.line || x.message || '';
   let html = ph.sum([
     ph.pill((s.hosts || 0) + ' hosts', 'info'),
     ph.pill((s.credentials || 0) + ' auth OK', (s.credentials || 0) ? 'ok' : ''),
@@ -9231,45 +9525,49 @@ function nxcRenderParsed(parsed) {
     ph.pill((p.indicators || []).length + ' indicators', (p.indicators || []).length ? 'warn' : 'ok'),
     ph.pill((s.shares || 0) + ' shares', (s.shares || 0) ? 'warn' : ''),
     ph.pill((s.errors || 0) + ' errors', (s.errors || 0) ? 'warn' : 'ok'),
+    ph.pill((s.unparsed || 0) + ' raw', (s.unparsed || 0) ? 'warn' : 'ok'),
   ]);
   if ((p.indicators || []).length) {
     html += ph.sec('Smart detections', p.indicators.map(i => ph.find(
-      `<span style="color:var(--g);font-weight:700">${ph.esc(i.label)}</span>`+
-      ` <span style="color:var(--mut);font-size:11px">${ph.esc(i.host || '')}</span>`+
+      `<span style="color:var(--g);font-weight:700">${ph.esc(i.label || 'indicator')}</span>`+
+      ` <span style="color:var(--mut);font-size:11px">${ph.esc(i.host || i.target || '')}</span>`+
       `<br><span style="color:var(--dim);font-size:11px">${ph.esc(i.line || '')}</span>`,
       i.severity || 'info'
     )).join(''));
   }
   if ((p.credentials || []).length) {
-    html += ph.sec('Credentials', ph.tbl(['PROTO','HOST','IDENTITY','SECRET','ADMIN'], p.credentials.map(c => [
-      ph.esc(c.protocol || ''), ph.esc(c.host || ''), ph.esc(c.identity || ''),
+    html += ph.sec('Credentials', ph.tbl(['PROTO','TARGET','PORT','IDENTITY','SECRET','ADMIN'], p.credentials.map(c => [
+      ph.esc(c.protocol || ''), ph.esc(hostOf(c)), ph.esc(c.port || ''), ph.esc(c.identity || ''),
       `<code>${ph.esc(c.secret || '')}</code>`, c.admin ? ph.pill('Pwned','crit') : ph.pill('OK','ok')
     ])));
   }
   if ((p.hosts || []).length) {
-    html += ph.sec('Hosts', ph.tbl(['PROTO','IP','HOST','DOMAIN','SIGNING','SMBv1'], p.hosts.map(h => [
-      ph.esc(h.protocol || ''), ph.esc(h.ip || ''), ph.esc(h.name || h.host || ''),
+    html += ph.sec('Hosts', ph.tbl(['PROTO','TARGET','PORT','HOST','DOMAIN','SIGNING','SMBv1'], p.hosts.map(h => [
+      ph.esc(h.protocol || ''), ph.esc(hostOf(h)), ph.esc(h.port || ''), ph.esc(h.name || h.host || ''),
       ph.esc(h.domain || ''), ph.esc(h.signing || ''), ph.esc(h.smbv1 || '')
     ])));
   }
   if ((p.shares || []).length) {
-    html += ph.sec('Shares', ph.tbl(['HOST','SHARE','PERM','COMMENT'], p.shares.map(x => [
-      ph.esc(x.host || ''), ph.esc(x.share || ''), ph.pill(ph.esc(x.permission || ''), /WRITE/.test(x.permission || '') ? 'crit' : 'warn'), ph.esc(x.comment || '')
+    html += ph.sec('Shares', ph.tbl(['TARGET','SHARE','PERM','COMMENT'], p.shares.map(x => [
+      ph.esc(hostOf(x)), ph.esc(x.share || ''), ph.pill(ph.esc(x.permission || ''), /WRITE|FULL|CHANGE/.test(x.permission || '') ? 'crit' : 'warn'), ph.esc(x.comment || '')
     ])));
   }
   if ((p.users || []).length) {
-    html += ph.sec('Users', ph.tbl(['HOST','USER','DETAIL'], p.users.slice(0,200).map(x => [ph.esc(x.host || ''), ph.esc(x.user || ''), ph.esc(x.detail || '')])));
+    html += ph.sec('Users', ph.tbl(['TARGET','USER','DETAIL'], p.users.slice(0,200).map(x => [ph.esc(hostOf(x)), ph.esc(x.user || ''), ph.esc(x.detail || '')])));
   }
   if ((p.groups || []).length) {
-    html += ph.sec('Groups', ph.tbl(['HOST','GROUP','DETAIL'], p.groups.slice(0,200).map(x => [ph.esc(x.host || ''), ph.esc(x.group || ''), ph.esc(x.detail || '')])));
+    html += ph.sec('Groups', ph.tbl(['TARGET','GROUP','DETAIL'], p.groups.slice(0,200).map(x => [ph.esc(hostOf(x)), ph.esc(x.group || ''), ph.esc(x.detail || '')])));
   }
   if ((p.findings || []).length) {
-    html += ph.sec('Findings', p.findings.slice(0,80).map(f => ph.find(ph.esc(f.line || ''), 'info')).join(''));
+    html += ph.sec('Findings', p.findings.slice(0,100).map(f => ph.find(ph.esc(lineOf(f)), 'info')).join(''));
   }
   if ((p.errors || []).length) {
-    html += ph.sec('Errors', p.errors.slice(0,40).map(e => ph.find(ph.esc(e.line || ''), 'warn')).join(''));
+    html += ph.sec('Errors', p.errors.slice(0,60).map(e => ph.find(ph.esc((e.status ? e.status + ' · ' : '') + lineOf(e)), 'warn')).join(''));
   }
-  if (!(p.indicators || []).length && !(p.credentials || []).length && !(p.hosts || []).length && !(p.findings || []).length) {
+  if ((p.unparsed || []).length) {
+    html += ph.sec('Unparsed / raw kept', p.unparsed.slice(0,80).map(u => ph.find(ph.esc(lineOf(u)), 'info')).join(''));
+  }
+  if (!(p.indicators || []).length && !(p.credentials || []).length && !(p.hosts || []).length && !(p.findings || []).length && !(p.errors || []).length && !(p.unparsed || []).length) {
     html += ph.empty('Sin resultados NXC reconocibles. Revisa RAW, credenciales y conectividad.');
   }
   return html;
@@ -11013,20 +11311,21 @@ function hxCountLine(line) {
   var url  = urlM ? urlM[1].replace(/[,;]+$/, '') : null;
   if (url && _hxSeen[url]) return;
   if (url) _hxSeen[url] = 1;
-  // Extract all codes from bracket groups: [200], [301,200], [301,302,200]
-  var codes = [], rx = /\[(\d{3}(?:,\d{3})*)\]/g, m2;
+  // Extract status codes from any bracket group. httpx may include metadata
+  // groups next to [301,302,200], so do not assume every group is only codes.
+  var codes = [], rx = /\[([^\[\]]+)\]/g, m2;
   while ((m2 = rx.exec(line)) !== null) {
-    m2[1].split(',').forEach(function(c){ codes.push(c); });
+    (m2[1].match(/\b\d{3}\b/g) || []).forEach(function(c){ codes.push(c); });
   }
   if (!codes.length) return;
   var has3xx = codes.some(function(c){ return c[0] === '3'; });
   var last   = codes[codes.length - 1];
   _hxLive.total++;
   if (url) _hxBuf.live.push(url);
-  if      (has3xx)          { _hxLive['30x']++;   if(url) _hxBuf.redirects.push(url); }
-  else if (last === '200')  { _hxLive['200']++;   if(url) _hxBuf.ok.push(url); }
-  else if (last === '403')  { _hxLive['403']++;   if(url) _hxBuf.forbidden.push(url); }
-  else                      { _hxLive.other++; }
+  if      (has3xx)                 { _hxLive['30x']++;   if(url) _hxBuf.redirects.push(url); }
+  else if (/^2/.test(last))        { _hxLive['200']++;   if(url) _hxBuf.ok.push(url); }
+  else if (last === '403')         { _hxLive['403']++;   if(url) _hxBuf.forbidden.push(url); }
+  else                             { _hxLive.other++; }
   var cnt = function(id,v){ var e=document.getElementById(id); if(e) e.textContent=v; };
   cnt('hx-cnt-total', _hxLive.total);
   cnt('hx-cnt-200',   _hxLive['200']);
@@ -11314,18 +11613,22 @@ function ncParseResults(exitCode) {
         appendOut('nc-out-c', '\n→ Sin hallazgos (archivo vacío o no generado)', 'warn');
         return;
       }
-      var lines = d.content.split('\n').filter(function(l){ return l.trim(); });
+      var lines = pH.lines(d.content);
       if (!lines.length) {
         appendOut('nc-out-c', '\n→ Sin hallazgos para estos criterios', 'warn');
+        injectParsedTabs('nc', ph.empty('Sin hallazgos para estos criterios.'));
         return;
       }
-      // Count by severity keyword in each finding line
       var counts = {critical:0, high:0, medium:0, low:0, info:0, other:0};
-      var sevRx = /\[(critical|high|medium|low|info)\]/i;
+      var rows = [];
       lines.forEach(function(l) {
-        var m = l.match(sevRx);
+        var m = l.match(/\[(critical|high|medium|low|info)\]/i);
         var sev = m ? m[1].toLowerCase() : 'other';
         counts[sev] = (counts[sev] || 0) + 1;
+        var id = (l.match(/^\[([^\]]+)\]/) || [,''])[1];
+        var proto = (l.match(/\[(http|dns|ssl|tcp|headless|file)\]/i) || [,''])[1];
+        var target = (l.match(/(https?:\/\/\S+|[a-z0-9.-]+:\d+|\b(?:\d{1,3}\.){3}\d{1,3}\b)/i) || [,''])[1];
+        rows.push([ph.esc(sev.toUpperCase()), ph.esc(id || '—'), ph.esc(proto || '—'), ph.esc(target || '—'), ph.esc(l.slice(0, 220))]);
       });
       var parts = [];
       if (counts.critical) parts.push('CRITICAL:' + counts.critical);
@@ -11334,6 +11637,15 @@ function ncParseResults(exitCode) {
       if (counts.low)      parts.push('LOW:'      + counts.low);
       if (counts.info)     parts.push('INFO:'     + counts.info);
       if (counts.other)    parts.push('OTHER:'    + counts.other);
+      var parsed = ph.sum([
+        counts.critical ? ph.pill('critical ' + counts.critical, 'crit') : '',
+        counts.high ? ph.pill('high ' + counts.high, 'crit') : '',
+        counts.medium ? ph.pill('medium ' + counts.medium, 'warn') : '',
+        counts.low ? ph.pill('low ' + counts.low, 'info') : '',
+        counts.info ? ph.pill('info ' + counts.info, 'ok') : '',
+        counts.other ? ph.pill('other ' + counts.other, 'warn') : '',
+      ]) + ph.sec('Findings (' + rows.length + ')', ph.tbl(['SEV','TEMPLATE','PROTO','TARGET','RAW'], rows.slice(0, 500)));
+      injectParsedTabs('nc', parsed);
       appendOut('nc-out-c',
         '\n→ ' + lines.length + ' hallazgo(s) | ' + parts.join(' ') +
         '\n→ Guardado en: ' + outPath, 'ok');

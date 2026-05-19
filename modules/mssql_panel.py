@@ -420,29 +420,53 @@ def run_query_sync(conn: dict, sql: str, timeout: int = 12) -> dict:
 
 
 def _parse_pipe_output(raw: str) -> tuple:
-    """Parse sqlcmd pipe-delimited output into (rows_list, headers_list)."""
-    lines = []
-    for ln in raw.splitlines():
+    """Parse sqlcmd pipe-delimited output into (rows_list, headers_list).
+
+    sqlcmd can prepend context/warning messages and uses a dashed separator
+    under the real header. Prefer that separator when present, but keep a
+    conservative fallback for single-column or message-only output.
+    """
+    cleaned = []
+    for ln in str(raw or '').splitlines():
         stripped = ln.strip()
         if not stripped:
             continue
-        if re.match(r'^-+(\|-+)*$', stripped):
-            continue
         if re.match(r'^\(\d+\s+rows?\s+affected\)', stripped, re.I):
             continue
-        lines.append(stripped)
+        if re.match(r'^(Changed database context|Warning:|Msg \d+,|Sqlcmd:)', stripped, re.I):
+            continue
+        cleaned.append(stripped)
 
-    if not lines:
+    if not cleaned:
         return [], []
 
-    headers = [h.strip() for h in lines[0].split('|')]
+    sep_idx = None
+    for i, line in enumerate(cleaned):
+        if re.match(r'^\s*-+(?:\s*\|\s*-+)*\s*$', line):
+            sep_idx = i
+            break
+
+    if sep_idx is not None and sep_idx > 0:
+        header_line = cleaned[sep_idx - 1]
+        data_lines = cleaned[sep_idx + 1:]
+    else:
+        header_line = cleaned[0]
+        data_lines = cleaned[1:]
+
+    headers = [h.strip() or f'col_{i + 1}' for i, h in enumerate(header_line.split('|'))]
     rows = []
-    for line in lines[1:]:
-        parts = [p.strip() for p in line.split('|')]
+    for line in data_lines:
+        if re.match(r'^\s*-+(?:\s*\|\s*-+)*\s*$', line):
+            continue
+        parts = [part.strip() for part in line.split('|')]
         if len(parts) == len(headers):
             rows.append(dict(zip(headers, parts)))
-        elif parts and any(p for p in parts):
-            rows.append({'_raw': '|'.join(parts)})
+        elif len(headers) == 1:
+            rows.append({headers[0]: line})
+        elif parts and any(parts):
+            row = {headers[i]: parts[i] for i in range(min(len(headers), len(parts)))}
+            row['_raw'] = line
+            rows.append(row)
     return rows, headers
 
 

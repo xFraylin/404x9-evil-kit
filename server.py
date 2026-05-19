@@ -624,20 +624,22 @@ def api_httpx_parse():
             m = re.match(r'^(https?://\S+)', line)
             if not m:
                 continue
-            url = m.group(1).rstrip(',;')
+            url = m.group(1).rstrip(',;)]')
             if url in seen:
                 continue
             seen.add(url)
-            # Extract all codes from bracket groups: [200], [301,200], [301,302,200]
-            groups = re.findall(r'\[(\d{3}(?:,\d{3})*)\]', line)
-            if not groups:
+            # Extract HTTP status codes from any bracket group. httpx emits
+            # [200], [301,302,200], and often other metadata groups nearby.
+            codes = []
+            for group in re.findall(r'\[([^\[\]]+)\]', line):
+                codes.extend(int(c) for c in re.findall(r'\b\d{3}\b', group))
+            if not codes:
                 continue
-            codes = [int(c) for g in groups for c in g.split(',')]
             has_3xx = any(300 <= c < 400 for c in codes)
-            last    = codes[-1]
+            last = codes[-1]
             if has_3xx:
                 redirects.append(url)
-            elif last == 200:
+            elif 200 <= last < 300:
                 ok.append(url)
             elif last == 403:
                 forbidden.append(url)

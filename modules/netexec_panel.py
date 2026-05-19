@@ -407,34 +407,91 @@ def build_evil_winrm_launcher(data: dict) -> str:
 # SMB  192.168.1.10  445  DC01  [*] Enumerated shares
 # SMB  192.168.1.10  445  DC01  ADMIN$  READ,WRITE
 
+_ANSI_RE = re.compile(r'\x1b\[[0-9;?]*[ -/]*[@-~]')
+_TS_RE = re.compile(r'^\s*(?:\[[^\]]*\]\s*)?(?:\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:,\d+)?)\s+')
+
 _LINE_RE = re.compile(
-    r'^(?P<proto>\w+)\s+'
-    r'(?P<ip>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})\s+'
-    r'(?P<port>\d+)\s+'
-    r'(?P<host>\S+)\s+'
-    r'(?P<rest>.+)$'
+    r'^(?P<proto>[A-Za-z][\w-]*)\s+'
+    r'(?P<target>\S+)\s+'
+    r'(?P<port>\d+|N/A|-)\s+'
+    r'(?P<host>\S+)\s*'
+    r'(?P<rest>.*)$'
 )
 
 _HOST_INFO_RE = re.compile(
     r'\[\*\].*\(name:(?P<name>[^)]+)\).*\(domain:(?P<domain>[^)]+)\)'
-    r'.*\(signing:(?P<signing>[^)]+)\).*\(SMBv1:(?P<smbv1>[^)]+)\)'
+    r'.*\(signing:(?P<signing>[^)]+)\).*\(SMBv1:(?P<smbv1>[^)]+)\)',
+    re.I,
 )
 
-_CRED_OK_RE = re.compile(
-    r'\[\+\]\s+(?P<identity>\S+):(?P<secret>\S*)\s*(?P<admin>\(Pwn3d!\))?'
-)
+_KV_RE = re.compile(r'\((?P<key>[A-Za-z0-9_ -]+):(?P<value>[^)]*)\)')
+_STATUS_RE = re.compile(r'\b(?:STATUS_[A-Z0-9_]+|KDC_ERR_[A-Z0-9_]+|NT_STATUS_[A-Z0-9_]+)\b')
+_BRACKET_RE = re.compile(r'^\[(?P<tag>[+*!-])\]\s*(?P<body>.*)$')
+_CRED_PREFIX_RE = re.compile(r'^\[\+\]\s+(?P<body>.*)$')
 
 _SHARE_RE = re.compile(
-    r'(?P<share>\S+)\s+(?P<perm>READ(?:,WRITE)?|WRITE|NO ACCESS)\s*(?P<comment>.*)'
+    r'^(?P<share>\S+)\s+(?P<perm>(?:READ|WRITE|NO ACCESS|DENIED|FULL|CHANGE|SPECIAL)(?:[,/](?:READ|WRITE|FULL|CHANGE|SPECIAL))*)\s*(?P<comment>.*)$',
+    re.I,
 )
 
 _USER_RE = re.compile(r'\[\*\]\s+(?P<user>\S+@\S+|\S+\\[^\s]+|\S+)\s*(?P<detail>.*)')
 _GROUP_RE = re.compile(r'\[\*\]\s+(?P<group>.+?)\s*(?:members|->|:)\s*(?P<detail>.*)', re.I)
 
 
+def _clean_line(line: str) -> str:
+    line = _ANSI_RE.sub('', str(line or '')).replace('\r', '').strip()
+    return _TS_RE.sub('', line).strip()
+
+
+def _truthy(value: str) -> bool | None:
+    v = str(value or '').strip().lower()
+    if v in {'true', 'yes', '1', 'enabled', 'required'}:
+        return True
+    if v in {'false', 'no', '0', 'disabled', 'not required'}:
+        return False
+    return None
+
+
+def _split_identity_secret(body: str) -> tuple[str, str]:
+    body = re.sub(r'\s*\((?:Pwn3d!|Owned!|Admin!)\)\s*', ' ', body, flags=re.I).strip()
+    body = re.sub(r'\s+\[[^\]]+\]\s*$', '', body).strip()
+    status = _STATUS_RE.search(body)
+    if status:
+        body = body[:status.start()].strip()
+    if ':' not in body:
+        return body, ''
+    identity, secret = body.split(':', 1)
+    return identity.strip(), secret.strip()
+
+
+def _append_unique(bucket: list, item: dict, keys: tuple[str, ...]) -> bool:
+    marker = tuple(str(item.get(k, '')) for k in keys)
+    for existing in bucket:
+        if tuple(str(existing.get(k, '')) for k in keys) == marker:
+            return False
+    bucket.append(item)
+    return True
+
+
+def _line_record(proto: str, target: str, port: str, host: str, rest: str, line: str) -> dict:
+    return {
+        'protocol': proto,
+        'target': target,
+        'ip': target,
+        'port': port,
+        'host': host,
+        'message': rest,
+        'line': line,
+    }
+
+
 def parse_netexec_output(raw: str) -> dict:
     result: dict = {
-        'summary': {'hosts': 0, 'credentials': 0, 'admin': 0, 'shares': 0, 'errors': 0},
+        'summary': {
+            'hosts': 0, 'credentials': 0, 'admin': 0, 'shares': 0,
+            'users': 0, 'groups': 0, 'findings': 0, 'errors': 0,
+            'unparsed': 0,
+        },
         'indicators': [],
         'credentials': [],
         'hosts': [],
@@ -443,110 +500,116 @@ def parse_netexec_output(raw: str) -> dict:
         'groups': [],
         'findings': [],
         'errors': [],
+        'unparsed': [],
     }
-    seen_hosts: set = set()
 
-    for line in raw.splitlines():
-        line = line.rstrip()
+    for raw_line in str(raw or '').splitlines():
+        line = _clean_line(raw_line)
         if not line:
             continue
 
         m = _LINE_RE.match(line)
         if not m:
-            # Non-standard line — capture as finding if it has signal
-            if re.search(r'\[\+\]|\[!\]|Pwn3d', line):
+            if re.search(r'\[\+\]|\[!\]|Pwn3d|Owned|VULNERABLE|SUCCESS', line, re.I):
                 result['findings'].append({'line': line})
+                result['summary']['findings'] += 1
+            elif re.search(r'\[-\]|\[!\]|error|failed|denied|timeout|STATUS_', line, re.I):
+                result['errors'].append({'line': line})
+                result['summary']['errors'] += 1
+            else:
+                result['unparsed'].append({'line': line})
+                result['summary']['unparsed'] += 1
             continue
 
         proto = m.group('proto').upper()
-        ip = m.group('ip')
+        target = m.group('target')
+        port = m.group('port')
         host = m.group('host')
         rest = m.group('rest').strip()
+        base = _line_record(proto, target, port, host, rest, line)
 
-        # Host info line
         host_m = _HOST_INFO_RE.search(rest)
-        if host_m and ip not in seen_hosts:
-            seen_hosts.add(ip)
-            result['hosts'].append({
-                'protocol': proto,
-                'ip': ip,
-                'host': host,
-                'name': host_m.group('name'),
-                'domain': host_m.group('domain'),
-                'signing': host_m.group('signing'),
-                'smbv1': host_m.group('smbv1'),
-            })
-            result['summary']['hosts'] += 1
-            # Indicator: SMBv1 enabled
-            if host_m.group('smbv1').lower() == 'true':
-                result['indicators'].append({
-                    'label': 'SMBv1 enabled',
-                    'host': ip,
-                    'line': line,
-                    'severity': 'warn',
-                })
-            # Indicator: signing disabled
-            if host_m.group('signing').lower() == 'false':
-                result['indicators'].append({
-                    'label': 'Signing disabled (relay target)',
-                    'host': ip,
-                    'line': line,
-                    'severity': 'crit',
-                })
+        has_host_metadata = bool(host_m) or '(name:' in rest or '(domain:' in rest
+        if rest.startswith('[*]') and has_host_metadata:
+            kv = {mt.group('key').strip().lower().replace(' ', '_'): mt.group('value').strip() for mt in _KV_RE.finditer(rest)}
+            if host_m:
+                item = {
+                    **base,
+                    'name': host_m.group('name').strip(),
+                    'domain': host_m.group('domain').strip(),
+                    'signing': host_m.group('signing').strip(),
+                    'smbv1': host_m.group('smbv1').strip(),
+                }
+            else:
+                item = {
+                    **base,
+                    'name': kv.get('name', host),
+                    'domain': kv.get('domain', ''),
+                    'signing': kv.get('signing', kv.get('smb_signing', '')),
+                    'smbv1': kv.get('smbv1', kv.get('smb_v1', '')),
+                }
+            if _append_unique(result['hosts'], item, ('protocol', 'target', 'port', 'host', 'name', 'domain')):
+                result['summary']['hosts'] += 1
+            if _truthy(item.get('smbv1')) is True:
+                result['indicators'].append({'label': 'SMBv1 enabled', 'host': target, 'line': line, 'severity': 'warn'})
+            if _truthy(item.get('signing')) is False:
+                result['indicators'].append({'label': 'Signing disabled (relay target)', 'host': target, 'line': line, 'severity': 'crit'})
             continue
 
-        # Credential success
         if rest.startswith('[+]'):
-            cred_m = _CRED_OK_RE.search(rest)
-            if cred_m:
-                is_admin = bool(cred_m.group('admin'))
-                result['credentials'].append({
-                    'protocol': proto,
-                    'host': ip,
-                    'identity': cred_m.group('identity'),
-                    'secret': cred_m.group('secret'),
-                    'admin': is_admin,
-                })
-                result['summary']['credentials'] += 1
+            cred_m = _CRED_PREFIX_RE.search(rest)
+            body = cred_m.group('body').strip() if cred_m else rest[3:].strip()
+            is_admin = bool(re.search(r'\((?:Pwn3d!|Owned!|Admin!)\)', body, re.I))
+            identity, secret = _split_identity_secret(body)
+            if identity:
+                item = {**base, 'identity': identity, 'secret': secret, 'admin': is_admin}
+                if _append_unique(result['credentials'], item, ('protocol', 'target', 'identity', 'secret', 'admin')):
+                    result['summary']['credentials'] += 1
                 if is_admin:
                     result['summary']['admin'] += 1
-                    result['indicators'].append({
-                        'label': 'Admin access',
-                        'host': ip,
-                        'line': line,
-                        'severity': 'crit',
-                    })
+                    result['indicators'].append({'label': 'Admin access', 'host': target, 'line': line, 'severity': 'crit'})
             else:
-                result['findings'].append({'line': line})
+                result['findings'].append(base)
+                result['summary']['findings'] += 1
             continue
 
-        # Error lines
-        if rest.startswith('[-]') or 'STATUS_' in rest:
+        if rest.startswith('[-]') or re.search(r'\[!\]|\[x\]|STATUS_|KDC_ERR_|error|failed|denied|timeout|exception', rest, re.I):
+            status = _STATUS_RE.search(rest)
+            result['errors'].append({**base, 'status': status.group(0) if status else ''})
             result['summary']['errors'] += 1
-            result['errors'].append({'line': line})
             continue
 
-        # Share enumeration
         share_m = _SHARE_RE.match(rest)
-        if share_m:
-            result['shares'].append({
-                'host': ip,
-                'share': share_m.group('share'),
-                'permission': share_m.group('perm'),
-                'comment': share_m.group('comment').strip(),
-            })
-            result['summary']['shares'] += 1
-            if 'WRITE' in share_m.group('perm'):
-                result['indicators'].append({
-                    'label': f"Writable share: {share_m.group('share')}",
-                    'host': ip,
-                    'line': line,
-                    'severity': 'crit',
-                })
+        if share_m and share_m.group('share').lower() not in {'share', 'name'}:
+            perm = re.sub(r'\s+', ' ', share_m.group('perm').upper().replace('/', ',')).strip()
+            item = {**base, 'share': share_m.group('share'), 'permission': perm, 'comment': share_m.group('comment').strip()}
+            if _append_unique(result['shares'], item, ('target', 'share', 'permission')):
+                result['summary']['shares'] += 1
+            if re.search(r'\b(?:WRITE|FULL|CHANGE)\b', perm):
+                result['indicators'].append({'label': f"Writable share: {share_m.group('share')}", 'host': target, 'line': line, 'severity': 'crit'})
             continue
 
-        # Info lines → findings
-        if rest.startswith('[*]'):
-            result['findings'].append({'line': line})
+        user_m = _USER_RE.match(rest)
+        if user_m and re.search(r'user|pwdlastset|badpwd|description|memberof|lastlogon|enabled|disabled', rest, re.I):
+            item = {**base, 'user': user_m.group('user'), 'detail': user_m.group('detail').strip()}
+            if _append_unique(result['users'], item, ('target', 'user', 'detail')):
+                result['summary']['users'] += 1
+            continue
+
+        group_m = _GROUP_RE.match(rest)
+        if group_m and re.search(r'group|member|admin|operator|remote|domain', rest, re.I):
+            item = {**base, 'group': group_m.group('group').strip(), 'detail': group_m.group('detail').strip()}
+            if _append_unique(result['groups'], item, ('target', 'group', 'detail')):
+                result['summary']['groups'] += 1
+            continue
+
+        if rest.startswith('[*]') or _BRACKET_RE.match(rest):
+            result['findings'].append(base)
+            result['summary']['findings'] += 1
+            continue
+
+        result['unparsed'].append(base)
+        result['summary']['unparsed'] += 1
 
     return result
+
