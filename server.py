@@ -525,10 +525,10 @@ def api_tools_status():
 
 _ADB_DL_DIR = '/tmp/404x9-adbrowser'
 
-def _adb_err(msg, code=400, **extra):
+def _adb_err(msg, status_code=400, **extra):
     payload = {'ok': False, 'error': msg}
     payload.update(extra)
-    return jsonify(payload), code
+    return jsonify(payload), status_code
 
 def _adb_clean_target(v):
     v = str(v or '').strip().replace('\\', '/').strip('/')
