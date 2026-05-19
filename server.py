@@ -638,7 +638,7 @@ def _adb_parse_ls(raw):
         t = line.strip()
         if not t or t.startswith('.') or 'blocks of size' in t.lower():
             continue
-        m = re.match(r'^(.+?)\s+([A-Z]+)\s+(\d+)\s+(.+)$', t)
+        m = re.match(r'^(.+?)\s+([ADHRS]+)\s+(\d+)\s+((?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+.+)$', t, re.I)
         if not m:
             continue
         name = m.group(1).rstrip()
