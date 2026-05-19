@@ -9999,7 +9999,10 @@ async function adfbDownload(name) {
   try {
     const r = await fetch(API + '/adbrowser/download', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(adfbPayload({name}))});
     const d = await r.json();
-    if (!d.ok) throw new Error(d.error || 'download failed');
+    if (!d.ok) {
+      const raw = (d.raw || '').trim();
+      throw new Error((d.error || 'download failed') + (raw ? ' · ' + raw.slice(0, 500).replace(/\s+/g, ' ') : ''));
+    }
     adfbSetStatus('Descargado: ' + d.path + ' (' + fmtSize(d.size || 0) + ')', 'ok');
     window.open(API + d.url, '_blank');
   } catch(e) { adfbSetStatus('Error descargando: ' + e.message, 'err'); }

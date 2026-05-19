@@ -690,8 +690,7 @@ def api_adbrowser_download():
     token = uuid.uuid4().hex
     safe_name = os.path.basename(name).replace('/', '_').replace('\\', '_')
     local = os.path.join(_ADB_DL_DIR, token + '_' + safe_name)
-    remote = name if not remote_path else remote_path + '\\' + name
-    cmd = f'get "{remote}" "{local}"'
+    cmd = f'get "{name}" "{local}"' if not remote_path else f'cd "{remote_path}"; get "{name}" "{local}"'
     r, err = _adb_run_smbclient(data, [f'//{target}/{share}', '-c', cmd], timeout=120)
     if err:
         return _adb_err(err, 500)
