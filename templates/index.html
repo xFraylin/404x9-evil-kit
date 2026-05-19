@@ -2075,10 +2075,10 @@ textarea.fi{resize:vertical;min-height:48px}
   <div class="nxc-section">
     <div class="nxc-section-title">CONEXION SMB</div>
     <div class="row">
-      <div class="ig w2"><div class="lbl">HOST / IP</div><input class="fi" id="fb-h" placeholder="172.16.13.5" oninput="adfbUpdateHint()"></div>
-      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="fb-d" placeholder="domain.local"></div>
+      <div class="ig w2"><div class="lbl">HOST / IP</div><input class="fi" id="fb-h" placeholder="172.16.13.5" oninput="adfbUpdateHint();adfbSaveState()"></div>
+      <div class="ig"><div class="lbl">DOMINIO</div><input class="fi" id="fb-d" placeholder="domain.local" oninput="adfbSaveState()"></div>
       <div class="ig"><div class="lbl">AUTH</div>
-        <select class="fi" id="fb-auth" onchange="adfbAuthChanged()">
+        <select class="fi" id="fb-auth" onchange="adfbAuthChanged();adfbSaveState()">
           <option value="password">password</option>
           <option value="hash">NTLM hash</option>
           <option value="kerberos">kerberos</option>
@@ -2088,9 +2088,9 @@ textarea.fi{resize:vertical;min-height:48px}
       </div>
     </div>
     <div class="row">
-      <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="fb-u" placeholder="user"></div>
-      <div class="ig"><div class="lbl">PASSWORD</div><input class="fi" id="fb-p" type="password" placeholder="Password1!"></div>
-      <div class="ig"><div class="lbl">NTLM HASH</div><input class="fi" id="fb-hash" placeholder="NTLM o LM:NTLM"></div>
+      <div class="ig"><div class="lbl">USUARIO</div><input class="fi" id="fb-u" placeholder="user" oninput="adfbSaveState()"></div>
+      <div class="ig"><div class="lbl">PASSWORD</div><input class="fi" id="fb-p" type="password" placeholder="Password1!" oninput="adfbSaveState()"></div>
+      <div class="ig"><div class="lbl">NTLM HASH</div><input class="fi" id="fb-hash" placeholder="NTLM o LM:NTLM" oninput="adfbSaveState()"></div>
     </div>
     <div class="adfb-toolbar">
       <button class="rbtn" onclick="adfbLoadShares()">▶ CONECTAR / SHARES</button>
@@ -9884,6 +9884,25 @@ function adfbSetStatus(msg, type) {
   el.style.color = type === 'err' ? 'var(--red)' : type === 'ok' ? 'var(--g2)' : type === 'warn' ? 'var(--yellow)' : 'var(--mut)';
   el.textContent = msg || '';
 }
+function adfbSaveState() {
+  try {
+    const data = {};
+    ['fb-h','fb-d','fb-auth','fb-u','fb-p','fb-hash'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value || '';
+    });
+    localStorage.setItem('x9_adfb_state', JSON.stringify(data));
+  } catch(_) {}
+}
+function adfbLoadState() {
+  try {
+    const data = JSON.parse(localStorage.getItem('x9_adfb_state') || '{}');
+    Object.entries(data || {}).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el) el.value = val || '';
+    });
+  } catch(_) {}
+}
 function adfbAuthChanged() {
   const auth = gv('fb-auth') || 'password';
   const p = document.getElementById('fb-p');
@@ -15242,7 +15261,7 @@ startC2AutoRefresh();
 
 /* ─── INIT ────────────────────────────────────────────── */
 bNmap(); bSf(); bAmass(); bHarv(); bWw(); bWp();
-bSherlock(); bHolehe(); bDnsrecon(); bExiftool(); adfbAuthChanged();
+bSherlock(); bHolehe(); bDnsrecon(); bExiftool(); adfbLoadState(); adfbAuthChanged(); adfbUpdateHint();
 bFfuf(); bGob(); bNikto(); bWfuzz(); bDalfox();
 bSql(); bJohn(); bHc(); bHyd(); bMedusa();
 bMsf(); bSs(); bAdEnum(); bSmb(); bKerb();
