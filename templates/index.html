@@ -75,39 +75,6 @@ body{font-family:'JetBrains Mono',monospace;background:var(--bg);color:var(--txt
 #content{flex:1;overflow-y:auto;padding:12px 14px 32px;min-width:0;min-height:0;background:var(--panel-bg);background-image:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,.008) 2px,rgba(0,255,136,.008) 4px)}
 
 
-/* ─── TERMINAL PANEL ─────────────────────────────────── */
-#term-panel{width:310px;background:#020302;border-left:1px solid var(--brd);display:flex;flex-direction:column;flex-shrink:0;min-height:0;transition:width .2s ease}
-#term-panel.collapsed{width:26px}
-#term-topbar{background:#040805;border-bottom:1px solid var(--brd);padding:6px 10px;display:flex;align-items:center;gap:7px;flex-shrink:0}
-#term-title{font-size:13px;color:var(--mut);flex:1;letter-spacing:2px;cursor:pointer;text-transform:uppercase}
-#term-title:hover{color:var(--g2)}
-#term-collapse{font-size:14px;color:var(--dim);cursor:pointer;padding:0 4px;transition:color .1s}
-#term-collapse:hover{color:var(--g)}
-#term-jobs{font-size:12px;color:var(--yellow)}
-#term-tabs{display:flex;border-bottom:1px solid var(--brd);overflow-x:auto;flex-shrink:0;background:var(--bg2)}
-.tt{font-size:12px;padding:5px 10px;color:var(--mut);cursor:pointer;border-bottom:2px solid transparent;display:flex;align-items:center;gap:4px;white-space:nowrap;transition:all .12s;letter-spacing:.5px}
-.tt:hover{color:var(--g2);background:#060d07}
-.tt.active{color:var(--g);border-bottom-color:var(--g)}
-.tt .tx{color:var(--dim);font-size:14px}
-.tt .tx:hover{color:var(--red)}
-#new-tt{padding:5px 8px;font-size:15px;color:var(--dim);cursor:pointer;transition:color .1s}
-#new-tt:hover{color:var(--g)}
-#term-body{flex:1;overflow:hidden;position:relative}
-.tout{position:absolute;inset:0;overflow-y:auto;padding:8px 10px;font-size:14px;line-height:1.7;display:none;font-family:'JetBrains Mono',monospace}
-.tout.active{display:block}
-.tl{white-space:pre-wrap;word-break:break-all}
-.tl.err{color:#ff7070}
-.tl.ok{color:var(--g)}
-.tl.cmd{color:var(--cyan)}
-.tl.sys{color:var(--mut);font-style:italic}
-.tl.warn{color:var(--yellow)}
-.tl.sep{color:var(--dim);border-top:1px solid #0d160f;padding-top:4px;margin-top:4px}
-#term-input-row{border-top:1px solid var(--brd);display:flex;align-items:center;padding:5px 8px;gap:6px;flex-shrink:0;background:#030504}
-#term-prompt{font-size:14px;color:var(--g);white-space:nowrap;text-shadow:0 0 8px rgba(0,255,136,.3)}
-#term-input{flex:1;background:transparent;border:none;color:var(--txt);font-family:inherit;font-size:14px;outline:none}
-#term-run-btn{font-size:12px;color:var(--g);cursor:pointer;padding:3px 8px;border:1px solid var(--brd);border-radius:2px;transition:all .1s;letter-spacing:1px}
-#term-run-btn:hover{background:#0a1a0c;border-color:#254530}
-
 /* ─── ENCODER AUX PANEL (right, replaces terminal) ────── */
 #enc-aux-panel{width:420px;background:#020403;border-left:1px solid var(--brd);display:none;flex-direction:column;flex-shrink:0;min-height:0}
 #enc-aux-panel.active{display:flex}
@@ -469,7 +436,6 @@ textarea.fi{resize:vertical;min-height:48px}
 /* ── 4K / XL ≥1800px: scale panels up ─────────────── */
 @media(min-width:1800px){
   #sidebar{width:260px}
-  #term-panel:not(.collapsed){width:420px}
   #enc-aux-panel.active{width:580px}
   .panel.active{grid-template-columns:1fr 490px}
 }
@@ -479,7 +445,6 @@ textarea.fi{resize:vertical;min-height:48px}
 /* ── 1200–1399px: compress right panels slightly ──────── */
 @media(max-width:1399px){
   #sidebar{width:200px}
-  #term-panel:not(.collapsed){width:320px}
   #enc-aux-panel.active{width:420px}
   .panel.active{grid-template-columns:1fr 370px}
 }
@@ -487,7 +452,6 @@ textarea.fi{resize:vertical;min-height:48px}
 /* ── 1024–1199px: small laptop ────────────────────────── */
 @media(max-width:1199px){
   #sidebar{width:185px}
-  #term-panel:not(.collapsed){width:280px}
   #enc-aux-panel.active{width:340px}
   .panel.active{grid-template-columns:1fr 320px}
 }
@@ -495,7 +459,6 @@ textarea.fi{resize:vertical;min-height:48px}
 /* ── <1024px: hide terminal, go wider ─────────────────── */
 @media(max-width:1023px){
   #sidebar{width:175px}
-  #term-panel{display:none}
   #enc-aux-panel.active{width:clamp(260px,40vw,380px)}
   .panel.active{grid-template-columns:1fr 330px}
 }
@@ -5255,27 +5218,6 @@ https://xxxx.ngrok.io/api/phish/land/TRACK_ID</pre>
 
 </div><!-- end content -->
 
-<!-- ═══════════════ TERMINAL ═══════════════ -->
-<div id="term-panel">
-  <div id="term-topbar">
-    <div id="term-title" onclick="toggleTerm()">TERMINAL</div>
-    <div id="term-jobs"></div>
-    <div id="term-collapse" onclick="toggleTerm()">◀</div>
-  </div>
-  <div id="term-tabs">
-    <div class="tt active" data-tid="t0" onclick="switchTT('t0',this)"><span>MAIN</span></div>
-    <div id="new-tt" onclick="newTT()">+</div>
-  </div>
-  <div id="term-body">
-    <div class="tout active" id="tout-t0"></div>
-  </div>
-  <div id="term-input-row">
-    <span id="term-prompt">root@kali:~#&nbsp;</span>
-    <input id="term-input" placeholder="comando..." onkeydown="termKey(event)">
-    <span id="term-run-btn" onclick="termExec()">RUN</span>
-  </div>
-</div>
-
 <!-- ═══════════════ ENCODER AUX PANEL ═══════════════ -->
 <div id="enc-aux-panel">
   <div id="enc-aux-topbar">
@@ -5562,16 +5504,9 @@ function sw(id, el) {
   if (id === 'ad-smb' && typeof nxcLoadModules !== 'undefined') setTimeout(() => nxcLoadModules(false), 50);
 }
 function updateRightPanel(id) {
-  const term = document.getElementById('term-panel');
-  const aux  = document.getElementById('enc-aux-panel');
-  if (!term || !aux) return;
-  if (id === 'encoder') {
-    term.style.display = 'none';
-    aux.classList.add('active');
-  } else {
-    term.style.display = '';
-    aux.classList.remove('active');
-  }
+  const aux = document.getElementById('enc-aux-panel');
+  if (!aux) return;
+  aux.classList.toggle('active', id === 'encoder');
 }
 function stabLib(n, el) {
   const panel = document.getElementById('enc-aux-panel');
@@ -5729,8 +5664,8 @@ function clearHist() {
 /* ─── JOB COUNT ───────────────────────────────────────── */
 function updJobs() {
   const n = Object.keys(activeJobs).length;
-  document.getElementById('sb-jobs').textContent = n + ' jobs';
-  document.getElementById('term-jobs').textContent = n > 0 ? n + ' running' : '';
+  const sbJobs = document.getElementById('sb-jobs');
+  if (sbJobs) sbJobs.textContent = n + ' jobs';
   const nxcJobs = document.getElementById('sm-job-panel');
   if (nxcJobs) {
     const keys = Object.keys(activeJobs);
@@ -8735,6 +8670,7 @@ async function viewFile(path) {
 const _termBufs = {};
 const _termRafs = {};
 function termWrite(tabId, text, cls) {
+  if (!document.getElementById('tout-' + tabId)) return;
   if (!_termBufs[tabId]) _termBufs[tabId] = [];
   for (const line of (text || '').split('\n')) {
     _termBufs[tabId].push({ t: line, c: cls || '' });
@@ -8767,6 +8703,7 @@ function termWrite(tabId, text, cls) {
 }
 function termExec() {
   const inp = document.getElementById('term-input');
+  if (!inp) return;
   const cmd = inp.value.trim();
   if (!cmd) return;
   termHist.unshift(cmd); termHistIdx = -1;
@@ -8786,8 +8723,10 @@ function termKey(e) {
 }
 function toggleTerm() {
   const p = document.getElementById('term-panel');
+  if (!p) return;
   p.classList.toggle('collapsed');
-  document.getElementById('term-collapse').textContent = p.classList.contains('collapsed') ? '▶' : '◀';
+  const c = document.getElementById('term-collapse');
+  if (c) c.textContent = p.classList.contains('collapsed') ? '▶' : '◀';
 }
 function newTT() {
   const id = 't' + ttCount++;
